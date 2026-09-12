@@ -195,7 +195,7 @@ void MechHintUIButton::Render() {
 void MechHintUIButton::Process(float elapsed) {
     if (active_hint != NULL) {
         display_elapsed += elapsed;
-        if (*reinterpret_cast<void **>(MechSystems::Get()->PlayerButton().field_0x3c) != NULL ||
+        if (MechSystems::Get()->PlayerButton().selector != NULL ||
             (active_hint->display_duration > 0.0f && display_elapsed >= active_hint->display_duration)) {
             if (active_hint != NULL) {
                 const f32 blend = AlphaBlendTime;
@@ -355,7 +355,7 @@ void Hint_Process(float elapsed) {
     if (hint != NULL) {
         hintsys.display_elapsed += elapsed;
         if ((hint->display_duration > 0.0f && hintsys.display_elapsed >= hint->display_duration) ||
-            *reinterpret_cast<void **>(MechSystems::Get()->PlayerButton().field_0x3c) != NULL)
+            MechSystems::Get()->PlayerButton().selector != NULL)
             hintsys.active_hint = NULL;
     }
 }

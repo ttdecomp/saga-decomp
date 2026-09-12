@@ -7,6 +7,8 @@
 # apply only to the corresponding source.
 
 build:target --per_file_copt=^src/batman\.cpp$@-O2
+# Editor path callbacks in the original use optimized frameless PIC call sequences.
+build:target --per_file_copt=^src/editor/edpath\.cpp$@-O2
 # Recovered Android entry points; -O2 and -O3 emit the same measured bodies.
 build:target --per_file_copt=^src/java/android\.cpp$@-O2
 # Original OBB lookup uses optimized inlined strlen/strcat and omits leaf frames.

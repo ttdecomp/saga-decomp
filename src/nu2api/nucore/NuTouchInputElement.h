@@ -15,8 +15,8 @@ struct NuTouchInputElement {
     virtual void UpdateButtons(i32) {
     }
     virtual void Update(NuInputTouchData const *) = 0;
-    virtual bool IsPressed() const {
-        return false;
+    virtual u8 IsPressed() const {
+        return 0;
     }
     virtual float GetStickX() const {
         return 0.0f;

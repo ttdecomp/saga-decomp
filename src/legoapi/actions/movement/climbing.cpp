@@ -179,9 +179,6 @@ extern i32 TERRAINMASK_NONWEAPON, TERRAINMASK_NONDROID;
 u32 LEGO_AIPATHCNX_MAGNETCLIMB, LEGO_AIPATHCNX_CLIMB;
 i32 GameRayCast(NUVEC *, NUVEC *, f32, i32);
 
-#if defined(__i386__)
-__attribute__((regparm(1)))
-#endif
 static __used__ void ClimbObject_FindNormal(CLIMBOBJECT_s *object) {
     AIPATHNODE *first = &object->path->nodes[object->connection->node_indices[0]];
     AIPATHNODE *second = &object->path->nodes[object->connection->node_indices[1]];

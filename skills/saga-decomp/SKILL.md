@@ -50,6 +50,11 @@ bazel aquery --config=target \
 - Definition order, data section, literal first-use order, signedness, field
   offsets, and static initialization can all affect emitted bytes.
 - Native/WASM behavior is diagnostic and must not leak into the target.
+- Use `__attribute__` only for a verified, documented linkage, layout,
+  platform, or runtime requirement; never merely to raise a matching score or
+  force an instruction pattern. Explain the necessity near its use.
+- Do not add `regparm`, `fastcall`, `thiscall`, or similar calling-convention
+  attributes as matching shortcuts. Record unresolved ABI discrepancies.
 
 Read `doc/decomp/02-codegen.md`, `04-types-abi.md`, and
 `07-diagnostics.md` before changing source to chase an assembly shape.

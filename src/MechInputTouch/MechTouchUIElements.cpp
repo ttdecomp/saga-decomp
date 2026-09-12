@@ -1,10 +1,12 @@
 #include "MechInputTouch_types.h"
+#include "legoapi/audio/audio.h"
 
 #include <string.h>
 
 #include "gameapi/gui/apimenu.h"
 #include "gameframework/saveload.h"
 #include "globals.h"
+#include "legoapi/items/base/apiobject.h"
 #include "legoapi/core/input/timer.h"
 #include "legoapi/cutscenes/cutscenes.h"
 #include "legoapi/render/core/render.h"
@@ -19,6 +21,7 @@ extern i32 editor_active;
 extern i32 NewMode;
 extern i32 PANELOFF;
 extern i32 Paused;
+f32 TagButtonSize;
 
 i32 GetMenuID();
 float GetAspectRatio();
@@ -80,8 +83,12 @@ bool MechTouchUI::OnClick(GameObject_s &, TouchHolder &holder) {
     for (i32 i = 0; i < 32; ++i) {
         MechTouchUIElement *element = elements[i];
         if (element != NULL && element->owner == &holder) {
-            if (element->hovered != 0 && element->on_click != NULL && element->disabled == 0) {
-                element->on_click(*element, holder);
+            if (element->hovered != 0 && element->on_click != NULL) {
+                if (element->disabled == 0) {
+                    element->on_click(*element, holder);
+                } else {
+                    GameAudio_PlaySfx(0x32, NULL, 0, 0);
+                }
             }
             return true;
         }
@@ -100,26 +107,25 @@ bool MechTouchUI::OnDoubleClick(GameObject_s &, TouchHolder &holder) {
 }
 
 bool MechTouchUI::OnDown(GameObject_s &, TouchHolder &holder) {
-    MechTouchUIElement *element = PickElement(holder.touch_position);
-    if (element == NULL) {
-        return false;
+    MechTouchUIElement *element = PickElement(holder.down_position);
+    if (element != NULL) {
+        element->owner = &holder;
+        if (element->on_down != NULL && element->disabled == 0) {
+            element->on_down(*element, holder);
+        }
     }
-    element->owner = &holder;
-    if (element->on_down != NULL && element->disabled == 0) {
-        element->on_down(*element, holder);
-    }
-    return true;
+    return element != NULL;
 }
 
 bool MechTouchUI::OnHold(GameObject_s &, TouchHolder &holder) {
     for (i32 i = 0; i < 32; ++i) {
         MechTouchUIElement *element = elements[i];
         if (element != NULL && element->owner == &holder) {
-            if (PickElement(holder.touch_position) == element && element->on_hold != NULL && element->disabled == 0) {
-                element->on_hold(*element, holder);
-            } else {
-                holder.field_0x0[7] = 1;
+            if (PickElement(holder.touch_position) == element && elements[i]->on_hold != NULL &&
+                elements[i]->disabled == 0) {
+                elements[i]->on_hold(*elements[i], holder);
             }
+            holder.field_0x0[7] = 1;
             return true;
         }
     }
@@ -133,7 +139,7 @@ bool MechTouchUI::OnRelease(GameObject_s &, TouchHolder &holder) {
             if (element->on_release != NULL && element->disabled == 0) {
                 element->on_release(*element, holder);
             }
-            element->owner = NULL;
+            elements[i]->owner = NULL;
         }
     }
     return false;
@@ -144,7 +150,7 @@ MechTouchUIElement *MechTouchUI::PickElement(NuVec2 &point) {
     float picked_depth = -1000000000.0f;
     for (i32 i = 0; i < 32; ++i) {
         MechTouchUIElement *element = elements[i];
-        if (element == NULL || (element->visible == 0 && CUTSTOPGAME == 0) || element->disabled != 0) {
+        if (element == NULL || (element->visible == 0 && PANELOFF == 0) || element->disabled != 0) {
             continue;
         }
 
@@ -253,9 +259,73 @@ void MechTouchUICharIcon::SetupDisabled() {
 }
 
 void MechTouchUITagButton::FadeOut() {
+    if (fading_out == 0) {
+        fading_out = 1;
+        if (1.0f > second_fade.value) {
+            second_fade.from = *second_fade.target;
+            second_fade.to = 0.0f;
+            second_fade.elapsed = 0.0f;
+            second_fade.duration = 0.2f;
+            second_fade.delay = 0.0f;
+        }
+        first_fade.from = *first_fade.target;
+        first_fade.to = 0.0f;
+        first_fade.elapsed = 0.0f;
+        first_fade.duration = 0.2f;
+        first_fade.delay = 0.0f;
+    }
 }
 
-MechTouchUITagButton::MechTouchUITagButton(GameObject_s &, TouchHolder &) {
+MechTouchUITagButton::MechTouchUITagButton(GameObject_s &object, TouchHolder &holder)
+    : MechTouchUIElement(VuVec(object.camera_screen_position.x, object.camera_screen_position.y,
+                                  object.camera_screen_position.z, 1.0f),
+                           TagButtonSize),
+      target_object(object.GetMechObjectInterface()), touch_holder(&holder) {
+    position.z = 0.0f;
+    rectangular = 0;
+    tag_state = 2;
+    fading_out = 0;
+    touched = 0;
+    enabled = 1;
+
+    first_fade.target = &first_fade.value;
+    first_fade.from = 0.0f;
+    first_fade.to = 1.0f;
+    first_fade.elapsed = 0.0f;
+    first_fade.duration = 0.3f;
+    first_fade.delay = 0.0f;
+    first_fade.value = 0.0f;
+
+    hover_animation.target = &hover_animation.value;
+    hover_animation.to = 0.0f;
+    hover_animation.elapsed = -1.0f;
+    hover_animation.duration = -1.0f;
+    hover_animation.delay = 0.0f;
+    hover_animation.value = 0.0f;
+
+    size_animation.target = &size_animation.value;
+    size_animation.to = 1.0f;
+    size_animation.elapsed = -1.0f;
+    size_animation.duration = -1.0f;
+    size_animation.delay = 0.0f;
+    size_animation.value = 1.0f;
+
+    second_fade.target = &second_fade.value;
+    second_fade.from = 0.0f;
+    second_fade.to = 1.0f;
+    second_fade.elapsed = 0.0f;
+    second_fade.duration = 0.8f;
+    second_fade.delay = 0.0f;
+    second_fade.value = 0.0f;
+    field_0xbc = 0.0f;
+
+    timer_animation.target = &timer_animation.value;
+    timer_animation.to = 0.0f;
+    timer_animation.elapsed = -1.0f;
+    timer_animation.duration = -1.0f;
+    timer_animation.delay = 0.0f;
+    timer_animation.value = 0.0f;
+    timer = 1.0f;
 }
 
 void MechTouchUITagButton::Process(float) {
@@ -293,15 +363,16 @@ MechTouchUITexButton::MechTouchUITexButton(VuVec const &pos, float radius) : Mec
 }
 
 void MechTouchUITexButton::Process(float) {
+    f32 frame_time = FRAMETIME;
     if (!(scale_duration < 0.0f) && !(scale_elapsed >= scale_duration + scale_delay)) {
-        scale_elapsed += FRAMETIME;
+        scale_elapsed += frame_time;
         if (scale_elapsed > scale_duration + scale_delay)
             scale_elapsed = scale_duration + scale_delay;
         if (scale_elapsed >= scale_delay)
             *scale_target = ((scale_elapsed - scale_delay) / scale_duration) * (scale_to - scale_from) + scale_from;
     }
     if (!(alpha_duration < 0.0f) && !(alpha_elapsed >= alpha_duration + alpha_delay)) {
-        alpha_elapsed += FRAMETIME;
+        alpha_elapsed += frame_time;
         if (alpha_elapsed > alpha_duration + alpha_delay)
             alpha_elapsed = alpha_duration + alpha_delay;
         if (alpha_elapsed >= alpha_delay)
@@ -325,10 +396,8 @@ MechTouchUITexButton::~MechTouchUITexButton() {
     material = NULL;
 }
 
-MechTouchUIPauseButton::MechTouchUIPauseButton() {
-    position = VuVec(0.7725f, 0.7525f, 0.0f, 1.0f);
-    radius_x = GetAspectRatio() * 0.16f;
-    radius_y = 0.16f;
+MechTouchUIPauseButton::MechTouchUIPauseButton()
+    : MechTouchUIElement(VuVec(0.7725f, 0.7525f, 0.0f, 1.0f), 0.16f) {
     on_click = MechTouchUIPauseButton_OnClick_Callback;
     disable_timer = 0.0f;
     skip_prompt_timer = 0.0f;
@@ -363,7 +432,7 @@ void MechTouchUIPauseButton::Process(float dt) {
         }
     }
 
-    if (MiniCutCam != 0 || (PANELOFF != 0 && GetMenuID() == -1) || WORLD->current_level == CREDITS_LDATA ||
+    if (MiniCutCam != 0 || (PANELOFF != 0 && GetMenuID() == -1) || WORLD->current_level == STATUS_LDATA ||
         (WORLD->current_level->flags & LEVEL_STATUS) != 0 || memcard_autosavestarted != 0 ||
         memcard_autosavepostdelay > 0.0f || memcard_autosavepredelay > 0.0f) {
         return;
@@ -399,15 +468,13 @@ void MechTouchUIPauseButton::Render() {
     DrawTouchPrompt(const_cast<char *>("II"), NULL, hovered != 0, false);
 }
 
-MechTouchUIPlayerButton::MechTouchUIPlayerButton() {
-    position = VuVec(-0.7725f, 0.7525f, 0.0f, 1.0f);
-    radius_x = GetAspectRatio() * 0.16f;
-    radius_y = 0.16f;
+MechTouchUIPlayerButton::MechTouchUIPlayerButton()
+    : MechTouchUIElement(VuVec(-0.7725f, 0.7525f, 0.0f, 1.0f), 0.16f) {
     on_click = PlayerButton_OnClick_Callback_NextButton;
     on_hold = PlayerButton_OnHold_Callback;
     on_leave = PlayerButton_OnLeave_Callback;
-    field_0x3c[0] = field_0x3c[1] = field_0x3c[2] = field_0x3c[3] = 0;
-    field_0x3c[4] = 1;
+    selector = NULL;
+    chooser_mode = 1;
 }
 
 void MechTouchUIPlayerButton::Process(float) {
@@ -417,6 +484,15 @@ void MechTouchUIPlayerButton::SetupTargetIds() {
 }
 
 void MechTouchUIPlayerButton::ShowChooser() {
+    if (FreePlay == 0 && target_ids[1] == -1) {
+        return;
+    }
+    if (selector != NULL) {
+        delete selector;
+        selector = NULL;
+    }
+    selector = new MechTouchUIPartySelector(*this, FreePlay != 0 ? free_play_target_ids : target_ids);
+    GameAudio_PlaySfx(0x30, NULL, 0, 0);
 }
 
 void MechTouchUIPlayerButton::TriggerTagNext() {
@@ -464,4 +540,5 @@ MechTouchUIPartySelector::MechTouchUIPartySelector(MechTouchUIPlayerButton &, i3
 }
 
 MechTouchUIPartySelector::~MechTouchUIPartySelector() {
+    Cleanup();
 }
