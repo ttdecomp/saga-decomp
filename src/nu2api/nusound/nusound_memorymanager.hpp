@@ -40,7 +40,7 @@ class NuSoundMemoryBuffer {
     bool IsAlloced();
     bool IsLocked();
     const char *GetLockReason(); // 0x321360: lock-reason getter, always NULL on device
-} __attribute__((packed));
+} __attribute__((packed));       // Preserves target member-access codegen despite the same natural x86 size.
 
 DECOMP_ASSERT(sizeof(NuSoundMemoryBuffer) == 0x10, "NuSoundMemoryBuffer size");
 

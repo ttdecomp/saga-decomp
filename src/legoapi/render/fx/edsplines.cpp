@@ -46,52 +46,6 @@ void BezierLineLength(VuVec &, VuVec &, VuVec &, VuVec &) {
 void BezierLineLength(VuVec &, VuVec &, VuVec &, VuVec &, float) {
 }
 
-void LoadShelfSplines() {
-    splshelf = NuSplineFind(WORLD->current_gscn, const_cast<char *>("shelf_top1"));
-    splcharshelf = NuSplineFind(WORLD->current_gscn, const_cast<char *>("shelf_bottom"));
-    splcodes = NuSplineFind(WORLD->current_gscn, const_cast<char *>("shelf_6"));
-
-    if (splshelf == NULL || splcharshelf == NULL || splcodes == NULL) {
-        return;
-    }
-    const i32 shelf_count = static_cast<i16>(splshelf->length);
-    const i32 character_count = static_cast<i16>(splcharshelf->length);
-    const i32 code_count = static_cast<i16>(splcodes->length);
-
-    memset(SubShelfPos, 0, sizeof(SubShelfPos));
-    memset(ShelfPos, 0, sizeof(ShelfPos));
-    memset(CodePos, 0, 6 * sizeof(*CodePos));
-
-    for (i32 i = 0; i < shelf_count; ++i) {
-        ShelfPos[i] = splshelf->pts[i];
-    }
-    ShelfPos[2].x += (ShelfPos[3].x - ShelfPos[2].x) * 0.5f;
-    ShelfPos[2].z += (ShelfPos[3].z - ShelfPos[2].z) * 0.5f;
-    for (i32 i = 0; i < character_count; ++i) {
-        SubShelfPos[i] = splcharshelf->pts[i];
-    }
-    for (i32 i = 0; i < code_count; ++i) {
-        CodePos[i] = splcodes->pts[i];
-    }
-
-    NUVEC diff;
-    NuVecSub(&diff, &CodePos[5], &CodePos[4]);
-    NuVecAdd(&CodePos[6], &CodePos[5], &diff);
-    CodePos[6].y += 0.02f;
-    NuVecScale(&diff, &diff, 0.5f);
-    NuVecSub(&CodePos[0], &CodePos[0], &diff);
-    NuVecSub(&CodePos[1], &CodePos[1], &diff);
-    NuVecSub(&CodePos[2], &CodePos[2], &diff);
-    NuVecSub(&CodePos[3], &CodePos[3], &diff);
-    NuVecSub(&CodePos[4], &CodePos[4], &diff);
-    NuVecSub(&CodePos[5], &CodePos[5], &diff);
-    NuVecSub(&CodePos[6], &CodePos[6], &diff);
-
-    NUVEC start = splshelf->pts[0];
-    NUVEC end = splshelf->pts[shelf_count];
-    NuVecSub(&diff, &end, &start);
-    shelfang = static_cast<u16>(NuAtan2D(diff.x, diff.z));
-}
 
 static void SplinePointAngles(NUGSPLINE *spline, i32 index, i32 looping, u16 *pitch, u16 *angle) {
     NUVEC *current = &spline->pts[index];

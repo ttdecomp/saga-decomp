@@ -15,10 +15,10 @@ extern "C" void aieditor_SetMode(i32 mode);
 extern "C" void AISYSRebuildFromEditorData(void);
 extern "C" i32 aieditor_Register(const char *, void (*)(), void (*)(), void (*)(), void (*)());
 extern "C" void aieditor_RegisterDefaultPathCnxTypes();
-extern "C" eduiitem_s *eduiItemCheckCreate(i32, const void *, i32, i32,
-                                            void (*)(eduimenu_s *, eduiitem_s *, u32), char *);
-extern "C" eduiitem_s *eduiItemSelCreate(i32, const void *, i32, i32,
-                                          void (*)(eduimenu_s *, eduiitem_s *, u32), char *);
+extern "C" eduiitem_s *eduiItemCheckCreate(i32, const void *, i32, i32, void (*)(eduimenu_s *, eduiitem_s *, u32),
+                                           char *);
+extern "C" eduiitem_s *eduiItemSelCreate(i32, const void *, i32, i32, void (*)(eduimenu_s *, eduiitem_s *, u32),
+                                         char *);
 extern "C" void aieditor_cbCancelMainMenu(eduimenu_s *, eduimenu_s *);
 
 struct nupad_s;
@@ -198,18 +198,24 @@ extern "C" {
         memset(aieditorsettings.modes, 0, sizeof(aieditorsettings.modes));
         aieditorsettings.path_height_offset = 0.01f;
 
-        AIEDITOR_PATHS = aieditor_Register("AIEDITOR_PATHS", pathEditor_Enter,
-            reinterpret_cast<void (*)()>(pathEditor_Process), reinterpret_cast<void (*)()>(pathEditor_Render), nullptr);
-        AIEDITOR_ROUTES = aieditor_Register("AIEDITOR_ROUTES", nullptr,
-            reinterpret_cast<void (*)()>(routeEditor_Process), reinterpret_cast<void (*)()>(routeEditor_Render), nullptr);
-        AIEDITOR_AREAS = aieditor_Register("AIEDITOR_AREAS", areaEditor_Enter,
-            reinterpret_cast<void (*)()>(areaEditor_Process), reinterpret_cast<void (*)()>(areaEditor_Render), nullptr);
+        AIEDITOR_PATHS =
+            aieditor_Register("AIEDITOR_PATHS", pathEditor_Enter, reinterpret_cast<void (*)()>(pathEditor_Process),
+                              reinterpret_cast<void (*)()>(pathEditor_Render), nullptr);
+        AIEDITOR_ROUTES =
+            aieditor_Register("AIEDITOR_ROUTES", nullptr, reinterpret_cast<void (*)()>(routeEditor_Process),
+                              reinterpret_cast<void (*)()>(routeEditor_Render), nullptr);
+        AIEDITOR_AREAS =
+            aieditor_Register("AIEDITOR_AREAS", areaEditor_Enter, reinterpret_cast<void (*)()>(areaEditor_Process),
+                              reinterpret_cast<void (*)()>(areaEditor_Render), nullptr);
         AIEDITOR_LOCATORS = aieditor_Register("AIEDITOR_LOCATORS", locatorEditor_Enter,
-            reinterpret_cast<void (*)()>(locatorEditor_Process), reinterpret_cast<void (*)()>(locatorEditor_Render), nullptr);
+                                              reinterpret_cast<void (*)()>(locatorEditor_Process),
+                                              reinterpret_cast<void (*)()>(locatorEditor_Render), nullptr);
         AIEDITOR_CREATURES = aieditor_Register("AIEDITOR_CREATURES", creatureEditor_Enter,
-            reinterpret_cast<void (*)()>(creatureEditor_Process), reinterpret_cast<void (*)()>(creatureEditor_Render), nullptr);
+                                               reinterpret_cast<void (*)()>(creatureEditor_Process),
+                                               reinterpret_cast<void (*)()>(creatureEditor_Render), nullptr);
         AIEDITOR_ANTINODES = aieditor_Register("AIEDITOR_ANTINODES", antinodeEditor_Enter,
-            reinterpret_cast<void (*)()>(antinodeEditor_Process), reinterpret_cast<void (*)()>(antinodeEditor_Render), nullptr);
+                                               reinterpret_cast<void (*)()>(antinodeEditor_Process),
+                                               reinterpret_cast<void (*)()>(antinodeEditor_Render), nullptr);
         aieditor_RegisterDefaultPathCnxTypes();
         aieditorsettings.external_display_a = *external_display_a;
         aieditorsettings.external_display_b = *external_display_b;
@@ -379,8 +385,8 @@ extern "C" {
     }
 
     void aieditor_cvSelectEditorMode(eduimenu_s *parent) {
-        eduimenu_s *menu = eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt,
-                                         aieditor_cbCancelSelectEditorMode, (char *)"Select Editor Mode");
+        eduimenu_s *menu = eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt, aieditor_cbCancelSelectEditorMode,
+                                          (char *)"Select Editor Mode");
         if (menu == nullptr) {
             return;
         }

@@ -269,7 +269,7 @@ typedef struct AIPACKET_s {
     i16 animation_override_from; // 0x126 (0xe9 means every ordinary animation)
     i16 animation_override_to;   // 0x128
     u8 pad1b[0x12c - 0x12a];
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         u64 character_type_mask; // 0x12c, character classes accepted by path routes
         struct {
             u32 character_type_mask_low;
@@ -469,14 +469,14 @@ typedef struct APIOBJECT_s {
     }; // 0x1d8
     f32 field_0x1dc; // 0x1dc
     f32 field_0x1e0; // 0x1e0
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         struct {
             u32 field_0x1e4;
             u32 field_0x1e8;
         };
         u64 collision_identity_mask; // 0x1e4
     };
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         struct {
             u32 field_0x1ec;
             u32 field_0x1f0;
@@ -603,7 +603,7 @@ typedef struct APIOBJECT_s {
         APIOBJECT_s *collision_link;
         APIOBJECT_s *collision_excluded_object;
     }; // 0x294, paired objects do not collide with each other
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         struct {
             union {
                 u32 collision_mask_low;
@@ -616,14 +616,14 @@ typedef struct APIOBJECT_s {
         };
         u64 collision_exclusion_mask;
     };
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         u64 ai_awareness_mask;
         struct {
             u32 field387_0x2a0;
             u32 field388_0x2a4;
         };
     };
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         u64 ai_area_mask;
         struct {
             union {
@@ -655,7 +655,7 @@ extern "C" i32 APIObjectCollision2D(APIOBJECT *first, APIOBJECT *second);
 struct APIOBJECTSYS_s {
     u32 object_size;
     APIOBJECT *objects;
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         u8 state[0x214 - 8];
         u64 line_of_sight[64];
         u32 hostility_masks[64][2]; // 0x008, one 64-bit mask per object slot
@@ -1202,14 +1202,14 @@ typedef struct GameObject_s {
     GameObject_s *takeover_target;       // 0x0eb0, reciprocal target link used by AI takeover actions
     void (*field_0xeb4)(GameObject_s *); // 0x0eb4, one-shot callback consumed by object management
     NUVEC *context_target_position;      // 0x0eb8
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         u64 ai_seen_mask;
         struct {
             u32 field_0xebc;
             u32 field_0xec0;
         };
     };
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         u64 ai_opponent_exclusion_mask;
         struct {
             u32 field_0xec4;

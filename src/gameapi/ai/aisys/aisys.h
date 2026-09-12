@@ -109,7 +109,7 @@ typedef struct AIPATHROUTE_s {
     u8 exit_node_count;
     u8 padding_0x12[2];
     u8 **route_nodes;
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         u32 character_mask[4];
         u64 character_masks[2];
     };
@@ -353,7 +353,7 @@ struct AIANTINODE_s {
     u8 game_flags;
     u8 type;
     u8 has_special;
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         struct {
             u8 special_type;
             u8 padding_0x4d[7];

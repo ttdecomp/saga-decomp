@@ -55,7 +55,7 @@ namespace {
                (level.flags & (LEVEL_INTRO | LEVEL_MIDTRO | LEVEL_OUTRO | LEVEL_STATUS)) == 0;
     }
 
-    [[noreturn]] void finish(int status, const char *reason) {
+    void finish(int status, const char *reason) {
         // Do not wait for engine workers when one of them may be deadlocked.
         char message[512];
         const int length = snprintf(message, sizeof(message), "smoke: %s %s (healthy_frames=%u)\n",

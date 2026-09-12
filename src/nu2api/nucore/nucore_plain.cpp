@@ -960,34 +960,33 @@ extern "C" {
 
 // Local helpers matching original static display-list setters (t local symbols)
 
-static __attribute__((used)) void NuDisplayListSetID(nudisplaylistitem_s *item, unsigned char id) {
+static __used__ void NuDisplayListSetID(nudisplaylistitem_s *item, unsigned char id) {
     item->id = id;
 }
-static __attribute__((used)) void NuDisplayListAddItem(nudisplaylist_s *list, unsigned char id, void *item) {
+static __used__ void NuDisplayListAddItem(nudisplaylist_s *list, unsigned char id, void *item) {
     (void)list;
     (void)id;
     (void)item;
 }
-static __attribute__((used)) void NuDisplayListSetItem(nudisplaylistitem_s *item, unsigned char a, unsigned char b,
-                                                       void *c) {
+static __used__ void NuDisplayListSetItem(nudisplaylistitem_s *item, unsigned char a, unsigned char b, void *c) {
     (void)item;
     (void)a;
     (void)b;
     (void)c;
 }
-static __attribute__((used)) void NuDisplayListSetNext(nudisplaylistitem_s *item, void *next) {
+static __used__ void NuDisplayListSetNext(nudisplaylistitem_s *item, void *next) {
     item->next = next;
 }
-static __attribute__((used)) void NuDisplayListSetID_CNT(nudisplaylistitem_s *item) {
+static __used__ void NuDisplayListSetID_CNT(nudisplaylistitem_s *item) {
     item->id = 0;
 }
-static __attribute__((used)) void NuDisplayListSetID_RET(nudisplaylistitem_s *item) {
+static __used__ void NuDisplayListSetID_RET(nudisplaylistitem_s *item) {
     item->id = 4;
 }
-static __attribute__((used)) void NuDisplayListSetID_CALL(nudisplaylistitem_s *item) {
+static __used__ void NuDisplayListSetID_CALL(nudisplaylistitem_s *item) {
     (void)item;
 }
-static __attribute__((used)) void NuDisplayListSetID_NEXT(nudisplaylistitem_s *item) {
+static __used__ void NuDisplayListSetID_NEXT(nudisplaylistitem_s *item) {
     item->id = 1;
 }
 
@@ -3572,7 +3571,7 @@ extern "C" {
     }
     void NuRenderContextSetAlphaBlend(void) {
     }
-    __attribute__((weak)) void NuRenderContextSetViewProj(NUMTX *view, NUMTX *projection) {
+    SAGA_HOST_WEAK void NuRenderContextSetViewProj(NUMTX *view, NUMTX *projection) {
         extern f32 g_renderContext_viewProj[16];
         extern f32 g_renderContext_viewProjInverse[16];
         extern f32 g_renderContext_view[16];
@@ -3810,9 +3809,8 @@ extern "C" {
             usize instance_animation = reinterpret_cast<usize>(display->instance_animation);
             NUVEC *draw_position = NUMTX_GET_ROW_VEC(&display->draw_mtx, 3);
             NUVEC *animated_position = reinterpret_cast<NUVEC *>(instance_animation + offsetof(NUMTX, m30));
-            return instance_animation != 0 && instance_animation != static_cast<usize>(-1)
-                       ? animated_position
-                       : draw_position;
+            return instance_animation != 0 && instance_animation != static_cast<usize>(-1) ? animated_position
+                                                                                           : draw_position;
         }
 
         NuPlainLegacySpecialLayout *legacy = static_cast<NuPlainLegacySpecialLayout *>(handle->special);
@@ -4061,26 +4059,37 @@ extern "C" {
     }
     f32 NuDynamicLightGetParameterf(NuDynamicLight *light, i32 parameter) {
         switch (parameter) {
-            case 0: return light->parameter_7c0;
-            case 1: return light->parameter_7c4;
-            case 2: return light->parameter_7c8;
-            case 3: return light->parameter_7cc;
+            case 0:
+                return light->parameter_7c0;
+            case 1:
+                return light->parameter_7c4;
+            case 2:
+                return light->parameter_7c8;
+            case 3:
+                return light->parameter_7cc;
             case 6:
-            case 7: return light->render_sets[0].parameter_110;
-            case 8: return light->render_sets[1].parameter_110;
+            case 7:
+                return light->render_sets[0].parameter_110;
+            case 8:
+                return light->render_sets[1].parameter_110;
             case 9:
             case 10:
             case 11:
             case 15:
-            case 16: return light->render_sets[1].parameter_104;
+            case 16:
+                return light->render_sets[1].parameter_104;
             case 12:
             case 13:
             case 14:
             case 17:
-            case 18: return light->render_sets[0].parameter_100;
-            case 19: return light->parameter_7d0;
-            case 20: return light->parameter_7d4;
-            default: return 0.0f;
+            case 18:
+                return light->render_sets[0].parameter_100;
+            case 19:
+                return light->parameter_7d0;
+            case 20:
+                return light->parameter_7d4;
+            default:
+                return 0.0f;
         }
     }
     i32 NuDynamicLightGetParameteri(NuDynamicLight *light, i32 parameter) {
@@ -4140,25 +4149,49 @@ extern "C" {
     }
     void NuDynamicLightSetParameterf(NuDynamicLight *light, i32 parameter, f32 value) {
         switch (parameter) {
-            case 0: light->parameter_7c0 = value; break;
-            case 1: light->parameter_7c4 = value; break;
-            case 2: light->parameter_7c8 = value; break;
-            case 3: light->parameter_7cc = value; break;
+            case 0:
+                light->parameter_7c0 = value;
+                break;
+            case 1:
+                light->parameter_7c4 = value;
+                break;
+            case 2:
+                light->parameter_7c8 = value;
+                break;
+            case 3:
+                light->parameter_7cc = value;
+                break;
             case 6:
-            case 7: light->render_sets[0].parameter_110 = value; break;
-            case 8: light->render_sets[1].parameter_110 = value; break;
+            case 7:
+                light->render_sets[0].parameter_110 = value;
+                break;
+            case 8:
+                light->render_sets[1].parameter_110 = value;
+                break;
             case 9:
             case 10:
-            case 11: light->render_sets[0].parameter_104 = value; break;
+            case 11:
+                light->render_sets[0].parameter_104 = value;
+                break;
             case 12:
             case 13:
-            case 14: light->render_sets[0].parameter_100 = value; break;
+            case 14:
+                light->render_sets[0].parameter_100 = value;
+                break;
             case 15:
-            case 16: light->render_sets[1].parameter_104 = value; break;
+            case 16:
+                light->render_sets[1].parameter_104 = value;
+                break;
             case 17:
-            case 18: light->render_sets[1].parameter_100 = value; break;
-            case 19: light->parameter_7d0 = value; break;
-            case 20: light->parameter_7d4 = value; break;
+            case 18:
+                light->render_sets[1].parameter_100 = value;
+                break;
+            case 19:
+                light->parameter_7d0 = value;
+                break;
+            case 20:
+                light->parameter_7d4 = value;
+                break;
         }
     }
     void NuDynamicLightSetParameteri(NuDynamicLight *light, i32 parameter, i32 value) {
@@ -4645,8 +4678,7 @@ extern "C" {
         }
         return &object->points_of_interest[point_index];
     }
-    void NuHGobjJointMtx(nuhgobj_s *object, u8 index, NUMTX *world_matrix,
-                         NUMTX *joint_matrices, NUMTX *result) {
+    void NuHGobjJointMtx(nuhgobj_s *object, u8 index, NUMTX *world_matrix, NUMTX *joint_matrices, NUMTX *result) {
         u8 joint_index = object->joint_override_map[index];
         NuMtxMulVU0(result, &joint_matrices[joint_index], world_matrix);
     }
@@ -4673,8 +4705,7 @@ extern "C" {
     i32 NuHGobjRndr(nuhgobj_s *object, NUMTX *world_matrix, i32 render_count, i16 *render_indices) {
         NUMTX joint_matrices[256];
         NuHGobjEval(object, 0, NULL, joint_matrices);
-        return NuHGobjRndrMtxDwa(object, world_matrix, render_count, render_indices,
-                                 joint_matrices, NULL, 0);
+        return NuHGobjRndrMtxDwa(object, world_matrix, render_count, render_indices, joint_matrices, NULL, 0);
     }
     // Original @0x2f56a0. Draw rigid hierarchy pieces at their evaluated joint
     // matrices, then build skin matrices for the smooth hierarchy pieces.

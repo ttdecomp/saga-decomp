@@ -98,7 +98,8 @@ void NuFntPrintChar(char) {
 void NuQFntSetMtx2d(void *, numtx_s *) {
 }
 
-void NuWarningPrint(char *) {
+void NuWarningPrint(char *message) {
+    printf("%s", message);
 }
 
 void NuDebugMsgPrint(char *message) {
@@ -648,7 +649,7 @@ void NuGCutLocatorCalcMtx_3(NUGCUTLOCATOR_s *locator, numtx_s *mtx, float frame)
 
 // Original 0x294764. The skin packet begins with the number of palette
 // matrices followed by their contiguous 4x4 values.
-void __attribute__((weak)) NuIOSDLSkinMtxCallback(void *data) {
+void SAGA_HOST_WEAK NuIOSDLSkinMtxCallback(void *data) {
     i32 *packet = static_cast<i32 *>(data);
     const i32 matrix_count = *packet++;
     NUSHADEROBJECT *shader = NuShaderManagerGetCurrentShader();

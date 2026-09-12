@@ -246,17 +246,17 @@ void GizDrawBuildItPiece(GameObject_s *player, i32 draw_reflection) {
     f32 progress = 1.0f - buildit->step_timer / buildit->step_duration;
     GAMEANIMOBJ_s *object = buildit->anim_objects[buildit->built_object_count];
     GIZBUILDITANIMDATA_s *data = static_cast<GIZBUILDITANIMDATA_s *>(object->object_data);
-    NUMTX matrix __attribute__((aligned(16))) = data->start_mtx;
+    NUMTX_ALIGNED16 matrix = data->start_mtx;
     if (progress > 0.0f) {
-        NUMTX start __attribute__((aligned(16))) = data->start_mtx;
-        NUMTX end __attribute__((aligned(16))) = data->end_mtx;
+        NUMTX_ALIGNED16 start = data->start_mtx;
+        NUMTX_ALIGNED16 end = data->end_mtx;
         start.m30 = start.m31 = start.m32 = 0.0f;
         end.m30 = end.m31 = end.m32 = 0.0f;
         NUQUAT from, to, rotation;
         NuMtxToQuat(&start, &from);
         NuMtxToQuat(&end, &to);
         NuQuatSlerp(&rotation, &from, &to, progress);
-        NUMTX interpolated __attribute__((aligned(16)));
+        NUMTX_ALIGNED16 interpolated;
         NuQuatToMtx(&rotation, &interpolated);
         interpolated.m30 = matrix.m30 + (data->end_mtx.m30 - matrix.m30) * progress;
         interpolated.m31 = matrix.m31 + (data->end_mtx.m31 - matrix.m31) * progress;
@@ -270,7 +270,7 @@ void GizDrawBuildItPiece(GameObject_s *player, i32 draw_reflection) {
         NuSpecialDrawAt(&object->special, &matrix);
         if (draw_reflection != 0) {
             extern i32 MatrixReflection(NUMTX *, i32, f32, f32, NUMTX *);
-            NUMTX reflection __attribute__((aligned(16)));
+            NUMTX_ALIGNED16 reflection;
             if (MatrixReflection(&matrix, player->field_0x1087, player->field_0x1020, WORLD->current_level->unknown_0cc,
                                  &reflection) != 0) {
                 NuRndrStartReflectionRender(0);

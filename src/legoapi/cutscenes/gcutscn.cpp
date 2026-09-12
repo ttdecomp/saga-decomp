@@ -297,7 +297,7 @@ void instGetLookAtLocatorInfo(instNUGCUTSCENE_s *, instNUGCUTLOOKAT_s *) {
 void instNuGCutGetNextRigidInfo(instNUGCUTSCENE_s *, float, i32, numtx_s *, nuhspecial_s *) {
 }
 
-__attribute__((visibility("hidden"))) i32 instNuGCutSceneSwapBuffers(instNUGCUTSCENE_s *instance, i32 force) {
+i32 instNuGCutSceneSwapBuffers(instNUGCUTSCENE_s *instance, i32 force) {
     if (static_cast<i8>(instance->flags_8c) >= 0 || force != 0) {
         if (instance->pending_stream_buffer == NULL) {
             u8 flags = instance->flags_8b;

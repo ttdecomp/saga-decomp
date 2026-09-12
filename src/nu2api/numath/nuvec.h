@@ -25,6 +25,8 @@ typedef struct nuvec_s {
     f32 z;
 } NUVEC;
 
+typedef NUVEC NUVEC_ALIGNED16 __attribute__((aligned(16)));
+
 /// @relatesalso nuvec_s
 /// @brief The vector `(0, 0, 0)`.
 extern NUVEC v000;

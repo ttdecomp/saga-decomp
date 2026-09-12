@@ -763,7 +763,7 @@ extern "C" i32 NuDisplayListAddRenderScene(void) {
     return mgr->nrender_scenes++;
 }
 
-extern "C" __attribute__((weak)) void NuDisplayListDrawRenderScene(i32 render_scene_id) {
+extern "C" SAGA_HOST_WEAK void NuDisplayListDrawRenderScene(i32 render_scene_id) {
     NUDLIST_MANAGER *mgr = &global_dlist_manager;
 
     NuThreadCriticalSectionBegin(mgr->loading_critical_section);

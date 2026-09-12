@@ -148,7 +148,8 @@ DECOMP_ASSERT(offsetof(NuDynamicLight::RenderSet, parameter_100) == 0x100, "Dyna
 DECOMP_ASSERT(offsetof(NuDynamicLight::RenderSet, parameter_104) == 0x104, "Dynamic light render parameter 104 offset");
 DECOMP_ASSERT(offsetof(NuDynamicLight::RenderSet, parameter_110) == 0x110, "Dynamic light render parameter 110 offset");
 DECOMP_ASSERT(offsetof(NuDynamicLight::RenderSet, render_scenes) == 0x33c, "Dynamic light render-scene list offset");
-DECOMP_ASSERT(offsetof(NuDynamicLight::RenderSet, render_scene_count) == 0x35c, "Dynamic light render-scene count offset");
+DECOMP_ASSERT(offsetof(NuDynamicLight::RenderSet, render_scene_count) == 0x35c,
+              "Dynamic light render-scene count offset");
 DECOMP_ASSERT(offsetof(NuDynamicLight, render_set_count) == 0x6cc, "Dynamic light render-set count offset");
 DECOMP_ASSERT(offsetof(NuDynamicLight, position) == 0x714, "Dynamic light position offset");
 DECOMP_ASSERT(offsetof(NuDynamicLight, direction) == 0x724, "Dynamic light direction offset");

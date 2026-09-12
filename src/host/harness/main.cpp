@@ -255,7 +255,7 @@ namespace {
         }
     }
 
-    [[noreturn]] void host_finish_engine_session(i32 status) {
+    void host_finish_engine_session(i32 status) {
         // NuMain is a process-lifetime entry point and the window/audio
         // utilities stop observing it before its worker threads have exited.
         // Keep the hard process boundary local to those utilities until their

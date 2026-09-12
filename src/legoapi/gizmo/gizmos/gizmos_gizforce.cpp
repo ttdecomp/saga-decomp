@@ -249,7 +249,7 @@ i32 GizForce_FindBestForceTarget(GIZFORCESYS_s *force_sys, GameObject_s *object)
             continue;
         }
 
-        NUVEC delta __attribute__((aligned(16)));
+        NUVEC_ALIGNED16 delta;
         f32 distance = NuVecDistSqr(&force->position, &object->apiobj.collision_position, &delta);
         if (distance > force->interaction_radius * force->interaction_radius)
             continue;

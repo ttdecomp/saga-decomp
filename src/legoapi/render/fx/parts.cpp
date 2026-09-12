@@ -524,7 +524,7 @@ static __used__ i32 PartDraw_VehicleHeart(PART_s *part) {
     scaling.x = (1.0f - part->field_100) * scale;
     if (scaling.x > 0.0f) {
         scaling.y = scaling.z = scaling.x;
-        NUMTX matrix __attribute__((aligned(16))) = part->transform;
+        NUMTX_ALIGNED16 matrix = part->transform;
         NuMtxPreScale(&matrix, &scaling);
         if (NuSpecialDrawAt(&part->special, &matrix) != 0)
             part->render_flags |= 6;
@@ -779,7 +779,7 @@ extern "C" {
         }
         if (params->matrix != NULL) {
             part->transform = *params->matrix;
-            NUMTX matrix __attribute__((aligned(16))) = *params->matrix;
+            NUMTX_ALIGNED16 matrix = *params->matrix;
             NuVecMtxRotate(&forward, &forward, &matrix);
             part->rotation_y = NuAtan2D(forward.x, forward.z);
             NuVecRotateY(&forward, &forward, -part->rotation_y);
@@ -1366,7 +1366,7 @@ extern "C" {
                 NuRndrSetAmbientLightPS(reinterpret_cast<NUCOLOUR3 *>(&part->lighting[6]));
             }
             part->render_flags &= ~2;
-            NUMTX scaled __attribute__((aligned(16)));
+            NUMTX_ALIGNED16 scaled;
             NUMTX *matrix = &part->transform;
             if (part->field_214 != 1.0f) {
                 scaled = *matrix;
@@ -1405,7 +1405,7 @@ extern "C" {
     i32 part_types_used;
     i32 part_emits_used;
     NUGSCN *part_scene[32];
-    i32 part_scene_pageid[32] __attribute__((aligned(16)));
+    i32 part_scene_pageid[32];
     i32 part_platimpactcnt;
     i16 part_platimpactlist[4];
     void ResetParts(void);
@@ -1617,9 +1617,9 @@ extern "C" {
     void UpdateParts(f32 time) {
         i32 key;
         NUVEC direction;
-        NUMTX impact_orientation __attribute__((aligned(16)));
-        NUMTX movement_orientation __attribute__((aligned(16)));
-        NUMTX emitter_orientation __attribute__((aligned(16)));
+        NUMTX_ALIGNED16 impact_orientation;
+        NUMTX_ALIGNED16 movement_orientation;
+        NUMTX_ALIGNED16 emitter_orientation;
         partglobaltime += time;
         if (partglobaltime > 900.0f)
             PartTimeSlip();
@@ -2233,7 +2233,7 @@ i32 PartDraw_Torp(PART_s *);
 
 void AddTorpedoAsPart(nuvec_s *position, nuvec_s *velocity, float scale, float lifetime) {
     WORLDINFO_s *world = WorldInfo_CurrentlyActive();
-    ADDPART_s params __attribute__((aligned(16))) = Default_ADDPART;
+    ADDPART_ALIGNED16 params = Default_ADDPART;
     params.position = position;
     params.velocity = velocity;
     f32 torpedo_scale = 0.1f * WORLD->giz_torp_machine_sys->scale;
@@ -2267,7 +2267,7 @@ void AddHeartAsPart(GameObject_s *recipient, nuvec_s *position, nuvec_s *velocit
     WORLDINFO_s *world = WorldInfo_CurrentlyActive();
     if (recipient == NULL)
         return;
-    ADDPART_s params __attribute__((aligned(16))) = Default_ADDPART;
+    ADDPART_ALIGNED16 params = Default_ADDPART;
     params.position = position;
     params.velocity = velocity;
     params.field_28 = 0xcb;
@@ -2377,7 +2377,7 @@ void AddCoinsAsParts(i32 type_id, nuvec_s *position, nuvec_s *velocity, float li
     LEVEL_OBJECT_RUNTIME_s *object = &world->lev_objs[model];
     if (object->active == 0)
         return;
-    ADDPART_s params __attribute__((aligned(16))) = Default_ADDPART;
+    ADDPART_ALIGNED16 params = Default_ADDPART;
     params.special = &object->special;
     params.field_28 = model;
     params.position = position;
@@ -2557,7 +2557,7 @@ void UpdatePartEmits(f32 time) {
                 }
                 f32 lifetime = type->lifetime;
                 params.field_a4 = lifetime + NuRandFloatSeeded(&partseed) * type->lifetime_random;
-                NUMTX matrix __attribute__((aligned(16)));
+                NUMTX_ALIGNED16 matrix;
                 NuMtxSetIdentity(&matrix);
                 f32 rotation_x = static_cast<f32>(type->rotation[0]);
                 f32 random_x = NuRandFloatSeeded(&partseed);

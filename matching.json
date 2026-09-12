@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.482662,
+    "fuzzy_match_percent": 44.5299,
     "total_code": "4722419",
-    "matched_code": "383877",
-    "matched_code_percent": 8.128821,
+    "matched_code": "385657",
+    "matched_code_percent": 8.166513,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4618,
-    "matched_functions_percent": 34.311615,
+    "matched_functions": 4626,
+    "matched_functions_percent": 34.371056,
     "total_units": 1
   },
   "text": {
@@ -17617,7 +17617,7 @@
           "address": 4571616,
           "offset": 3681648,
           "size": 400,
-          "match_percent": 64.09876
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystemsC2Ev",
@@ -17625,7 +17625,7 @@
           "address": 4571616,
           "offset": 3681648,
           "size": 400,
-          "match_percent": 64.09876
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems8LoadPermEv",
@@ -17641,7 +17641,7 @@
           "address": 4572720,
           "offset": 3682752,
           "size": 153,
-          "match_percent": 77.14286
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems21ProcessOnlyWhenPausedEP16ThingProcessData",
@@ -17657,7 +17657,7 @@
           "address": 4572928,
           "offset": 3682960,
           "size": 429,
-          "match_percent": 18.73
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems10EnterLevelEP11WORLDINFO_s",
@@ -17745,7 +17745,7 @@
           "address": 4578624,
           "offset": 3688656,
           "size": 296,
-          "match_percent": 6.268657
+          "match_percent": 78.07462
         },
         {
           "name": "_ZN11MechSystems23HookUpClickToPressStartEv",
@@ -17753,7 +17753,7 @@
           "address": 4578928,
           "offset": 3688960,
           "size": 59,
-          "match_percent": 28.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems23UnhookClickToPressStartEv",
@@ -17761,7 +17761,7 @@
           "address": 4578992,
           "offset": 3689024,
           "size": 51,
-          "match_percent": 30.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems7GetNameEv",
@@ -43772,7 +43772,7 @@
           "address": 1030912,
           "offset": 140944,
           "size": 245,
-          "match_percent": 90.7875
+          "match_percent": 100.0
         },
         {
           "name": "_Z19DeactivateCharacterPc",
@@ -44039,12 +44039,20 @@
           "match_percent": 50.826088
         },
         {
+          "name": "_Z20CharScenes_LevelLoadP11WORLDINFO_s",
+          "demangled_name": "CharScenes_LevelLoad(WORLDINFO_s*)",
+          "address": 4587392,
+          "offset": 3697424,
+          "size": 332,
+          "match_percent": 73.333336
+        },
+        {
           "name": "_Z19CharScenes_AreaLoadP23APICHARACTERMODELLIST_sP9variptr_uS1_",
           "demangled_name": "CharScenes_AreaLoad(APICHARACTERMODELLIST_s*, variptr_u*, variptr_u)",
           "address": 4587728,
           "offset": 3697760,
           "size": 400,
-          "match_percent": 45.100918
+          "match_percent": 45.14679
         },
         {
           "name": "_Z22CharScene_FindHSpecialP11WORLDINFO_si",
@@ -50057,7 +50065,7 @@
           "address": 4565376,
           "offset": 3675408,
           "size": 43,
-          "match_percent": 13.4
+          "match_percent": 100.0
         }
       ]
     },
@@ -50890,14 +50898,6 @@
           "match_percent": 27.75926
         },
         {
-          "name": "_Z20CharScenes_LevelLoadP11WORLDINFO_s",
-          "demangled_name": "CharScenes_LevelLoad(WORLDINFO_s*)",
-          "address": 4587392,
-          "offset": 3697424,
-          "size": 332,
-          "match_percent": 73.44086
-        },
-        {
           "name": "_ZL9CS_no_fogP8nufpar_s",
           "demangled_name": "CS_no_fog(nufpar_s*)",
           "address": 4819024,
@@ -51047,7 +51047,7 @@
           "address": 4819744,
           "offset": 3929776,
           "size": 281,
-          "match_percent": 74.402596
+          "match_percent": 74.207794
         },
         {
           "name": "_ZL18CutScene_ConfigureP7CUTINFOPcP9variptr_uS3_",
@@ -51055,7 +51055,7 @@
           "address": 4827040,
           "offset": 3937072,
           "size": 674,
-          "match_percent": 24.38889
+          "match_percent": 35.07143
         },
         {
           "name": "_ZL10CS_farclipP8nufpar_s",
@@ -51255,7 +51255,7 @@
           "address": 4835040,
           "offset": 3945072,
           "size": 2344,
-          "match_percent": 25.340288
+          "match_percent": 24.866774
         }
       ]
     },
@@ -71418,47 +71418,7 @@
           "address": 1150800,
           "offset": 260832,
           "size": 1528,
-          "match_percent": 11.064972
-        },
-        {
-          "name": "_ZL13Shop_GetInputP9SHOPINPUT",
-          "demangled_name": "Shop_GetInput(SHOPINPUT*)",
-          "address": 2366176,
-          "offset": 1476208,
-          "size": 1020,
-          "match_percent": 97.48617
-        },
-        {
-          "name": "_Z8ItemMenuP6MENU_s",
-          "demangled_name": "ItemMenu(MENU_s*)",
-          "address": 2367200,
-          "offset": 1477232,
-          "size": 2237,
-          "match_percent": 24.185745
-        },
-        {
-          "name": "_Z8CodeMenuP6MENU_s",
-          "demangled_name": "CodeMenu(MENU_s*)",
-          "address": 2370128,
-          "offset": 1480160,
-          "size": 3222,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_ZL11SubItemMenuP6MENU_s",
-          "demangled_name": "SubItemMenu(MENU_s*)",
-          "address": 2391568,
-          "offset": 1501600,
-          "size": 2909,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_Z15DrawShopPromptsv",
-          "demangled_name": "DrawShopPrompts()",
-          "address": 2407040,
-          "offset": 1517072,
-          "size": 796,
-          "match_percent": 77.19337
+          "match_percent": 10.99435
         },
         {
           "name": "NewMenu",
@@ -71563,6 +71523,46 @@
           "match_percent": 88.81481
         },
         {
+          "name": "_ZL13Shop_GetInputP9SHOPINPUT",
+          "demangled_name": "Shop_GetInput(SHOPINPUT*)",
+          "address": 2366176,
+          "offset": 1476208,
+          "size": 1020,
+          "match_percent": 97.42688
+        },
+        {
+          "name": "_Z8ItemMenuP6MENU_s",
+          "demangled_name": "ItemMenu(MENU_s*)",
+          "address": 2367200,
+          "offset": 1477232,
+          "size": 2237,
+          "match_percent": 21.818575
+        },
+        {
+          "name": "_Z12DrawCodeMenuv",
+          "demangled_name": "DrawCodeMenu()",
+          "address": 2369808,
+          "offset": 1479840,
+          "size": 315,
+          "match_percent": 99.84746
+        },
+        {
+          "name": "_Z8CodeMenuP6MENU_s",
+          "demangled_name": "CodeMenu(MENU_s*)",
+          "address": 2370128,
+          "offset": 1480160,
+          "size": 3222,
+          "match_percent": 0.0
+        },
+        {
+          "name": "_ZL18Shop_DrawCharacterP10shopitem_sP7nuvec_sffttt.part.0",
+          "demangled_name": "Shop_DrawCharacter(shopitem_s*, nuvec_s*, float, float, unsigned short, unsigned short, unsigned short) [clone .part.0]",
+          "address": 2377120,
+          "offset": 1487152,
+          "size": 1328,
+          "match_percent": 92.32404
+        },
+        {
           "name": "_Z15Shop_UpdateHintP6HINT_s",
           "demangled_name": "Shop_UpdateHint(HINT_s*)",
           "address": 2378448,
@@ -71571,12 +71571,20 @@
           "match_percent": 62.10692
         },
         {
+          "name": "_Z16LoadShelfSplinesv",
+          "demangled_name": "LoadShelfSplines()",
+          "address": 2379024,
+          "offset": 1489056,
+          "size": 884,
+          "match_percent": 99.849556
+        },
+        {
           "name": "_Z8InitShopP11WORLDINFO_s",
           "demangled_name": "InitShop(WORLDINFO_s*)",
           "address": 2381584,
           "offset": 1491616,
           "size": 4613,
-          "match_percent": 76.07629
+          "match_percent": 76.09007
         },
         {
           "name": "_Z17GetShopCamLookPosP7nuvec_s",
@@ -71600,7 +71608,7 @@
           "address": 2386352,
           "offset": 1496384,
           "size": 347,
-          "match_percent": 99.85227
+          "match_percent": 99.90909
         },
         {
           "name": "_Z14SelectShopItemP10shopitem_si",
@@ -71608,7 +71616,7 @@
           "address": 2386704,
           "offset": 1496736,
           "size": 1337,
-          "match_percent": 58.520145
+          "match_percent": 58.575092
         },
         {
           "name": "_Z17MoveSubItemsRightPiP7nuvec_si",
@@ -71635,12 +71643,20 @@
           "match_percent": 92.65753
         },
         {
+          "name": "_ZL11SubItemMenuP6MENU_s",
+          "demangled_name": "SubItemMenu(MENU_s*)",
+          "address": 2391568,
+          "offset": 1501600,
+          "size": 2909,
+          "match_percent": 0.0
+        },
+        {
           "name": "_Z10DoShopMenuP6MENU_s",
           "demangled_name": "DoShopMenu(MENU_s*)",
           "address": 2394480,
           "offset": 1504512,
           "size": 354,
-          "match_percent": 72.42254
+          "match_percent": 72.56338
         },
         {
           "name": "_Z10UpdateShopP6MENU_s",
@@ -71649,6 +71665,54 @@
           "offset": 1504880,
           "size": 599,
           "match_percent": 74.43636
+        },
+        {
+          "name": "_Z14DrawCodeMenu3Dv",
+          "demangled_name": "DrawCodeMenu3D()",
+          "address": 2395696,
+          "offset": 1505728,
+          "size": 2573,
+          "match_percent": 93.36056
+        },
+        {
+          "name": "_Z12DrawTopShelfi",
+          "demangled_name": "DrawTopShelf(int)",
+          "address": 2398704,
+          "offset": 1508736,
+          "size": 2082,
+          "match_percent": 0.0
+        },
+        {
+          "name": "_Z12DrawSubItemsv",
+          "demangled_name": "DrawSubItems()",
+          "address": 2400800,
+          "offset": 1510832,
+          "size": 6077,
+          "match_percent": 25.313599
+        },
+        {
+          "name": "_Z10DrawShop3DP11WORLDINFO_s",
+          "demangled_name": "DrawShop3D(WORLDINFO_s*)",
+          "address": 2406912,
+          "offset": 1516944,
+          "size": 76,
+          "match_percent": 99.95
+        },
+        {
+          "name": "_Z13DrawShopPanelv",
+          "demangled_name": "DrawShopPanel()",
+          "address": 2406992,
+          "offset": 1517024,
+          "size": 46,
+          "match_percent": 98.933334
+        },
+        {
+          "name": "_Z15DrawShopPromptsv",
+          "demangled_name": "DrawShopPrompts()",
+          "address": 2407040,
+          "offset": 1517072,
+          "size": 796,
+          "match_percent": 77.19337
         },
         {
           "name": "_Z25Shop_CollectAllCharactersi",
@@ -74524,7 +74588,7 @@
           "address": 1148576,
           "offset": 258608,
           "size": 1716,
-          "match_percent": 4.385246
+          "match_percent": 4.303279
         },
         {
           "name": "_Z13DrawSaveSlotsP6MENU_sf",
@@ -74580,7 +74644,7 @@
           "address": 1306096,
           "offset": 416128,
           "size": 6194,
-          "match_percent": 39.585438
+          "match_percent": 39.128155
         },
         {
           "name": "_Z14DrawBonusScorefiifPi",
@@ -74644,7 +74708,7 @@
           "address": 1316752,
           "offset": 426784,
           "size": 12845,
-          "match_percent": 44.08518
+          "match_percent": 44.078915
         },
         {
           "name": "_Z19DrawForceGlowSpriteP7nuvec_sfifP12GameObject_s",
@@ -74775,14 +74839,6 @@
           "match_percent": 99.958336
         },
         {
-          "name": "_Z12DrawCodeMenuv",
-          "demangled_name": "DrawCodeMenu()",
-          "address": 2369808,
-          "offset": 1479840,
-          "size": 315,
-          "match_percent": 99.84746
-        },
-        {
           "name": "_Z17DrawSubItemMenu2Dv",
           "demangled_name": "DrawSubItemMenu2D()",
           "address": 2373360,
@@ -74797,14 +74853,6 @@
           "offset": 1505488,
           "size": 230,
           "match_percent": 85.08197
-        },
-        {
-          "name": "_Z14DrawCodeMenu3Dv",
-          "demangled_name": "DrawCodeMenu3D()",
-          "address": 2395696,
-          "offset": 1505728,
-          "size": 2573,
-          "match_percent": 93.36056
         },
         {
           "name": "_Z12DrawQuestionP7nuvec_sff",
@@ -74823,44 +74871,12 @@
           "match_percent": 100.0
         },
         {
-          "name": "_Z12DrawTopShelfi",
-          "demangled_name": "DrawTopShelf(int)",
-          "address": 2398704,
-          "offset": 1508736,
-          "size": 2082,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_Z12DrawSubItemsv",
-          "demangled_name": "DrawSubItems()",
-          "address": 2400800,
-          "offset": 1510832,
-          "size": 6077,
-          "match_percent": 25.313599
-        },
-        {
           "name": "_Z17DrawSubItemMenu3Dv",
           "demangled_name": "DrawSubItemMenu3D()",
           "address": 2406880,
           "offset": 1516912,
           "size": 27,
           "match_percent": 100.0
-        },
-        {
-          "name": "_Z10DrawShop3DP11WORLDINFO_s",
-          "demangled_name": "DrawShop3D(WORLDINFO_s*)",
-          "address": 2406912,
-          "offset": 1516944,
-          "size": 76,
-          "match_percent": 99.95
-        },
-        {
-          "name": "_Z13DrawShopPanelv",
-          "demangled_name": "DrawShopPanel()",
-          "address": 2406992,
-          "offset": 1517024,
-          "size": 46,
-          "match_percent": 98.933334
         },
         {
           "name": "_Z14DrawStatusTextPctfffji",
@@ -75076,7 +75092,7 @@
           "address": 3531648,
           "offset": 2641680,
           "size": 2908,
-          "match_percent": 85.143555
+          "match_percent": 84.69005
         },
         {
           "name": "edbitsDrawTorus",
@@ -75156,7 +75172,7 @@
           "address": 4166848,
           "offset": 3276880,
           "size": 700,
-          "match_percent": 87.572464
+          "match_percent": 87.46377
         },
         {
           "name": "LocaledbitsDrawCircleXY",
@@ -75324,7 +75340,7 @@
           "address": 4589216,
           "offset": 3699248,
           "size": 989,
-          "match_percent": 87.71707
+          "match_percent": 87.86341
         },
         {
           "name": "_Z21BackDrop_ResetColoursv",
@@ -78557,14 +78573,6 @@
           "offset": 1439072,
           "size": 3057,
           "match_percent": 0.8
-        },
-        {
-          "name": "_Z16LoadShelfSplinesv",
-          "demangled_name": "LoadShelfSplines()",
-          "address": 2379024,
-          "offset": 1489056,
-          "size": 884,
-          "match_percent": 99.78319
         },
         {
           "name": "_Z8setpointf",
@@ -94003,7 +94011,7 @@
           "address": 2557816,
           "offset": 1667848,
           "size": 47,
-          "match_percent": 28.0
+          "match_percent": 65.46667
         },
         {
           "name": "_Z15NuDebugMsgPrintPc",
@@ -117088,7 +117096,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117176,7 +117183,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117264,7 +117270,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117363,7 +117368,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117497,7 +117501,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117596,7 +117599,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117695,7 +117697,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117794,7 +117795,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117893,7 +117893,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117992,7 +117991,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118303,7 +118301,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118402,7 +118399,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118501,7 +118497,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118645,7 +118640,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118755,7 +118749,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118975,7 +118968,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119149,7 +119141,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119324,7 +119315,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119423,7 +119413,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119522,7 +119511,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119621,7 +119609,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119773,7 +119760,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119872,7 +119858,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119982,7 +119967,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120081,7 +120065,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120216,7 +120199,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120315,7 +120297,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120449,7 +120430,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120548,7 +120528,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120647,7 +120626,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120746,7 +120724,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120908,7 +120885,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -121007,7 +120983,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -121106,7 +121081,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -121553,7 +121527,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -121782,7 +121755,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -121986,7 +121958,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -122456,7 +122427,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -122555,7 +122525,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -123894,14 +123863,6 @@
       "address": 2358368,
       "offset": 1468400,
       "size": 288,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZL18Shop_DrawCharacterP10shopitem_sP7nuvec_sffttt.part.0",
-      "demangled_name": "Shop_DrawCharacter(shopitem_s*, nuvec_s*, float, float, unsigned short, unsigned short, unsigned short) [clone .part.0]",
-      "address": 2377120,
-      "offset": 1487152,
-      "size": 1328,
       "match_percent": 0.0
     },
     {
@@ -129852,8 +129813,8 @@
   "summary": {
     "bazel_units": 523,
     "functions": 13454,
-    "assigned_functions": 12313,
+    "assigned_functions": 12314,
     "ambiguous_functions": 235,
-    "unassigned_functions": 906
+    "unassigned_functions": 905
   }
 }

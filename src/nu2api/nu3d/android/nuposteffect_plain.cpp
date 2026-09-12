@@ -65,7 +65,7 @@ static NuMotionFilter *motionFilter;
 static NuMotionAccumFilter *motionAccumFilter;
 static NuSpeedBlurFilter *speedBlurFilter;
 static NuCopyFilter *copyFilter;
-static u8 filterMem[0x800] __attribute__((aligned(16)));
+static u8 filterMem[0x800];
 static u8 *filterCursor = filterMem;
 static nueffecttex_s *g_backBufferCopy;
 u32 g_posteffect_shaderEngineFlag;

@@ -1,6 +1,8 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
+#include "decomp.h"
+
 // Android stores these entry points as exported data symbols. Host GL libraries
 // can export functions with the same names, so this table is target-only.
 extern "C" {
@@ -12,7 +14,7 @@ extern "C" {
     void (*glDeleteVertexArraysOES)(GLsizei, const GLuint *);
 }
 
-__attribute__((weak)) void NuGLES2ExtensionsInit() {
+SAGA_HOST_WEAK void NuGLES2ExtensionsInit() {
     glGetProgramBinaryOES =
         reinterpret_cast<decltype(glGetProgramBinaryOES)>(eglGetProcAddress("glGetProgramBinaryOES"));
     glProgramBinaryOES = reinterpret_cast<decltype(glProgramBinaryOES)>(eglGetProcAddress("glProgramBinaryOES"));

@@ -567,6 +567,7 @@ static i32 GetHLSLRegisterIndex(const char *source, const char *uniform_name, bo
     return -1;
 }
 
+// The 16-byte type alignment supplies the trailing padding in the original 0x810-byte pool.
 struct __attribute__((aligned(16))) ShaderProgramPool {
     NUSHADERPROGRAM programs[64];
     u8 occupied[8];

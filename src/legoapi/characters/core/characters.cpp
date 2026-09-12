@@ -36,6 +36,8 @@
 #include "legoapi/menus/core/text.h"
 #include "nu2api/numath/nutrig.h"
 
+static CHARSCENE_s *CharScene_Area;
+
 // LoadPerm1 is one of the few game-level entry points which wires together
 // otherwise C-linkage engine subsystems.  Keep these declarations local: the
 // individual subsystem TUs intentionally expose their original plain names.
@@ -502,6 +504,36 @@ void CharScenes_Init(variptr_u *buf, variptr_u *) {
     CharScene_Area = reinterpret_cast<CHARSCENE_s *>(buf->void_ptr);
     buf->addr += static_cast<usize>(CHARCOUNT) * sizeof(*CharScene_Area);
     memset(CharScene_Area, 0, static_cast<usize>(CHARCOUNT) * sizeof(*CharScene_Area));
+}
+
+void CharScenes_LevelLoad(WORLDINFO *world) {
+    if (CHARCOUNT <= 0) {
+        return;
+    }
+
+    for (i32 i = 0; i < CHARCOUNT; i++) {
+        CHARSCENE_s *entry = &world->minikit.character_scenes[i];
+        entry->scene = NULL;
+
+        // Check if we should load this character scene
+        if ((CharScene_Area == NULL || CharScene_Area[i].scene == NULL) && (CDataList[i].flags & 1) != 0 &&
+            world->cutscene_sys != NULL) {
+            // Check if this character is in a cutscene
+            u32 *cutscene_flags = *(u32 **)((char *)world->cutscene_sys + 8);
+            u32 flag = (cutscene_flags[i >> 5] >> (i & 0x1f)) & 1;
+            if (flag != 0) {
+                // Load the character scene
+                char path[136];
+                VARIPTR buf_end = world->unknown_0108;
+                sprintf(path, "chars\\%s\\%s.gsc", CDataList[i].dir, CDataList[i].file);
+                NUGSCN *scene = NuGScnRead(&world->giz_buffer, buf_end, path);
+                entry->scene = scene;
+                if (scene != NULL) {
+                    NuSpecialFind(scene, &entry->special_scene, CDataList[i].file, 1);
+                }
+            }
+        }
+    }
 }
 
 extern i16 tUNKNOWN;

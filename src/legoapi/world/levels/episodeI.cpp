@@ -291,7 +291,7 @@ static void UpdatePacemakerDisplay(void *lev_objs) {
 // Mine update — mirrors _ZL18UpdatePodRaceMinesv. Host: mines behind the
 // camera despawn, mines touched by a vehicle explode (players die instead).
 // Client: mines flagged in client_mines by the host explode on contact.
-static __attribute__((noinline)) void UpdatePodRaceMines(void) {
+static __used__ void UpdatePodRaceMines(void) {
     GameObject_s *minesarr[64];
     i32 minecount = 0;
 

@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-__attribute__((weak)) void NuGScnCreatePS(nugscn_s *scene, variptr_u *, variptr_u *) {
+SAGA_HOST_WEAK void NuGScnCreatePS(nugscn_s *scene, variptr_u *, variptr_u *) {
     NUNATIVETEX **textures = scene->textures;
     if (g_VideoResHeader.texture_hashes == 0) {
         for (i32 i = 0; i < scene->ntextures; ++i) {
@@ -173,7 +173,7 @@ void NuGScnMtlLayerMask(nugscn_s *scene, unsigned char mask) {
     display_list->material_layer_mask = mask;
 }
 
-__attribute__((weak)) i32 NuGScnReadTexturesPS(i32 file, variptr_u *buf, variptr_u buf_end) {
+SAGA_HOST_WEAK i32 NuGScnReadTexturesPS(i32 file, variptr_u *buf, variptr_u buf_end) {
     (void)buf_end;
     i32 bytes_read = 0;
     bytes_read += NuFileRead(file, &g_VideoResHeader.ntextures, sizeof(g_VideoResHeader.ntextures));

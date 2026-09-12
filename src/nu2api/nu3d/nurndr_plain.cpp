@@ -203,7 +203,7 @@ extern "C" void NuPrim2DAddXYZ(float x, float y, float z) {
     }
 }
 
-extern "C" __attribute__((weak)) void NuPrim2DBegin(u32 prim_type, u32 /*vtx_fmt*/, NUMTL *mtl) {
+extern "C" SAGA_HOST_WEAK void NuPrim2DBegin(u32 prim_type, u32 /*vtx_fmt*/, NUMTL *mtl) {
     if (mtl == nullptr) {
         mtl = numtl_defaultmtl2d;
     }
@@ -337,7 +337,7 @@ extern "C" void NuRndrEndSceneEx(i32) {
 
 // Original 0x2967db — swap display-list and stream buffers, kick the render
 // thread, then pace the game thread until the app leaves the running state.
-extern "C" __attribute__((weak)) i32 NuRndrSwapScreen(i32 /*mode*/) {
+extern "C" SAGA_HOST_WEAK i32 NuRndrSwapScreen(i32 /*mode*/) {
     NuRenderThreadLock();
     rndr_blend_shape_deformer_wt_cnt = 0x3f00;
     rndr_blend_shape_deformer_wt_ptrs_cnt = 0x800;

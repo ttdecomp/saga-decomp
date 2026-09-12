@@ -122,7 +122,7 @@ void GrabStillScreen() {
     }
 }
 
-__attribute__((weak)) void InitStillRender(variptr_u *, variptr_u) {
+SAGA_HOST_WEAK void InitStillRender(variptr_u *, variptr_u) {
     static NUNATIVETEX nativePauseTex;
 
     pause_rt = NuTexGenTexture(&nativePauseTex);

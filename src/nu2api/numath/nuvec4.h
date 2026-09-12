@@ -10,6 +10,8 @@ typedef struct nuvec4_s {
     f32 w;
 } NUVEC4;
 
+typedef NUVEC4 NUVEC4_ALIGNED16 __attribute__((aligned(16)));
+
 typedef struct nuhalfvec4_s {
     i16 x;
     i16 y;

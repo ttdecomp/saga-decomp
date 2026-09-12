@@ -49,7 +49,7 @@ void GizmoBlowupGenShadowMatrix(GIZMOBLOWUP_s *, NUMTX *);
 void GizmoBlowupDraw(void *world_ptr, void *, float) {
     WORLDINFO_s *world = static_cast<WORLDINFO_s *>(world_ptr);
     GIZMOBLOWUP_s *blowup = world->gizmo_blowups;
-    NUMTX matrix __attribute__((aligned(16)));
+    NUMTX_ALIGNED16 matrix;
     for (i32 index = 0; index < world->gizmo_blowup_count; ++index, ++blowup) {
         if ((blowup->visibility_flags & 0x40) != 0) {
             i32 drawn = NuSpecialDrawAt(&blowup->type->animated_special, &blowup->transform);
@@ -144,7 +144,7 @@ void GizmoBlowUp_AddEffects(nuvec_s *position, GIZMOBLOWUP_s *blowup, i32 offset
             if (!NuSpecialExistsFn(&type->alternate_specials[i]))
                 continue;
             for (i32 j = 0; j < type->field_0xfa; ++j) {
-                NUMTX matrix __attribute__((aligned(16)));
+                NUMTX_ALIGNED16 matrix;
                 NuMtxSetIdentity(&matrix);
                 matrix.m30 = position->x;
                 matrix.m31 = position->y;

@@ -127,6 +127,9 @@ struct MechInputTouchGestureTracker {
     virtual bool OnHold(GameObject_s &, TouchHolder &);
     virtual bool OnSwipe(GameObject_s &, TouchHolder &, i32);
 };
+struct ClickToPressStartGestureTracker : MechInputTouchGestureTracker {
+    bool OnClick(GameObject_s &, TouchHolder &) override;
+};
 typedef void (*MechTouchUICallback)(MechTouchUIElement &, TouchHolder &);
 float GetAspectRatio();
 
@@ -682,7 +685,8 @@ struct MechSystems : BaseThing {
     u8 ui_storage[0x84];
     u8 player_button_storage[0x164];
     u8 pause_button_storage[0x44];
-    u32 marker_manager_vptr;
+    // Constructed after the UI controls, as in the original MechSystems ctor.
+    u32 click_to_press_start_tracker_storage;
     MoveToMarker *move_to_markers[32];
     SwipeDecalRenderer *swipe_markers[4];
     MechTouchUITagButton *level_ui_elements[3];
@@ -699,7 +703,12 @@ struct MechSystems : BaseThing {
     MechTouchUIPauseButton &PauseButton() {
         return *reinterpret_cast<MechTouchUIPauseButton *>(pause_button_storage);
     }
+    ClickToPressStartGestureTracker &ClickToPressStartTracker() {
+        return *reinterpret_cast<ClickToPressStartGestureTracker *>(&click_to_press_start_tracker_storage);
+    }
 };
+DECOMP_ASSERT(sizeof(ClickToPressStartGestureTracker) == sizeof(u32), "click-to-start tracker size");
+DECOMP_ASSERT(offsetof(MechSystems, click_to_press_start_tracker_storage) == 0x2888, "click-to-start tracker offset");
 DECOMP_ASSERT(offsetof(MechSystems, gesture_tracking_system) == 0x84, "MechSystems gesture tracking system offset");
 DECOMP_ASSERT(offsetof(MechSystems, move_to_markers) == 0x288c, "MechSystems move markers offset");
 DECOMP_ASSERT(offsetof(MechSystems, swipe_markers) == 0x290c, "MechSystems swipe marker slots offset");

@@ -48,7 +48,7 @@ HudRadarPulse::HudRadarPulse(VuVec const &initial_position) : position(initial_p
     paused = 0;
 }
 
-i32 HudRadarPulse::IsFinished() {
+u8 HudRadarPulse::IsFinished() {
     if (pulses[0].delay_finished && pulses[0].finished && pulses[1].delay_finished && pulses[1].finished &&
         pulses[2].delay_finished)
         return pulses[2].finished;

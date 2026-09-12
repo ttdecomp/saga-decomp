@@ -147,8 +147,8 @@ static __used__ void pathEditor_cbShareNodeMenu(eduimenu_s *parent, eduiitem_s *
     if (current == nullptr || current->current_node == nullptr) {
         return;
     }
-    eduimenu_s *menu = eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt,
-                                     pathEditor_cbCancelSelectMenu, (char *)"Share node with...");
+    eduimenu_s *menu =
+        eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt, pathEditor_cbCancelSelectMenu, (char *)"Share node with...");
     if (menu == nullptr) {
         return;
     }
@@ -171,8 +171,8 @@ static __used__ void pathEditor_cbShareNodeMenu(eduimenu_s *parent, eduiitem_s *
                     node = (EDAIPATHNODE_s *)NuLinkedListGetNext(&path->nodes, &node->link);
                 }
             }
-            eduiitem_s *item = eduiItemToggleCreate(index, &attr, selected, index + 1,
-                                                     pathEditor_cbSetShareNode, path->name);
+            eduiitem_s *item =
+                eduiItemToggleCreate(index, &attr, selected, index + 1, pathEditor_cbSetShareNode, path->name);
             eduiMenuAddItem(menu, item);
             ++index;
         }
@@ -195,8 +195,8 @@ static __used__ void pathEditor_cbRenameNodeMenu(eduimenu_s *parent, eduiitem_s 
     if (path == nullptr || path->current_node == nullptr) {
         return;
     }
-    eduimenu_s *menu = eduiMenuCreate(0xf0, 0x5a, 0xf0, 0xfa, ed_fnt,
-                                     pathEditor_cbCancelRenameNodeMenu, (char *)"Rename Node");
+    eduimenu_s *menu =
+        eduiMenuCreate(0xf0, 0x5a, 0xf0, 0xfa, ed_fnt, pathEditor_cbCancelRenameNodeMenu, (char *)"Rename Node");
     if (menu == nullptr) {
         return;
     }
@@ -215,8 +215,8 @@ static __used__ void pathEditor_cbRenamePathMenu(eduimenu_s *parent, eduiitem_s 
     if (path == nullptr || (path->flags & 1) != 0) {
         return;
     }
-    eduimenu_s *menu = eduiMenuCreate(0xf0, 0x5a, 0xf0, 0xfa, ed_fnt,
-                                     pathEditor_cbCancelRenamePathMenu, (char *)"Rename Path");
+    eduimenu_s *menu =
+        eduiMenuCreate(0xf0, 0x5a, 0xf0, 0xfa, ed_fnt, pathEditor_cbCancelRenamePathMenu, (char *)"Rename Path");
     if (menu == nullptr) {
         return;
     }
@@ -231,8 +231,8 @@ static __used__ void pathEditor_cbRenamePathMenu(eduimenu_s *parent, eduiitem_s 
 }
 
 static __used__ void pathEditor_cbSelectPathMenu(eduimenu_s *parent, eduiitem_s *, u32) {
-    eduimenu_s *menu = eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt,
-                                     pathEditor_cbCancelSelectMenu, (char *)"Select Path");
+    eduimenu_s *menu =
+        eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt, pathEditor_cbCancelSelectMenu, (char *)"Select Path");
     if (menu == nullptr) {
         return;
     }
@@ -349,8 +349,8 @@ static __used__ void routeEditor_cbRouteUsers(eduimenu_s *parent, eduiitem_s *, 
         aieditor->current_path->current_route == nullptr) {
         return;
     }
-    eduimenu_s *menu = eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt,
-                                     routeEditor_cbCancelRouteUsers, (char *)"Route Users");
+    eduimenu_s *menu =
+        eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt, routeEditor_cbCancelRouteUsers, (char *)"Route Users");
     if (menu == nullptr) {
         return;
     }
@@ -358,8 +358,7 @@ static __used__ void routeEditor_cbRouteUsers(eduimenu_s *parent, eduiitem_s *, 
     char *name = SpecialRouteCharacterNameFn(0);
     while (index < 64 && name != nullptr) {
         i32 selected = (aieditor->current_path->current_route->user_mask >> index) & 1;
-        eduiitem_s *item = eduiItemCheckCreate(index, &attr, selected, index + 1,
-                                               routeEditor_cbSetRouteUsers, name);
+        eduiitem_s *item = eduiItemCheckCreate(index, &attr, selected, index + 1, routeEditor_cbSetRouteUsers, name);
         eduiMenuAddItem(menu, item);
         eduiMenuAttach(parent, menu);
         ++index;
@@ -367,8 +366,7 @@ static __used__ void routeEditor_cbRouteUsers(eduimenu_s *parent, eduiitem_s *, 
     }
     if (index == 0 || index == 64) {
         i32 selected = (aieditor->current_path->current_route->user_mask >> 63) & 1;
-        eduiitem_s *item = eduiItemCheckCreate(63, &attr, selected, 64,
-                                               routeEditor_cbSetRouteUsers, (char *)"Global");
+        eduiitem_s *item = eduiItemCheckCreate(63, &attr, selected, 64, routeEditor_cbSetRouteUsers, (char *)"Global");
         eduiMenuAddItem(menu, item);
     }
 }
@@ -420,8 +418,8 @@ static __used__ void routeEditor_cbRenameRouteMenu(eduimenu_s *parent, eduiitem_
     if (path == nullptr || path->current_route == nullptr) {
         return;
     }
-    eduimenu_s *menu = eduiMenuCreate(0xf0, 0x5a, 0xf0, 0xfa, ed_fnt,
-                                     routeEditor_cbCancelRenameRouteMenu, (char *)"Rename Route");
+    eduimenu_s *menu =
+        eduiMenuCreate(0xf0, 0x5a, 0xf0, 0xfa, ed_fnt, routeEditor_cbCancelRenameRouteMenu, (char *)"Rename Route");
     if (menu == nullptr) {
         return;
     }

@@ -278,8 +278,8 @@ void MechTouchUITagButton::FadeOut() {
 
 MechTouchUITagButton::MechTouchUITagButton(GameObject_s &object, TouchHolder &holder)
     : MechTouchUIElement(VuVec(object.camera_screen_position.x, object.camera_screen_position.y,
-                                  object.camera_screen_position.z, 1.0f),
-                           TagButtonSize),
+                               object.camera_screen_position.z, 1.0f),
+                         TagButtonSize),
       target_object(object.GetMechObjectInterface()), touch_holder(&holder) {
     position.z = 0.0f;
     rectangular = 0;
@@ -396,8 +396,7 @@ MechTouchUITexButton::~MechTouchUITexButton() {
     material = NULL;
 }
 
-MechTouchUIPauseButton::MechTouchUIPauseButton()
-    : MechTouchUIElement(VuVec(0.7725f, 0.7525f, 0.0f, 1.0f), 0.16f) {
+MechTouchUIPauseButton::MechTouchUIPauseButton() : MechTouchUIElement(VuVec(0.7725f, 0.7525f, 0.0f, 1.0f), 0.16f) {
     on_click = MechTouchUIPauseButton_OnClick_Callback;
     disable_timer = 0.0f;
     skip_prompt_timer = 0.0f;
@@ -468,8 +467,7 @@ void MechTouchUIPauseButton::Render() {
     DrawTouchPrompt(const_cast<char *>("II"), NULL, hovered != 0, false);
 }
 
-MechTouchUIPlayerButton::MechTouchUIPlayerButton()
-    : MechTouchUIElement(VuVec(-0.7725f, 0.7525f, 0.0f, 1.0f), 0.16f) {
+MechTouchUIPlayerButton::MechTouchUIPlayerButton() : MechTouchUIElement(VuVec(-0.7725f, 0.7525f, 0.0f, 1.0f), 0.16f) {
     on_click = PlayerButton_OnClick_Callback_NextButton;
     on_hold = PlayerButton_OnHold_Callback;
     on_leave = PlayerButton_OnLeave_Callback;

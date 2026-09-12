@@ -372,6 +372,7 @@ struct ADDGAMEMSG {
     u8 field_0x4f;
 };
 DECOMP_ASSERT(sizeof(ADDGAMEMSG) == 0x50, "ADDGAMEMSG size");
+typedef ADDGAMEMSG ADDGAMEMSG_ALIGNED16 __attribute__((aligned(16)));
 struct PARTLIGHTSOURCE_s {
     u8 reserved_00[0x78];
     NUVEC values[7];
@@ -419,6 +420,7 @@ struct ADDPART_s {
     u8 field_c5[3];
 };
 DECOMP_ASSERT(sizeof(ADDPART_s) == 0xc8, "ADDPART_s ABI");
+typedef ADDPART_s ADDPART_ALIGNED16 __attribute__((aligned(16)));
 DECOMP_ASSERT(offsetof(ADDPART_s, matrix) == 0x00, "ADDPART matrix offset");
 DECOMP_ASSERT(offsetof(ADDPART_s, velocity) == 0x08, "ADDPART velocity offset");
 DECOMP_ASSERT(offsetof(ADDPART_s, field_14) == 0x14, "ADDPART field_14 offset");
@@ -3574,9 +3576,6 @@ struct ClassObjectList {
     bool IsInList(EdClass *);
     bool IsInList(void *, EdRef *);
 };
-struct ClickToPressStartGestureTracker {
-    void OnClick(GameObject_s &, TouchHolder &);
-};
 struct CursorTool {
     void Initialise(variptr_u &, variptr_u &, i32);
     void Process(EdInputContext &);
@@ -4569,7 +4568,7 @@ DECOMP_ASSERT(sizeof(HudRadarPulseStage) == 0x14, "HudRadarPulseStage ABI");
 
 struct HudRadarPulse {
     HudRadarPulse(VuVec const &);
-    i32 IsFinished();
+    u8 IsFinished();
     void Process(float);
     void Render();
 

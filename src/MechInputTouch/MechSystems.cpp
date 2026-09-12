@@ -2,10 +2,20 @@
 #include "globals.h"
 #include "legoapi/legoapi_types.h"
 #include "legoapi/items/base/apiobject.h"
+#include "legoapi/items/objects/gameobjects.h"
+#include "legoapi/world/level.h"
 #include "legoapi/world/world.h"
+#include "nu2api/nu3d/nuspecial.h"
+#include "nu2api/numath/numtx.h"
 
 #include <stddef.h>
+#include <string.h>
 #include <new>
+
+extern void (*preRenderFlashingHack)(void);
+extern void (*postRenderFlashingHack)(void);
+void PreRenderFlashHack();
+void PostRenderFlashHack();
 
 u8 MechSystems::SkipTextScroll = 0;
 
@@ -62,6 +72,7 @@ MechSystems *MechSystems::Get() {
 }
 
 void MechSystems::HookUpClickToPressStart() {
+    gesture_tracking_system.RegisterGestureTracker(ClickToPressStartTracker(), 0);
 }
 
 void MechSystems::Init() {
@@ -71,6 +82,8 @@ void MechSystems::Init() {
         TouchUI().AddUIElement(PlayerButton());
         TouchUI().AddUIElement(PauseButton());
         initialized = 1;
+        preRenderFlashingHack = PreRenderFlashHack;
+        postRenderFlashingHack = PostRenderFlashHack;
     }
 }
 
@@ -81,24 +94,24 @@ MechSystems::MechSystems() {
     new (ui_storage) MechTouchUI();
     new (player_button_storage) MechTouchUIPlayerButton();
     new (pause_button_storage) MechTouchUIPauseButton();
-    field_0x4 = 0;
-    flags = 0;
-    profiling_0xc = NULL;
-    for (i32 i = 0; i < 6; ++i) {
+    initialized = 0;
+    new (&click_to_press_start_tracker_storage) ClickToPressStartGestureTracker();
+    unknown_0x10[4] = 0;
+    for (i32 i = 0; i < 4; ++i) {
         unknown_0x10[i] = 0;
     }
-    marker_manager_vptr = 0;
-    for (i32 i = 0; i < 32; ++i) {
-        move_to_markers[i] = NULL;
-    }
-    for (i32 i = 0; i < 4; ++i) {
-        swipe_markers[i] = NULL;
-        radar_pulses[i] = NULL;
-    }
-    for (i32 i = 0; i < 3; ++i) {
-        level_ui_elements[i] = NULL;
-    }
-    initialized = 0;
+    memset(move_to_markers, 0, sizeof(move_to_markers));
+    swipe_markers[0] = NULL;
+    swipe_markers[1] = NULL;
+    swipe_markers[2] = NULL;
+    swipe_markers[3] = NULL;
+    level_ui_elements[0] = NULL;
+    level_ui_elements[1] = NULL;
+    level_ui_elements[2] = NULL;
+    radar_pulses[0] = NULL;
+    radar_pulses[1] = NULL;
+    radar_pulses[2] = NULL;
+    radar_pulses[3] = NULL;
 }
 
 void MechSystems::NewMoveToMarker(MechObjectInterface &) {
@@ -176,10 +189,36 @@ void MechSystems::ProcessEvenWhenPaused(ThingProcessData *data) {
     if (initialized == 0) {
         Init();
     }
-    if (initialized != 0) {
-        input_touch_system.ProcessEvenWhenPaused(data);
-        TouchUI().Process(data->t);
+    if (radar_pulses[0] != NULL) {
+        radar_pulses[0]->Process(FRAMETIME);
+        if (radar_pulses[0]->IsFinished()) {
+            delete radar_pulses[0];
+            radar_pulses[0] = NULL;
+        }
     }
+    if (radar_pulses[1] != NULL) {
+        radar_pulses[1]->Process(FRAMETIME);
+        if (radar_pulses[1]->IsFinished()) {
+            delete radar_pulses[1];
+            radar_pulses[1] = NULL;
+        }
+    }
+    if (radar_pulses[2] != NULL) {
+        radar_pulses[2]->Process(FRAMETIME);
+        if (radar_pulses[2]->IsFinished()) {
+            delete radar_pulses[2];
+            radar_pulses[2] = NULL;
+        }
+    }
+    if (radar_pulses[3] != NULL) {
+        radar_pulses[3]->Process(FRAMETIME);
+        if (radar_pulses[3]->IsFinished()) {
+            delete radar_pulses[3];
+            radar_pulses[3] = NULL;
+        }
+    }
+    input_touch_system.ProcessEvenWhenPaused(data);
+    TouchUI().Process(FRAMETIME);
 }
 
 void MechSystems::ProcessOnlyWhenPaused(ThingProcessData *) {
@@ -208,12 +247,25 @@ void MechSystems::Render(ThingRenderData *) {
 }
 
 void MechSystems::RenderCurrentPlayerHighlight() {
+    if (player != NULL && WORLD->lev_objs[166].active != 0) {
+        NUVEC scale = {0.6f, 0.6f, 0.6f};
+        NUVEC position = player->apiobj.position;
+        position.y = GameShadow(player, &position, 2.0f, -1) + 0.001f;
+
+        NUMTX matrix;
+        NuMtxSetRotationY(&matrix, 0);
+        NuMtxRotateX(&matrix, 0x4000);
+        NuMtxScale(&matrix, &scale);
+        NuMtxTranslate(&matrix, &position);
+        NuSpecialDrawAtAlpha(&WORLD->lev_objs[166].special, &matrix, 0.25f);
+    }
 }
 
 void MechSystems::Reset(ThingResetData *) {
 }
 
 void MechSystems::UnhookClickToPressStart() {
+    gesture_tracking_system.UnregisterGestureTracker(ClickToPressStartTracker());
 }
 
 MechSystems::~MechSystems() {

@@ -121,7 +121,7 @@ void GizBuildIt_KillParts(GIZBUILDIT_s *buildit) {
         return;
     for (GAMEANIMOBJ_s *object = buildit->anim_set->objects; object != NULL; object = object->next) {
         ADDPART_s params = Default_ADDPART;
-        NUMTX matrix __attribute__((aligned(16))) = static_cast<GIZBUILDITANIMDATA_s *>(object->object_data)->end_mtx;
+        NUMTX_ALIGNED16 matrix = static_cast<GIZBUILDITANIMDATA_s *>(object->object_data)->end_mtx;
         params.matrix = &matrix;
         params.velocity = &velocity;
         params.special = &object->special;

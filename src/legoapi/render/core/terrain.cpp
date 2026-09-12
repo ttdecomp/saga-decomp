@@ -1310,8 +1310,8 @@ void ScanTerrain(i32 scan_type, i32 terrain_mask, i32 scan_flags) {
     }
 }
 NUVEC TerrainSkin(PLATSKININFO *info, nuvec_s *position, float weight, i32 mode) {
-    NUVEC4 point __attribute__((aligned(16)));
-    NUMTX matrix __attribute__((aligned(16)));
+    NUVEC4_ALIGNED16 point;
+    NUMTX_ALIGNED16 matrix;
     if (mode == 1) {
         point.x = position->x;
         point.y = position->y;
@@ -2407,7 +2407,7 @@ void TerrDrawPlatCol(tertype *, i16, i32) {
 void TerrShowCamTerr() {
 }
 NUVEC TerrainStaticMtx(PLATSKININFO *info, nuvec_s *position, i32) {
-    NUVEC4 point __attribute__((aligned(16)));
+    NUVEC4_ALIGNED16 point;
     point.x = position->x;
     point.y = position->y;
     point.z = position->z;
