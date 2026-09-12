@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 39.402073,
+    "fuzzy_match_percent": 39.579327,
     "total_code": "4722419",
-    "matched_code": "370312",
-    "matched_code_percent": 7.841574,
+    "matched_code": "370139",
+    "matched_code_percent": 7.837911,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4476,
-    "matched_functions_percent": 33.256557,
+    "matched_functions": 4475,
+    "matched_functions_percent": 33.249126,
     "total_units": 1
   },
   "text": {
@@ -39169,14 +39169,6 @@
           "offset": 30496,
           "size": 93,
           "match_percent": 99.35294
-        },
-        {
-          "name": "_ZL19JediBKilledCallbackP12GameObject_s",
-          "demangled_name": "JediBKilledCallback(GameObject_s*)",
-          "address": 2113424,
-          "offset": 1223456,
-          "size": 879,
-          "match_percent": 3.947368
         },
         {
           "name": "_Z22SpecialMoves_ConfigurePcP9variptr_uS1_",
@@ -83097,12 +83089,20 @@
           "match_percent": 100.0
         },
         {
+          "name": "_ZL19JediBKilledCallbackP12GameObject_s",
+          "demangled_name": "JediBKilledCallback(GameObject_s*)",
+          "address": 2113424,
+          "offset": 1223456,
+          "size": 879,
+          "match_percent": 96.416664
+        },
+        {
           "name": "_Z10JediB_InitP11WORLDINFO_s",
           "demangled_name": "JediB_Init(WORLDINFO_s*)",
           "address": 2116944,
           "offset": 1226976,
           "size": 1603,
-          "match_percent": 1.126005
+          "match_percent": 96.99732
         },
         {
           "name": "_Z11JediB_ResetP11WORLDINFO_s",
@@ -83110,7 +83110,7 @@
           "address": 2118560,
           "offset": 1228592,
           "size": 2072,
-          "match_percent": 0.878661
+          "match_percent": 99.4205
         },
         {
           "name": "_Z12JediB_UpdateP11WORLDINFO_s",
@@ -83118,7 +83118,7 @@
           "address": 2120640,
           "offset": 1230672,
           "size": 7214,
-          "match_percent": 0.26465
+          "match_percent": 45.921864
         },
         {
           "name": "_Z15JediB_DrawPanelP11WORLDINFO_s",
@@ -83126,7 +83126,7 @@
           "address": 2127856,
           "offset": 1237888,
           "size": 807,
-          "match_percent": 2.058824
+          "match_percent": 87.07843
         },
         {
           "name": "_Z13FactoryB_InitP11WORLDINFO_s",
@@ -83438,7 +83438,7 @@
           "address": 2358656,
           "offset": 1468688,
           "size": 173,
-          "match_percent": 100.0
+          "match_percent": 99.44444
         },
         {
           "name": "_Z26BountyHunterPursuitA_ResetP11WORLDINFO_s",

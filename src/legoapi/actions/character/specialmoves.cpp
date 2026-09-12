@@ -94,9 +94,6 @@ void SpecialMove_Attacker_SetTargetMom(GameObject_s *object) {
     object->apiobj.velocity.x = object->target_velocity.x;
 }
 
-static __used__ void JediBKilledCallback(GameObject_s *) {
-}
-
 void BackFlipCode(GameObject_s *object) {
     if (LEGOCONTEXT_BACKFLIP == -1 || object->character_context != LEGOCONTEXT_BACKFLIP) {
         return;
