@@ -631,6 +631,13 @@ extern "C" {
     extern i16 id_GEONOSIAN;
     extern i16 id_BOB;
     extern i16 id_WHIP;
+    extern i16 id_JARJAR;
+    extern i16 id_PADMECLAWED;
+    extern i16 id_SHAAKTI;
+    extern i16 id_LUMINARA;
+    extern i16 id_SUPERBATTLEDROID;
+    extern i16 id_BATTLEDROIDSECURITY;
+    extern i16 id_BATTLEDROIDGEONOSIAN;
 }
 
 void LoadSingleCharacter(bgprocinfo_s *info);
