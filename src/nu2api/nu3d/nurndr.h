@@ -66,6 +66,18 @@ extern "C" {
     void NuRndrSetGlobalMinMipLevel(i32 level);
     void NuRndrSetGlobalMipMapBias(f32 bias);
     void NuTextureBlendEffect(i32 arg0, i32 arg1, struct nuvec4_s *parameters);
+    void NuRndrAxisArrowsMtx(NUMTX *matrix, f32 length, struct numtl_s *material);
+    void NuRndrAxisArrows(NUVEC *position, void *unused, f32 length, struct numtl_s *material);
+    void NuRndrBoundingBox(NUVEC *minimum, NUVEC *maximum, NUMTX *matrix, i32 colour);
+    void NuRndrAxes(NUMTX *matrix, f32 length);
+    void NuRndrAxisBright(NUMTX *matrix, f32 length, i32 brightness);
+    void NuRndrCircle(f32 x, f32 y, f32 radius, f32 aspect, i32 count, f32 u0, f32 v0, f32 u1, f32 v1, i32 colour,
+                      struct numtl_s *material);
+    i32 NuRndrHighResScreenGrab(char *prefix, f32 scale, f32 a, f32 b, f32 c, i32 number);
+    void NuRndrScreenGrabTileInit(void *, i32, f32, f32, f32);
+    void NuRndrScreenGrabTileDeInit(void *);
+    void NuRndrScreenGrabTileBegin(void **);
+    void NuRndrScreenGrabTileEnd(void **);
     void NuRndrSolidTri(NUVEC *a, NUVEC *b, NUVEC *c, i32 colour);
     void NuRndrWireTri(NUVEC *a, NUVEC *b, NUVEC *c, i32 colour);
     void NuRndrLineRect2di(i32 x, i32 y, i32 width, i32 height, i32 colour, struct numtl_s *material);
@@ -92,11 +104,14 @@ extern "C" {
 
     extern i32 nurndr_pixel_width;
     extern i32 nurndr_pixel_height;
+    void NuRndrShadPolys(struct numtl_s *material);
     extern i32 NuRndrShadowCnt;
     extern NURND_SHADOW_s NuRndrShadPolDat[128];
 
     void NuRndrInitEx(i32 stream_buffer_size, VARIPTR *buffer);
     i32 NuRndrSwapScreenEx(i32 mode, void (*callback)(void));
+    void NuRndr3dLine(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1, f32 z1, i32 colour);
+    i32 NuRndrTri3dClip(NURND_VERTEX3D *vertices, i32 count, NUMTX *matrix, struct numtl_s *material);
     i32 NuRndrStrip3d(NURND_VERTEX3D *vertices, struct numtl_s *material, NUMTX *matrix, i32 count);
     i32 NuRndrTriStrip3dClip(NURND_VERTEX3D *vertices, i32 count, NUMTX *matrix, struct numtl_s *material);
 
@@ -119,3 +134,5 @@ extern "C" {
 
 f32 **NuRndrCreateBlendShapeDWAPointers(i32 count);
 #endif
+
+extern f32 circle_scale_radius;

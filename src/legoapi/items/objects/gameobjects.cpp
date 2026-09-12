@@ -3251,7 +3251,38 @@ void *GameBufferAlloc(variptr_u *buf, variptr_u *buf_end, i32 size) {
     return ptr;
 }
 
-void GameObj_GetName(i32, GameObject_s *, char *) {
+extern i16 tUNKNOWN;
+char *GameObj_GetName(i32 model, GameObject_s *object, char *buffer) {
+    if (object != NULL) {
+        if (object->field_0xcc0 != NULL && object->field_0xcc0->apiobj.character_data->name_id != -1)
+            model = object->field_0xcc0->id;
+        else
+            model = object->id;
+    } else if (model == -1) {
+        return TTab[tUNKNOWN];
+    }
+    if (buffer != NULL) {
+        i32 index = -1;
+        if (model == id_WEIRDO1) {
+            if (Game.customizer.primary_use_saved_name)
+                index = 0;
+        } else if (model == id_WEIRDO2) {
+            if (Game.customizer.secondary_use_saved_name)
+                index = 1;
+        }
+        if (index == -1)
+            return TTab[CDataList[model].name_id];
+        NuStrCpy(buffer,
+                 reinterpret_cast<char *>(&Game.customizer) + offsetof(CUSTOMISESAVE_s, primary_name) + index * 0x38);
+        for (i32 i = 14; i >= 0; --i) {
+            if (buffer[i] != ' ')
+                return buffer;
+            buffer[i] = '\0';
+        }
+        NuStrCpy(buffer, "?");
+        return buffer;
+    }
+    return TTab[CDataList[model].name_id];
 }
 
 void Game_AutoSaving() {
@@ -6629,7 +6660,8 @@ void ManageGameObjects() {
     }
 }
 
-void PowerUp_GetPanelY(i32) {
+f32 PowerUp_GetPanelY(i32) {
+    return 0.0f;
 }
 
 void PowerUp_Particles(WORLDINFO_s *, nuvec_s *) {
@@ -7478,8 +7510,64 @@ i32 EquivalentObject_Find(WORLDINFO_s *, nuhspecial_s *) {
     return 0;
 }
 
-void FindNearestGameObject(nuvec_s *, GameObject_s *, u32, float, float, i32, i32, i32, float *, i32,
-                           i32 (*)(GameObject_s *), bool) {
+GameObject_s *FindNearestGameObject(NUVEC *position, GameObject_s *exclude, u32 required_flags, f32 radius,
+                                    f32 extra_radius, i32 animation, i32 character_id, i32 player_index,
+                                    f32 *distance_squared, i32 horizontal_only, i32 (*filter)(GameObject_s *),
+                                    bool first_match) {
+    GameObject_s *nearest = NULL;
+    f32 nearest_distance = 100000000.0f;
+    f32 radius_squared = radius * radius;
+    GameObject_s *object = Obj;
+    for (i32 i = 0; i < HIGHGAMEOBJECT; ++i, ++object) {
+        if ((object->apiobj.field_0x1f8 & 0x1001) != 0x1001 || object->apiobj.field_0x287 != 0 ||
+            (object->field_0xe20 & 0x20) || (CInfo[object->character_context].flags & 0x8000))
+            continue;
+        if (character_id != -1 && object->id != character_id)
+            continue;
+        if (player_index >= 0) {
+            if (player_index <= 1) {
+                if (object->apiobj.field_0x27c != player_index)
+                    continue;
+            } else if (player_index == 99) {
+                if (object->apiobj.field_0x27c == -1)
+                    continue;
+            } else if (player_index == 100) {
+                if (object->apiobj.field_0x27c != -1)
+                    continue;
+            }
+        }
+        if (exclude && object == exclude)
+            continue;
+        if (required_flags && (object->apiobj.character_data->model_flags & required_flags) != required_flags)
+            continue;
+        if (animation != -1 && object->apiobj.character_model->model_data_b[animation] == NULL)
+            continue;
+        if (filter && !filter(object))
+            continue;
+        f32 x = object->apiobj.collision_position.x - position->x;
+        f32 y = object->apiobj.collision_position.y - position->y;
+        f32 z = object->apiobj.collision_position.z - position->z;
+        f32 distance = horizontal_only ? x * x + z * z : x * x + y * y + z * z;
+        if (exclude) {
+            if (radius_squared <= 0.0f || distance < radius_squared) {
+                f32 combined_radius = exclude->apiobj.collision_radius + object->apiobj.collision_radius + extra_radius;
+                if (distance < combined_radius * combined_radius && distance < nearest_distance) {
+                    nearest_distance = distance;
+                    nearest = object;
+                    if (first_match)
+                        break;
+                }
+            }
+        } else if ((radius_squared <= 0.0f || distance < radius_squared) && distance < nearest_distance) {
+            nearest_distance = distance;
+            nearest = object;
+            if (first_match)
+                break;
+        }
+    }
+    if (nearest && distance_squared)
+        *distance_squared = nearest_distance;
+    return nearest;
 }
 
 extern "C" {

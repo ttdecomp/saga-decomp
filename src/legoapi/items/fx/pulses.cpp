@@ -241,8 +241,7 @@ void Pulses_Configure(WORLDINFO_s *world, char *config) {
                 pulse_sys.radial_hit_direction = 1;
             } else if (NuStrICmp(parser->word_buf, "debris_hitplayer") == 0) {
                 if (NuFParGetWord(parser) != 0) {
-                    pulse_sys.debris_hit_player =
-                        static_cast<i16>(FindGameDebris(world->debris_sys, parser->word_buf));
+                    pulse_sys.debris_hit_player = static_cast<i16>(FindGameDebris(world->debris_sys, parser->word_buf));
                 }
             } else if (NuStrICmp(parser->word_buf, "pulse") == 0 && NuFParGetWord(parser) != 0 &&
                        NuSpecialFind(world->current_gscn, &pulse->special, parser->word_buf, 1) != 0) {

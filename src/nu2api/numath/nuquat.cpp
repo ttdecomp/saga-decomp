@@ -241,105 +241,182 @@ void NuQuatSub(NUQUAT *out, NUQUAT *q0, NUQUAT *q1) {
 }
 
 void NuQuatMul(NUQUAT *out, NUQUAT *q0, NUQUAT *q1) {
-    out->w = q0->w * q1->w - q0->x * q1->x - q0->y * q1->y - q0->z * q1->z;
-    out->x = q0->w * q1->x + q0->x * q1->w + q0->y * q1->z - q0->z * q1->y;
-    out->y = q0->w * q1->y - q0->x * q1->z + q0->y * q1->w + q0->z * q1->x;
-    out->z = q0->w * q1->z + q0->x * q1->y - q0->y * q1->x + q0->z * q1->w;
+    NUQUAT result;
+    result.w = q1->w * q0->w - q1->x * q0->x - q1->y * q0->y - q1->z * q0->z;
+    result.x = q1->w * q0->x + q1->x * q0->w + q1->y * q0->z - q1->z * q0->y;
+    result.y = q1->w * q0->y + q1->y * q0->w + q1->z * q0->x - q1->x * q0->z;
+    out->z = q1->w * q0->z + q1->z * q0->w + q1->x * q0->y - q1->y * q0->x;
+    out->x = result.x;
+    out->y = result.y;
+    out->w = result.w;
 }
 
 f32 NuQuatMagnitude(NUQUAT *q) {
-    return NuFsqrt(q->w * q->w + q->x * q->x + q->y * q->y + q->z * q->z);
+    return q->w * q->w + q->x * q->x + q->y * q->y + q->z * q->z;
 }
 
 void NuQuatNormalise(NUQUAT *out, NUQUAT *q) {
-    f32 mag = NuFsqrt(q->w * q->w + q->x * q->x + q->y * q->y + q->z * q->z);
-
-    if (mag > 0.0f) {
-        mag = 1.0f / mag;
+    f32 magnitude_squared = q->w * q->w + q->x * q->x + q->y * q->y + q->z * q->z;
+    if (magnitude_squared > 0.0f) {
+        f32 inverse_magnitude = NuFdiv(1.0f, NuFsqrt(magnitude_squared));
+        out->w = q->w * inverse_magnitude;
+        out->x = q->x * inverse_magnitude;
+        out->y = q->y * inverse_magnitude;
+        out->z = q->z * inverse_magnitude;
     } else {
-        mag = 0.0f;
+        *out = *q;
     }
-
-    out->w = q->w * mag;
-    out->x = q->x * mag;
-    out->y = q->y * mag;
-    out->z = q->z * mag;
 }
 
 void NuQuatNeg2(NUQUAT *out, NUQUAT *in) {
-    out->w = -in->w;
     out->x = -in->x;
     out->y = -in->y;
     out->z = -in->z;
+    out->w = -in->w;
 }
 
 void NuQuatBlend(NUQUAT *out, NUQUAT *q0, NUQUAT *q1, f32 blendA, f32 blendB) {
-    out->w = q0->w * blendA + q1->w * blendB;
     out->x = q0->x * blendA + q1->x * blendB;
     out->y = q0->y * blendA + q1->y * blendB;
     out->z = q0->z * blendA + q1->z * blendB;
+    out->w = q0->w * blendA + q1->w * blendB;
 }
 
 void NuQuatLerp2(NUQUAT *out, NUQUAT *from, NUQUAT *to, f32 t) {
-    out->x = (to->x - from->x) * t + from->x;
-    out->y = (to->y - from->y) * t + from->y;
-    out->z = (to->z - from->z) * t + from->z;
-    out->w = (to->w - from->w) * t + from->w;
+    f32 dot = to->x * from->x + to->y * from->y + to->z * from->z + to->w * from->w;
+    if (dot < 0.0f) {
+        out->x = (to->x + from->x) * t - from->x;
+        out->y = (to->y + from->y) * t - from->y;
+        out->z = (to->z + from->z) * t - from->z;
+        out->w = (to->w + from->w) * t - from->w;
+    } else {
+        out->x = (to->x - from->x) * t + from->x;
+        out->y = (to->y - from->y) * t + from->y;
+        out->z = (to->z - from->z) * t + from->z;
+        out->w = (to->w - from->w) * t + from->w;
+    }
 }
 
 f32 NuQuatDot(NUQUAT *q0, NUQUAT *q1) {
-    return q0->w * q1->w + q0->x * q1->x + q0->y * q1->y + q0->z * q1->z;
+    return q0->x * q1->x + q0->y * q1->y + q0->z * q1->z + q0->w * q1->w;
 }
 
 void NuQuatSlerpFast(NUQUAT *out, NUQUAT *from, NUQUAT *to, f32 t) {
-    NuQuatLerp2(out, from, to, t);
-    NuQuatNormalise(out, out);
+    f32 threshold = 0.85f;
+    f32 dot = from->x * to->x + from->y * to->y + from->z * to->z + from->w * to->w;
+    NUQUAT negative;
+    NUQUAT *target;
+    if (dot < 0.0f) {
+        dot = -dot;
+        target = &negative;
+        target->x = -to->x;
+        target->y = -to->y;
+        target->z = -to->z;
+        target->w = -to->w;
+    } else {
+        target = to;
+    }
+    if (dot > threshold) {
+        f32 inverse_t = 1.0f - t;
+        out->x = from->x * inverse_t + target->x * t;
+        out->y = from->y * inverse_t + target->y * t;
+        out->z = from->z * inverse_t + target->z * t;
+        out->w = from->w * inverse_t + target->w * t;
+        NuQuatNormalise(out, out);
+    } else {
+        dot = dot < 0.995f ? dot : 0.995f;
+        f32 a = 2.2184808254241943f + (dot * 0.223403662443161f) * dot;
+        f32 b = dot * 2.4418842792510986f;
+        f32 angle = 1.5707963705062866f + (NuFsqrt(a - b) - NuFsqrt(a + b)) + dot * 0.6391287446022034f;
+        f32 inverse_sine = 1.0f / NuFsqrt(1.0f - dot * dot);
+        f32 u = (1.0f - t) * angle - 1.5707963705062866f;
+        u = u * u;
+        f32 v = t * angle - 1.5707963705062866f;
+        v = v * v;
+        f32 sin_u = 0.9999999403953552f +
+                    (((u * 2.3154014343163e-05f - 0.0013853708514943719f) * u + 0.04166358336806297f) * u -
+                     0.4999990463256836f) *
+                        u;
+        f32 sin_v = 0.9999999403953552f +
+                    (((v * 2.3154014343163e-05f - 0.0013853708514943719f) * v + 0.04166358336806297f) * v -
+                     0.4999990463256836f) *
+                        v;
+        f32 from_factor = sin_u * inverse_sine;
+        f32 to_factor = sin_v * inverse_sine;
+        out->x = from->x * from_factor + target->x * to_factor;
+        out->y = from->y * from_factor + target->y * to_factor;
+        out->z = from->z * from_factor + target->z * to_factor;
+        out->w = from->w * from_factor + target->w * to_factor;
+    }
 }
 
 void NuQuatSlerp_Accurate(NUQUAT *out, NUQUAT *from, NUQUAT *to, f32 t) {
     f32 scale;
     f32 from_factor;
     f32 to_factor;
+    f32 unused = 0.0f;
     f32 omega;
     f32 sin_omega;
     NUQUAT to_prime;
-
-    scale = NuQuatDot(from, to);
-
+    scale = from->x * to->x + from->y * to->y + from->z * to->z + from->w * to->w;
     if (scale < 0.0f) {
         scale = -scale;
-        to_prime.w = -to->w;
         to_prime.x = -to->x;
         to_prime.y = -to->y;
         to_prime.z = -to->z;
+        to_prime.w = -to->w;
     } else {
-        to_prime.w = to->w;
         to_prime.x = to->x;
         to_prime.y = to->y;
         to_prime.z = to->z;
+        to_prime.w = to->w;
     }
-
-    if (1.0f - scale > 1e-05f) {
-        omega = NuACos(scale);
-
-        sin_omega = NU_SIN_LUT((i32)omega);
-        from_factor = NuFdiv(NU_SIN_LUT((i32)((1.0f - t) * omega)), sin_omega);
-        to_factor = NuFdiv(NU_SIN_LUT((i32)(t * omega)), sin_omega);
+    if (1.0f - scale > 0.0f) {
+        omega = 1.5707963705062866f - NuASin_Accurate(scale);
+        sin_omega = NuSin_Accurate(omega);
+        from_factor = NuSin_Accurate((1.0f - t) * omega) / sin_omega;
+        to_factor = NuSin_Accurate(t * omega) / sin_omega;
     } else {
         from_factor = 1.0f - t;
         to_factor = t;
     }
-
-    out->w = from->w * from_factor + to_prime.w * to_factor;
     out->x = from->x * from_factor + to_prime.x * to_factor;
     out->y = from->y * from_factor + to_prime.y * to_factor;
     out->z = from->z * from_factor + to_prime.z * to_factor;
+    out->w = from->w * from_factor + to_prime.w * to_factor;
 }
 
-typedef struct nuqthdr_s nuqthdr_s;
+struct nuqtentry_s {
+    i16 count;
+    i16 field_02;
+    u8 *data;
+    u32 field_08;
+};
 
-static void NuQTFixAddress(nuqthdr_s *) {
+struct nuqthdr_s {
+    u32 field_00[5];
+    nuqtentry_s *entries;
+    i32 entry_count;
+    u32 field_1c;
+    u8 *data;
+};
+
+static void NuQTFixAddress(nuqthdr_s *header) {
+    uintptr_t base = (uintptr_t)header;
+    header->entries = (nuqtentry_s *)((u8 *)header->entries + base);
+    header->data = header->data + base;
+    for (i32 index = 0; index < header->entry_count; ++index) {
+        if (header->entries[index].count > 0)
+            header->entries[index].data = header->entries[index].data + base;
+    }
 }
 
-static void NuQTUnfixAddress(nuqthdr_s *) {
+static void NuQTUnfixAddress(nuqthdr_s *header) {
+    uintptr_t base = -(uintptr_t)header;
+    for (i32 index = 0; index < header->entry_count; ++index) {
+        if (header->entries[index].count > 0)
+            header->entries[index].data = header->entries[index].data + base;
+    }
+    header->entries = (nuqtentry_s *)((u8 *)header->entries + base);
+    header->data = header->data + base;
 }

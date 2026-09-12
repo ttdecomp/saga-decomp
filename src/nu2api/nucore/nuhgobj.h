@@ -155,6 +155,8 @@ extern "C" {
                                    ani3_animheader_s *animation_b, f32 time_b, f32 blend, i32 override_count,
                                    NUJOINTANIM_s *overrides, NUMTX *matrices, NUHGOBJROOTFN root_fn, void *root_data);
     void **NuHGobjEvalDwa2(i32 render_count, i16 *render_indices, nuanimdata2_s *animation, f32 frame);
+    void **NuHGobjEvalDwaBlend(i32 render_count, i16 *render_indices, void *animation_a, f32 frame_a, void *animation_b,
+                               f32 frame_b, f32 blend);
     void **NuHGobjEvalDwaBlend2(i32 render_count, i16 *render_indices, nuanimdata2_s *animation_a, f32 frame_a,
                                 nuanimdata2_s *animation_b, f32 frame_b, f32 blend);
     i32 NuHGobjRndrMtxDwa(nuhgobj_s *object, NUMTX *world_matrix, i32 render_count, i16 *render_indices,

@@ -1150,6 +1150,9 @@ extern "C" {
     i32 edmainGetCursorEnabled(void) {
         return edmain_cursor_enabled;
     }
+    // Shared editor font; edmainInit receives and stores the font handle.
+    void *ed_fnt;
+
     void edmainInit(void) {
     }
     void edmainInitEx(void) {
@@ -1619,7 +1622,7 @@ extern "C" {
     void eduiItemToggleCreate(void) {
     }
     eduiitem_s *edui_last_item;
-    void eduiMenuAddItem(eduimenu_s *menu, eduiitem_s *item) {
+    eduiitem_s *eduiMenuAddItem(eduimenu_s *menu, eduiitem_s *item) {
         if (menu->last)
             menu->last->next = item;
         else
@@ -1630,6 +1633,7 @@ extern "C" {
         menu->field_0c = menu->first;
         menu->field_10 = 0;
         edui_last_item = item;
+        return item;
     }
     void eduiMenuAddItemAfter(eduimenu_s *menu, eduiitem_s *item, eduiitem_s *after) {
         if (after) {

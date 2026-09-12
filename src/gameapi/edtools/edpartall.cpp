@@ -3,8 +3,8 @@
 #include "legoapi/legoapi_types.h"
 
 extern "C" {
-extern part_typedesc_s *edpart_nearest_type;
-i32 edpart_set_part = 5;
+    extern part_typedesc_s *edpart_nearest_type;
+    i32 edpart_set_part = 5;
 }
 
 // Particle editor subsystem stubs (static, internal linkage).

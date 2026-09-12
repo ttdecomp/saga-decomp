@@ -1,3 +1,4 @@
+#include "editor/edpath.h"
 #include "legoapi/world/world_shared.h"
 #include "decomp.h"
 #include "gameapi/ai/aisys/aisys.h"
@@ -3055,12 +3056,6 @@ extern "C" {
         AiRndrCullDistance = distance;
     }
 
-    struct AIEDITOR_RENDER_STATE {
-        u8 unknown_00[0x28];
-        NUVEC camera_position;
-        u8 unknown_34[0x42ea8 - 0x34];
-        u8 flags;
-    };
     AIEDITOR_RENDER_STATE *aieditor;
     void NuRndrLine3dDbg(f32, f32, f32, f32, f32, f32, i32);
     void AiRndrLine3d(NURND_VERTEX3D *vertices, NUMTL *, NUMTX *matrix) {
@@ -3346,7 +3341,7 @@ extern "C" {
     typedef void AIEDITORCALLBACK(void);
 
     AIEDITORCALLBACK *AIPathDeletedFn;
-    AIEDITORCALLBACK *AIPathNodeDeletedFn;
+    AIEDITORPATHNODECALLBACK *AIPathNodeDeletedFn;
     AIEDITORCALLBACK *AIPathNodeMovedFn;
     AIEDITORCALLBACK *GameAISYSRebuildFromEditorDataFn;
     AIEDITORCALLBACK *GameAISaveFn;
@@ -3355,7 +3350,7 @@ extern "C" {
         AIPathDeletedFn = function;
     }
 
-    void InitFn_AIPathNodeDeleted(AIEDITORCALLBACK *function) {
+    void InitFn_AIPathNodeDeleted(AIEDITORPATHNODECALLBACK *function) {
         AIPathNodeDeletedFn = function;
     }
 

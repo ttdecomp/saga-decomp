@@ -67,12 +67,8 @@ void NuRandSetSeed(NURAND *rand, i32 seed) {
     rand->value = seed;
 }
 
-u32 NuRandGetSeed(NURAND *rand) {
-    if (rand == NULL) {
-        rand = &global_rand;
-    }
-
-    return rand->value;
+u32 NuRandGetSeed(void) {
+    return fseed;
 }
 
 f32 NuFloatRand(NURAND *rand) {

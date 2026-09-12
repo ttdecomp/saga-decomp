@@ -1320,43 +1320,86 @@ f32 NuMtxSSE(NUMTX *a, NUMTX *b) {
     return sse;
 }
 
-void NuMtx24BitCorrection(NUMTX *m) {
-    u32 *m_int = (u32 *)m;
-
-    m_int[0] &= 0xffffff00;
-    m_int[1] &= 0xffffff00;
-    m_int[2] &= 0xffffff00;
-    m_int[3] &= 0xffffff00;
-    m_int[4] &= 0xffffff00;
-    m_int[5] &= 0xffffff00;
-    m_int[6] &= 0xffffff00;
-    m_int[7] &= 0xffffff00;
-    m_int[8] &= 0xffffff00;
-    m_int[9] &= 0xffffff00;
-    m_int[10] &= 0xffffff00;
-    m_int[11] &= 0xffffff00;
-    m_int[12] &= 0xffffff00;
-    m_int[13] &= 0xffffff00;
-    m_int[14] &= 0xffffff00;
-    m_int[15] &= 0xffffff00;
+void NuMtx24BitCorrection(NUMTX *correction, NUMTX *matrix) {
+    f32 best_error = 3.4028234663852886e+38f;
+    i32 element;
+    i32 pass;
+    f32 step = 1.0f;
+    NUMTX truncated;
+    NUMTX product;
+    NuMtxTruncate24Bit(&truncated, matrix);
+    *correction = numtx_identity;
+    for (pass = 0; pass < 100; ++pass) {
+        for (element = 0; element < 16; ++element) {
+            if (element % 4 == 3)
+                continue;
+            f32 previous;
+            f32 error;
+            f32 *value = reinterpret_cast<f32 *>(correction) + element;
+            previous = *value;
+            *value += step;
+            reinterpret_cast<u8 *>(value)[0] = 0;
+            NuMtxMulH(&product, correction, &truncated);
+            error = NuMtxSSE(&product, matrix);
+            if (error >= best_error)
+                *value = previous;
+            else
+                best_error = error;
+            previous = *value;
+            *value -= step;
+            reinterpret_cast<u8 *>(value)[0] = 0;
+            NuMtxMulH(&product, correction, &truncated);
+            error = NuMtxSSE(&product, matrix);
+            if (error >= best_error)
+                *value = previous;
+            else
+                best_error = error;
+        }
+        step *= 0.9f;
+    }
 }
 
 void NuMtxCalcCheapFaceOnDebug(NUMTX *m, NUVEC *v) {
-    NuMtxCalcCheapFaceOn(m, v);
+    NUMTX camera = {
+        -0.9711849093437195f,  0.0f,
+        -0.23832732439041138f, 0.0f,
+        0.08866473287343979f,  0.9282209873199463f,
+        -0.3613092005252838f,  0.0f,
+        0.22122041881084442f,  -0.37202924489974976f,
+        -0.9014742374420166f,  0.0f,
+        -0.6754902601242065f,  1.3077397346496582f,
+        -0.7606481909751892f,  1.0f,
+    };
+    m->m00 = -camera.m00;
+    m->m10 = camera.m01;
+    m->m20 = -camera.m02;
+    m->m01 = -camera.m10;
+    m->m11 = camera.m11;
+    m->m21 = -camera.m12;
+    m->m02 = -camera.m20;
+    m->m12 = camera.m21;
+    m->m22 = -camera.m22;
+    m->m03 = m->m13 = m->m23 = 0.0f;
+    m->m33 = 1.0f;
+    m->m30 = v->x;
+    m->m31 = v->y;
+    m->m32 = v->z;
 }
 
 void NuMtxGetPerspectivePS3(NUMTX *mtx, f32 *fovy, f32 *aspect, f32 *zNear, f32 *zFar) {
     f32 Q = mtx->m22;
+    f32 B = mtx->m32;
 
-    *zNear = -mtx->m32 / Q;
-    *zFar = (*zNear * Q) / (Q - 1.0f);
+    *zNear = -B / (Q + 1.0f);
+    *zFar = (*zNear * B) / ((*zNear + *zNear) + B);
     *aspect = mtx->m11 / mtx->m00;
     *fovy = NuAtan2(1.0f / mtx->m11, 1.0f) * 360.0f / (f32)M_PI;
 }
 
 void NuMtxGetPerspectiveOGL(NUMTX *mtx, f32 *fovy, f32 *aspect, f32 *zNear, f32 *zFar) {
-    *zNear = mtx->m32 / (mtx->m22 - 1.0f);
-    *zFar = (*zNear * (mtx->m22 + 1.0f)) / (mtx->m22 - 1.0f);
+    f32 depth = mtx->m22;
+    *zNear = (depth + depth) / mtx->m32 - 1.0f;
+    *zFar = (*zNear * depth) / (depth - 1.0f);
     *aspect = mtx->m11 / mtx->m00;
     *fovy = NuAtan2(1.0f / mtx->m11, 1.0f) * 360.0f / (f32)M_PI;
 }
@@ -1385,9 +1428,9 @@ void NuMtxLookAtInverseD3D(NUMTX *mtx, NUVEC *eye, NUVEC *center, NUVEC *up) {
     mtx->m21 = az.y;
     mtx->m22 = az.z;
     mtx->m23 = 0.0f;
-    mtx->m30 = eye->x * ax.x + eye->y * ax.y + eye->z * ax.z;
-    mtx->m31 = eye->x * ay.x + eye->y * ay.y + eye->z * ay.z;
-    mtx->m32 = eye->x * az.x + eye->y * az.y + eye->z * az.z;
+    mtx->m30 = eye->x;
+    mtx->m31 = eye->y;
+    mtx->m32 = eye->z;
     mtx->m33 = 1.0f;
 }
 
@@ -1411,19 +1454,17 @@ void NuMtxToQuat(NUMTX *m, struct nuquat_s *out) {
         i = 0;
         if (reinterpret_cast<f32 *>(m)[5] > reinterpret_cast<f32 *>(m)[0])
             i = 1;
-        if (reinterpret_cast<f32 *>(m)[10] > reinterpret_cast<f32 *>(m)[i * 4 + i])
+        if (reinterpret_cast<f32 *>(m)[10] > (&m->m00)[(i << 2) + i])
             i = 2;
         j = next[i];
         k = next[j];
-        s = NuFsqrt((reinterpret_cast<f32 *>(m)[i * 4 + i] -
-                     (reinterpret_cast<f32 *>(m)[j * 4 + j] + reinterpret_cast<f32 *>(m)[k * 4 + k])) +
-                    1.0f);
+        s = NuFsqrt(((&m->m00)[(i << 2) + i] - ((&m->m00)[(j << 2) + j] + (&m->m00)[(k << 2) + k])) + 1.0f);
         q[i] = s * 0.5f;
         if (s != 0.0f)
             s = 0.5f / s;
-        q[3] = (reinterpret_cast<f32 *>(m)[j * 4 + k] - reinterpret_cast<f32 *>(m)[k * 4 + j]) * s;
-        q[j] = (reinterpret_cast<f32 *>(m)[i * 4 + j] + reinterpret_cast<f32 *>(m)[j * 4 + i]) * s;
-        q[k] = (reinterpret_cast<f32 *>(m)[i * 4 + k] + reinterpret_cast<f32 *>(m)[k * 4 + i]) * s;
+        q[3] = ((&m->m00)[(j << 2) + k] - (&m->m00)[(k << 2) + j]) * s;
+        q[j] = ((&m->m00)[(i << 2) + j] + (&m->m00)[(j << 2) + i]) * s;
+        q[k] = ((&m->m00)[(i << 2) + k] + (&m->m00)[(k << 2) + i]) * s;
         out->x = q[0];
         out->y = q[1];
         out->z = q[2];

@@ -174,7 +174,7 @@ typedef struct SOCK {
         u32 unknown_110;
         u32 blend_count;
     }; // 0x110
-    u8 unknown_114[40];             // 0x114
+    u8 unknown_114[40]; // 0x114
 } SOCK;
 
 DECOMP_ASSERT(offsetof(SOCK, looping) == 0x33, "SOCK loop flag offset");
@@ -201,13 +201,18 @@ extern "C" {
 
     void SockSysFindInScene(SOCKSYS *sock_sys, NUGSCN *gscn);
     SOCKSYS *SockSysInit(VARIPTR *buf, VARIPTR buf_end, NUGSCN *gscn);
-    void SockSys_GenerateData(SOCKSYS *sock_sys, VARIPTR *buf, VARIPTR *buf_end);
+    void SockSys_GenerateData(SOCKSYS *sock_sys, VARIPTR *buf, VARIPTR buf_end);
     void SockSysPointAlongSpline(NUVEC *result, NUGSPLINE *spline, i32 segment, i32 next_segment, f32 ratio);
     void SockRotationMatrix(SOCKSYS *system, SOCKPOSITION *position, NUMTX *out, i32 stride, i32 mode);
     void SetSockBit(SOCK *sock, i32 index);
     void ComplexSockPosition(SOCKSYS *sock_sys, NUVEC *position, i32 prior_sock, i32 prior_segment,
                              SOCKPOSITION *result);
     void ComplexSockAngles(SOCKROT *angles);
+    i32 SockSysCameraWithOverlapBlend(SOCKSYS *sock_sys, NUVEC *fallback_camera_position, i32 socket_changed,
+                                      NUVEC *player_camera_positions, NUVEC *player_positions, i32 player_count,
+                                      SOCKPOSITION *camera_socket_position, NUVEC *camera_position,
+                                      NUVEC *camera_target, f32 *overlap_blend, f32 *position_seek, f32 *angle_seek,
+                                      f32 *camera_shake, f32 *separation_scale);
     i32 SockSysCamera(SOCKSYS *sock_sys, NUVEC *fallback_camera_position, i32 socket_changed,
                       NUVEC *player_camera_positions, NUVEC *player_positions, i32 player_count,
                       SOCKPOSITION *camera_socket_position, NUVEC *camera_position, NUVEC *camera_target,

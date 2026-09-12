@@ -204,15 +204,6 @@ void NuIOS_SetCullMode(i32 mode) {
 }
 
 // Blend / alpha-test translation — original 0x29c1c0.
-//
-// The original reads NUMTL fields by raw byte offsets:
-//   m[0x40] & 0xf          -> attribs.alpha_mode   (blend selector)
-//   (m[0x41] >> 4) & 3     -> attribs.cull_mode
-//   (m[0x42] >> 4) & 7     -> attribs.alpha_test   (alpha-test selector)
-//   m[0x43]                -> attribs.alpha_ref
-// We go through the typed attribs where the mapping is stable and fall
-// back to raw bytes for the variant-flag byte at 0x1F2.
-
 enum : u32 {
     kBlendOpaque = 0,
     kBlendAlpha = 1,        // srcA * src + (1-srcA) * dst
@@ -222,24 +213,16 @@ enum : u32 {
 };
 
 extern "C" void NuMtlSetRenderStatesPS(numtl_s *mtl) {
-    const u8 *bytes = (const u8 *)mtl;
-
-    // ---- alpha-test setup (mirrors original goto have_alpha flow) ----
-    // Original tautology: alpha_ref_byte = (m[0x42]>>7 &1) ? m[0x43] : m[0x43]
-    // i.e. always m[0x43].  Kept verbatim for fidelity, but expressed
-    // through the typed field when available.
-    u8 alpha_ref_byte = mtl->attribs.alpha_ref; // == bytes[0x43]
-
-    const u8 variantFlags = MaterialVariantFlags(mtl);
-    const bool isDebris = (variantFlags & 0x10) != 0;
+    u8 alpha_ref_byte = mtl->attribs.alpha_ref;
+    bool isDebris = (mtl->shader_desc.vtx_desc.flags & 0x100000) != 0;
 
     if (!isDebris) {
         u32 alphaSel = (u32)(mtl->attribs.alpha_test & 7); // (bytes[0x42]>>4)&7
         if (alphaSel > 1) {
             if (alphaSel == 5) {
-                g_alphaRef = alpha_ref_byte;
                 g_alphaFunc = 5; // GEQUAL
                 g_alphaTestEnabled = 1;
+                g_alphaRef = alpha_ref_byte;
             } else {
                 g_alphaFunc = 6; // GREATER
                 g_alphaTestEnabled = 1;
@@ -280,17 +263,17 @@ extern "C" void NuMtlSetRenderStatesPS(numtl_s *mtl) {
         case kBlendAlphaTest10:
             glDisable(GL_BLEND);
             g_alphaTestEnabled = 1;
-            g_alphaRef = alpha_ref_byte;
             g_alphaFunc = 5;
+            g_alphaRef = alpha_ref_byte;
             break;
         default:
             break;
     }
 
-    g_lastAlphaRef = alpha_ref_byte;
     g_lastAlphaBlend = blend;
+    g_lastAlphaRef = alpha_ref_byte;
 
-    NuIOS_SetCullMode((bytes[0x41] >> 4) & 3); // attribs.cull_mode
+    NuIOS_SetCullMode(mtl->attribs.cull_mode);
 }
 
 // original 0x2a3860
@@ -1075,17 +1058,18 @@ void NuIOSDLCameraCallback(void *arg) {
     }
 }
 
-// original 0x2a45d0 — records the material's vertex format on static geometry
+// original 0x294233 — records the material's vertex format on static geometry
 // while a scene is being fixed up.
 void NuIOSDLPreWarmGeomCallback(void *arg) {
     if (g_LastMtl == nullptr || g_LastMtl->shader_desc.blend_op2 == 0xff) {
         return;
     }
-    NUSHADEROBJECT *shader = NuShaderManagerGetShaderById(g_LastMtl->shader_desc.shader_id);
+    NUSHADEROBJECT *shader = NuShaderManagerGetShaderById(static_cast<i16>(g_LastMtl->shader_desc.shader_id));
     if (shader == NULL || shader->glsl.program == 0) {
         return;
     }
 
+    NuShaderObjectGLSLSetupTextureStates(shader, g_LastMtl);
     auto *geometry = static_cast<NUDISPLAYLISTGEOM *>(arg);
     NuIOSBindVAO(0);
     if (geometry->primitive_type == 6 && geometry->immediate == 0) {

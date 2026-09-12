@@ -144,7 +144,10 @@ struct instNUGCUTCHAR_s {
         void *character_model;
         void *character;
     };
-    i32 field_04;
+    union {
+        i32 field_04;
+        f32 blend_progress;
+    };
     u32 field_08;
     f32 animation_frame_a;
     f32 animation_frame_b;

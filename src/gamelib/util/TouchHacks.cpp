@@ -88,7 +88,38 @@ bool TouchHacks::CanSlam(GameObject_s &object) {
 void TouchHacks::CanTagTo(GameObject_s &, GameObject_s &) {
 }
 
-void TouchHacks::CanTagVehicle(GameObject_s &, GameObject_s &) {
+void Move_CHARACTER(GameObject_s *);
+void Move_WEIRDO(GameObject_s *);
+void Move_JEDI(GameObject_s *);
+void Move_DROIDGENERIC(GameObject_s *);
+void Move_JAWA(GameObject_s *);
+void Move_GEONOSIAN(GameObject_s *);
+extern i16 id_SKELETON, id_GRIEVOUS, id_BODYGUARD, id_ATAT, id_STAP, id_STAP2;
+
+bool TouchHacks::CanTagVehicle(GameObject_s &object, GameObject_s &vehicle) {
+    CHARACTERDATA *character = object.apiobj.character_data;
+    if (character->move_fn != Move_CHARACTER && character->move_fn != Move_WEIRDO && character->move_fn != Move_JEDI &&
+        character->move_fn != Move_DROIDGENERIC && character->move_fn != Move_JAWA &&
+        character->move_fn != Move_GEONOSIAN) {
+        return false;
+    }
+    if ((vehicle.apiobj.character_data->model_flags & 0x40000000) != 0 &&
+        (vehicle.character_context == 0x17 || vehicle.character_context == 0x3e)) {
+        return false;
+    }
+    if (vehicle.field_0xcc0 != NULL || (character->model_flags & 0x10) != 0 || object.id == id_SKELETON ||
+        object.id == id_GRIEVOUS || object.id == id_BODYGUARD) {
+        return false;
+    }
+    if (vehicle.id != id_ATST && vehicle.id != id_ATST_LOWRES && vehicle.id != id_ATAT && vehicle.id != id_STAP &&
+        vehicle.id != id_STAP2 &&
+        fabsf(vehicle.apiobj.position.y - object.apiobj.position.y) > object.apiobj.scaled_height) {
+        return false;
+    }
+    const f32 x = object.apiobj.position.x - vehicle.apiobj.position.x;
+    const f32 y = object.apiobj.position.y - vehicle.apiobj.position.y;
+    const f32 z = object.apiobj.position.z - vehicle.apiobj.position.z;
+    return !(x * x + y * y + z * z > 4.0f);
 }
 
 void TouchHacks::CanThrowBountyBomb(GameObject_s &) {

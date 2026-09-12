@@ -13,10 +13,10 @@ void NuVec4MtxTransform(NUVEC4 *v, NUVEC *v0, NUMTX *m0) {
 }
 
 void NuVec4Add(NUVEC4 *v, NUVEC4 *v0, NUVEC4 *v1) {
+    v->w = v0->w + v1->w;
     v->x = v0->x + v1->x;
     v->y = v0->y + v1->y;
     v->z = v0->z + v1->z;
-    v->w = v0->w + v1->w;
 }
 
 void NuVec4Scale(NUVEC4 *v, NUVEC4 *v0, f32 k) {
@@ -27,7 +27,7 @@ void NuVec4Scale(NUVEC4 *v, NUVEC4 *v0, f32 k) {
 }
 
 f32 NuVec4Dot(NUVEC4 *v0, NUVEC4 *v1) {
-    return v0->x * v1->x + v0->y * v1->y + v0->z * v1->z + v0->w * v1->w;
+    return v0->w * v1->w + v0->x * v1->x + v0->y * v1->y + v0->z * v1->z;
 }
 
 void NuVec4MtxTransformH(NUVEC4 *v, NUVEC4 *v0, NUMTX *m0) {

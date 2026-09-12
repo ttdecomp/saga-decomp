@@ -128,7 +128,7 @@ void CheckMissionEnd(MISSIONSYS *ms) {
     }
 }
 
-void Mission_FindTarget(MISSIONSYS *ms, u64 *target) {
+GameObject_s *Mission_FindTarget(MISSIONSYS *ms, u64 *target) {
     GameObject_s *obj;
 
     if (ms == NULL) {
@@ -138,7 +138,7 @@ void Mission_FindTarget(MISSIONSYS *ms, u64 *target) {
         if (target != NULL) {
             *target = 0;
         }
-        return;
+        return NULL;
     }
 
     obj = FindGameObject((u32)ms->mission->find_char, 0, 0, 1, 0);
@@ -149,6 +149,7 @@ void Mission_FindTarget(MISSIONSYS *ms, u64 *target) {
         }
         *target = v;
     }
+    return obj;
 }
 
 i32 Missions_PickupsOff(MISSIONSYS *ms) {

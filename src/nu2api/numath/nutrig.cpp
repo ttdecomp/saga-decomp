@@ -214,12 +214,14 @@ f32 NuAtan2(f32 dx, f32 dy) {
     return NuAtan2D(dx, dy) * 0.000095873802492f;
 }
 
+static f32 NuSinApprox3(i32 angle);
+
 float NuSinApprox2(i32 ang) {
-    return NU_SIN_LUT(ang);
+    return NuSinApprox3(ang);
 }
 
 float NuCosApprox2(i32 ang) {
-    return NU_COS_LUT(ang);
+    return NuSinApprox3(ang + 0x4000);
 }
 
 float NuSin_Accurate(float x) {

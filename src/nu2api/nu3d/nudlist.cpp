@@ -1,3 +1,7 @@
+#include "nu2api/nu3d/nucamera.h"
+#include "nu2api/nu3d/nuspecial.h"
+#include "nu2api/nu3d/nuhspecial.h"
+#include <string.h>
 // nudlist.cpp — Display-list manager
 //
 // Transcribed from libTTapp.so (Android x86). Builds and executes the
@@ -344,36 +348,26 @@ static void ResetRenderStateCache(nurndrstate_s *st) {
 // Frame setup
 // ──────────────────────────────────────────────────────────────────────────────
 
-// Clip bitsets are double-buffered; render_buffer bit7 selects the active one.
-// Each clip object uses 2 bits, packed into bytes. The block count is the
-// number of 16-byte blocks needed to hold the bits plus one sentinel block.
+// Clip bitsets hold two bits per clip object, followed by a sentinel block.
 static i32 ClipUsedBlockCount(i32 nclip) {
-    // Original keeps signed arithmetic for the (-15) path, but nclip is
-    // always >=0 here. Simplified to the unsigned ceil form:
-    //   blocks = ((ceil(nclip/8)*2 + 15)/16) + 1
-    if (nclip <= 0)
-        return 0;
-    i32 words16 = ((nclip + 7) >> 3) * 2; // bytes rounded to 8, doubled
-    return (words16 + 15) / 16 + 1;       // 16-byte blocks + sentinel
+    return (((nclip + 7) / 8) * 2) / 16 + 1;
 }
 
 static void ResetSceneBeforeFrame(nudldlistscene_s *scene, bool gated) {
-    u8 buf = static_cast<u8>(scene->render_buffer >> 7);
-
     if (gated && (scene->flags & 6) == 0) {
         return;
     }
 
     if (scene->nmtls != 0) {
-        NuMemSet128(scene->mtl_used[buf], 0, ((scene->nmtls + 7) >> 7) + 1);
+        NuMemSet128(scene->mtl_used[scene->render_buffer >> 7], 0, ((scene->nmtls + 7) >> 7) + 1);
     }
 
     if (scene->nclip_objects != 0) {
         i32 blocks = ClipUsedBlockCount(scene->nclip_objects);
-        NuMemSet128(scene->clip_used[buf], 0, blocks);
+        NuMemSet128(scene->clip_used[scene->render_buffer >> 7], 0, blocks);
         if (!gated) {
             // Ungated variant re-initialises the back buffer to all-ones.
-            NuMemSet128(scene->clip_used[buf ^ 1], 0xff, blocks);
+            NuMemSet128(scene->clip_used[(scene->render_buffer >> 7) ^ 1], 0xff, blocks);
         }
     }
 
@@ -390,6 +384,125 @@ static void ResetSceneBeforeFrame(nudldlistscene_s *scene, bool gated) {
         ResetRenderStateCache(dl->state);
     }
     scene->flags &= 0xf1;
+}
+
+template <typename T> static T *CloneSceneAllocate(VARIPTR *buffer, usize count, usize alignment = 4) {
+    buffer->addr = (buffer->addr + alignment - 1) & ~(alignment - 1);
+    T *result = static_cast<T *>(buffer->void_ptr);
+    buffer->addr += sizeof(T) * count;
+    return result;
+}
+
+extern "C" NUDLDLISTSCENE *NuDisplaySceneClone(NUDLDLISTSCENE *source, VARIPTR *buffer) {
+    NuThreadCriticalSectionBegin(global_dlist_manager.loading_critical_section);
+    NUDLDLISTSCENE *scene = CloneSceneAllocate<NUDLDLISTSCENE>(buffer, 1);
+    *scene = *source;
+    scene->items = CloneSceneAllocate<NUDISPLAYLISTITEM>(buffer, source->nitems);
+    memcpy(scene->items, source->items, sizeof(NUDISPLAYLISTITEM) * source->nitems);
+    i32 clip_bytes = ClipUsedBlockCount(source->nclip_objects) * 16;
+    scene->clip_used[0] = CloneSceneAllocate<u8>(buffer, clip_bytes, 16);
+    scene->clip_used[1] = CloneSceneAllocate<u8>(buffer, clip_bytes, 1);
+    memset(scene->clip_used[0], 0, clip_bytes);
+    memset(scene->clip_used[1], 0, clip_bytes);
+    u32 mtl_bytes = (((source->nmtls + 7) >> 7) + 1) * 16;
+    scene->mtl_used[0] = CloneSceneAllocate<u8>(buffer, mtl_bytes, 16);
+    scene->mtl_used[1] = CloneSceneAllocate<u8>(buffer, mtl_bytes, 1);
+    memset(scene->mtl_used[0], 0, mtl_bytes);
+    memset(scene->mtl_used[1], 0, mtl_bytes);
+    NUDISPLAYLIST *lists = CloneSceneAllocate<NUDISPLAYLIST>(buffer, source->nmtls);
+    NUDISPLAYLIST *first_list = lists;
+    scene->dlist_mtls = CloneSceneAllocate<NUDISPLAYLIST *>(buffer, source->nmtls);
+    NURNDRSTATE *states = CloneSceneAllocate<NURNDRSTATE>(buffer, source->nmtls);
+    memset(states, 0, sizeof(NURNDRSTATE) * source->nmtls);
+    NUDISPLAYLISTITEM *heads = CloneSceneAllocate<NUDISPLAYLISTITEM>(buffer, source->nmtls);
+    memset(heads, 0, sizeof(NUDISPLAYLISTITEM) * source->nmtls);
+    for (i32 i = 0; i < static_cast<i32>(source->nmtls); ++i, ++lists, ++states, ++heads) {
+        scene->dlist_mtls[i] = lists;
+        memcpy(scene->dlist_mtls[i], source->dlist_mtls[i], sizeof(NUDISPLAYLIST));
+        scene->dlist_mtls[i]->dlist = scene;
+        scene->dlist_mtls[i]->state = states;
+        scene->dlist_mtls[i]->mtl_item = scene->items + (source->dlist_mtls[i]->mtl_item - source->items);
+        scene->dlist_mtls[i]->dyn_geom = scene->items + (source->dlist_mtls[i]->dyn_geom - source->items);
+        scene->dlist_mtls[i]->first = heads;
+        scene->dlist_mtls[i]->mtl_last = scene->dlist_mtls[i]->first;
+        scene->dlist_mtls[i]->scene_first[0] =
+            CloneSceneAllocate<NUDISPLAYLISTITEM>(buffer, source->dlist_mtls[i]->nscene_items, 16);
+        scene->dlist_mtls[i]->scene_first[1] =
+            CloneSceneAllocate<NUDISPLAYLISTITEM>(buffer, source->dlist_mtls[i]->nscene_items, 1);
+        scene->dlist_mtls[i]->first->type = 0x8d;
+        scene->dlist_mtls[i]->first->next = NULL;
+        scene->dlist_mtls[i]->first->id = 1;
+    }
+    NUMTL *materials = CloneSceneAllocate<NUMTL>(buffer, source->nmtls);
+    scene->mtls = CloneSceneAllocate<NUMTL *>(buffer, source->nmtls);
+    for (i32 i = 0; i < static_cast<i32>(source->nmtls); ++i, ++materials) {
+        scene->mtls[i] = materials;
+        memcpy(scene->mtls[i], source->mtls[i], sizeof(NUMTL));
+        scene->mtls[i]->display_list = reinterpret_cast<NUDISPLAYLIST *>(
+            reinterpret_cast<u8 *>(first_list) +
+            ((reinterpret_cast<usize>(source->mtls[i]->display_list) - reinterpret_cast<usize>(source->dlist_mtls[0])) &
+             ~usize(3)));
+        NuMtlUpdate(scene->mtls[i]);
+    }
+    scene->sort_pris = CloneSceneAllocate<NUSORTPRI>(buffer, source->nsort_pris);
+    memcpy(scene->sort_pris, source->sort_pris, sizeof(NUSORTPRI) * source->nsort_pris);
+    for (i32 i = 0; i < source->nsort_pris; ++i) {
+        scene->sort_pris[i].display_scene = scene;
+        scene->sort_pris[i].items = scene->items + (source->sort_pris[i].items - source->items);
+        scene->sort_pris[i].dlist_next = &scene->sort_pris[i];
+    }
+    for (i32 i = 0; i < source->nitems; ++i) {
+        NUDISPLAYLISTITEM *item = &scene->items[i];
+        if (item->type == 0x80) {
+            for (i32 j = 0; j < static_cast<i32>(source->nmtls); ++j) {
+                if (source->items[i].next == source->mtls[j]) {
+                    item->next = scene->mtls[j];
+                    break;
+                }
+            }
+        } else if (item->type == 0x85) {
+            item->next = scene->items + (static_cast<NUDISPLAYLISTITEM *>(source->items[i].next) - source->items);
+        }
+    }
+    if (source->material_animations != NULL) {
+        scene->material_animations = CloneSceneAllocate<NUMTLANIMSET>(buffer, 1);
+        *scene->material_animations = *source->material_animations;
+        scene->material_animations->scene = scene;
+        scene->material_animations->next = global_dlist_manager.mtlanim_list;
+        global_dlist_manager.mtlanim_list = scene->material_animations;
+    } else {
+        scene->material_animations = NULL;
+    }
+    scene->local_state = CloneSceneAllocate<NUGLOBALRNDRSTATE>(buffer, 1);
+    memset(scene->local_state, 0, sizeof(NUGLOBALRNDRSTATE));
+    NuDisplaySceneClonePS(source, scene, buffer);
+    global_dlist_manager.dlists[global_dlist_manager.ndisplay_lists++] = scene;
+    ResetSceneBeforeFrame(scene, false);
+    NUSORTPRI *sort_list = global_dlist_manager.sort_list;
+    for (i32 i = 0; i < scene->nsort_pris; ++i) {
+        NUSORTPRI *sort = &scene->sort_pris[i];
+        sort->sort_pri &= 0x1ffff;
+        if (numtl_renderplane != 0)
+            sort->sort_pri += numtl_renderplane * 0x20000;
+        NUSORTPRI *previous = NULL;
+        NUSORTPRI *current = sort_list;
+        while (current != NULL && current->sort_pri < sort->sort_pri) {
+            previous = current;
+            current = current->sys_next;
+        }
+        sort->sys_next = current;
+        if (previous == NULL)
+            sort_list = sort;
+        else
+            previous->sys_next = sort;
+        ++global_dlist_manager.nused_sort_pris;
+    }
+    global_dlist_manager.sort_list = sort_list;
+    scene->flags &= 0xef;
+    scene->render_buffer |= 0x20;
+    NuDisplaySceneAddPS(scene);
+    NuThreadCriticalSectionEnd(global_dlist_manager.loading_critical_section);
+    return scene;
 }
 
 // NuDisplaySceneAdd @ 0x2f9e30
@@ -535,7 +648,7 @@ static void UpdateMaterialClipBits(nudldlistscene_s *scene) {
         return;
     }
     u8 buf = static_cast<u8>(scene->render_buffer >> 7);
-    const u8 *cur = scene->mtl_used[buf];
+    const u8 *cur = scene->mtl_used[scene->render_buffer >> 7];
     const u8 *other = scene->mtl_used[buf ^ 1];
     u32 nbytes = (scene->nmtls + 7) >> 3;
     if (nbytes == 0)
@@ -599,23 +712,25 @@ extern "C" i32 NuDisplayListAddRenderScene(void) {
             new_sp->items = area;
 
             i32 slot = 0;
-            for (u32 m = 0; m < sp->nmtls; ++m) {
-                NUDISPLAYLIST *dl = sc->dlist_mtls[static_cast<u32>(sp->mtl_first) + m];
+            for (i32 m = 0; m < sp->nmtls; ++m) {
+                NUDISPLAYLIST *dl = sp->display_scene->dlist_mtls[sp->mtl_first + m];
                 if (dl->mtl_last == dl->first)
                     continue;
 
-                const nudisplaylistitem_s *hdr =
-                    (dl->mtl_item[1].type == kItemType_Mtl) ? dl->mtl_item + 1 : dl->mtl_item + 3;
-                area[slot] = *hdr;
-                area[slot + 1] = *dl->first;
+                if (dl->mtl_item[1].type == kItemType_Mtl) {
+                    new_sp->items[slot] = dl->mtl_item[1];
+                } else {
+                    new_sp->items[slot] = dl->mtl_item[3];
+                }
+                new_sp->items[slot + 1] = *dl->first;
                 slot += 2;
-                dl->mtl_last->next = &area[slot];
+                dl->mtl_last->next = &new_sp->items[slot];
                 dl->mtl_last = dl->first;
                 ResetRenderStateCache(dl->state);
             }
-            area[slot].type = kItemType_Terminator;
-            area[slot].id = kItemId_Ret;
-            area[slot].next = nullptr;
+            new_sp->items[slot].id = kItemId_Ret;
+            new_sp->items[slot].next = nullptr;
+            new_sp->items[slot].type = kItemType_Terminator;
             buf->addr += static_cast<usize>(slot + 1) * kItemSize;
 
             pris[count++] = new_sp;
@@ -704,35 +819,7 @@ static i32 MtlSortKey(const NUMTL *mtl) {
            mtl->sort_pri;
 }
 
-static void ReassignMtlIds(NUDLIST_MANAGER *mgr) {
-    for (u32 i = 0; i < mgr->dyn_mtl_dlist.nmtls; ++i) {
-        if (mgr->material_used[i] != 0) {
-            mgr->dyn_mtl_dlist.mtls[i]->display_list->mtl_id = static_cast<i32>(i);
-        }
-    }
-}
-
-static void RecomputeMtlFirst(NUDLIST_MANAGER *mgr) {
-    u32 total = 0;
-    for (i32 i = 0; i < mgr->dyn_mtl_dlist.nsort_pris; ++i) {
-        total += mgr->dyn_mtl_dlist.sort_pris[i].nmtls;
-    }
-    if (total == 0)
-        return;
-    for (i32 i = 0; i < mgr->dyn_mtl_dlist.nsort_pris; ++i) {
-        nusortpri_s *sp = &mgr->dyn_mtl_dlist.sort_pris[i];
-        if (sp->nmtls == 0)
-            continue;
-        for (u32 k = 0; k < total; ++k) {
-            if (MtlSortKey(mgr->dyn_mtl_dlist.mtls[k]) == sp->sort_pri) {
-                sp->mtl_first = static_cast<u16>(k);
-                break;
-            }
-        }
-    }
-}
-
-static void DisplayListLinkDynamicMtls(void) {
+void DisplayListLinkDynamicMtls(void) {
     NUDLIST_MANAGER *mgr = &global_dlist_manager;
     if (mgr->nnew_materials == 0 && mgr->ndel_materials == 0)
         return;
@@ -825,18 +912,42 @@ static void DisplayListLinkDynamicMtls(void) {
                 --mgr->dyn_mtl_dlist.nsort_pris;
             }
 
-            // Compact material slots: shift left and re-place evicted tail.
-            NUDISPLAYLIST *tail_dl = mgr->dyn_mtl_dlist.dlist_mtls[mgr->dyn_mtl_dlist.nmtls - 1];
+            // Compact material slots and recycle the removed list into the free tail.
+            NUDISPLAYLIST *removed_dl = mgr->dyn_mtl_dlist.dlist_mtls[idx];
             for (u32 j = static_cast<u32>(idx); j + 1 < mgr->dyn_mtl_dlist.nmtls; ++j) {
                 mgr->dyn_mtl_dlist.mtls[j] = mgr->dyn_mtl_dlist.mtls[j + 1];
                 mgr->dyn_mtl_dlist.dlist_mtls[j] = mgr->dyn_mtl_dlist.dlist_mtls[j + 1];
                 mgr->material_used[j] = mgr->material_used[j + 1];
             }
-            mgr->dyn_mtl_dlist.dlist_mtls[mgr->dyn_mtl_dlist.nmtls - 1] = tail_dl;
+            mgr->dyn_mtl_dlist.dlist_mtls[mgr->dyn_mtl_dlist.nmtls - 1] = removed_dl;
             mgr->material_used[mgr->dyn_mtl_dlist.nmtls - 1] = 0;
 
-            ReassignMtlIds(mgr);
-            RecomputeMtlFirst(mgr);
+            {
+                for (u32 i = 0; i < mgr->dyn_mtl_dlist.nmtls; ++i) {
+                    if (mgr->material_used[i] != 0) {
+                        mgr->dyn_mtl_dlist.mtls[i]->display_list->mtl_id = static_cast<i32>(i);
+                    }
+                }
+            }
+            {
+                u32 total = 0;
+                for (i32 i = 0; i < mgr->dyn_mtl_dlist.nsort_pris; ++i) {
+                    total += mgr->dyn_mtl_dlist.sort_pris[i].nmtls;
+                }
+                if (total != 0) {
+                    for (i32 i = 0; i < mgr->dyn_mtl_dlist.nsort_pris; ++i) {
+                        nusortpri_s *sp = &mgr->dyn_mtl_dlist.sort_pris[i];
+                        if (sp->nmtls == 0)
+                            continue;
+                        for (u32 k = 0; k < total; ++k) {
+                            if (MtlSortKey(mgr->dyn_mtl_dlist.mtls[k]) == sp->sort_pri) {
+                                sp->mtl_first = static_cast<u16>(k);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         mtl->display_list = nullptr;
@@ -922,7 +1033,13 @@ static void DisplayListLinkDynamicMtls(void) {
         mgr->dyn_mtl_dlist.dlist_mtls[insert] = old_tail;
         mgr->material_used[insert] = 0;
 
-        ReassignMtlIds(mgr);
+        {
+            for (u32 i = 0; i < mgr->dyn_mtl_dlist.nmtls; ++i) {
+                if (mgr->material_used[i] != 0) {
+                    mgr->dyn_mtl_dlist.mtls[i]->display_list->mtl_id = static_cast<i32>(i);
+                }
+            }
+        }
         mgr->material_used[insert] = 1;
 
         NUDISPLAYLIST *dl = mgr->dyn_mtl_dlist.dlist_mtls[insert];
@@ -978,8 +1095,32 @@ static void DisplayListLinkDynamicMtls(void) {
             ++sp->nmtls;
         }
 
-        ReassignMtlIds(mgr);
-        RecomputeMtlFirst(mgr);
+        {
+            for (u32 i = 0; i < mgr->dyn_mtl_dlist.nmtls; ++i) {
+                if (mgr->material_used[i] != 0) {
+                    mgr->dyn_mtl_dlist.mtls[i]->display_list->mtl_id = static_cast<i32>(i);
+                }
+            }
+        }
+        {
+            u32 total = 0;
+            for (i32 i = 0; i < mgr->dyn_mtl_dlist.nsort_pris; ++i) {
+                total += mgr->dyn_mtl_dlist.sort_pris[i].nmtls;
+            }
+            if (total != 0) {
+                for (i32 i = 0; i < mgr->dyn_mtl_dlist.nsort_pris; ++i) {
+                    nusortpri_s *sp = &mgr->dyn_mtl_dlist.sort_pris[i];
+                    if (sp->nmtls == 0)
+                        continue;
+                    for (u32 k = 0; k < total; ++k) {
+                        if (MtlSortKey(mgr->dyn_mtl_dlist.mtls[k]) == sp->sort_pri) {
+                            sp->mtl_first = static_cast<u16>(k);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
     mgr->nnew_materials = 0;
 }
@@ -1124,7 +1265,7 @@ extern "C" void NuDisplayListSwapBuffersEndFrame(void) {
                 bool same_as_last = (dl->mtl_last == dl->first && ls == last_local);
                 if (!same_as_last) {
                     DisplayListUpdateRenderState(dl, ls);
-                    last_local = ls;
+                    last_local = sc->local_state;
                     if (dl->mtl_last != dl->first) {
                         copyMaterialGeometry(dl, dl->first, sc);
                     } else {
@@ -1174,4 +1315,95 @@ void NuDisplayListEndScene(void) {
     if (global_dlist_manager.dyn_mtl_dlist.flags & NUDL_SCENE_FLAG_CLIP_MATERIALS)
         global_dlist_manager.dyn_mtl_dlist.flags |= NUDL_SCENE_FLAG_END_SCENE;
     NuDisplayListEndCriticalSection();
+}
+
+extern "C" void *DisplayListCreateFaceonTransformPS(VARIPTR *, NUMTX *, NUMTL *, void *);
+extern "C" void *DisplayListCreateGeomTransformPS(VARIPTR *, NUMTX *, NUMTL *, void *, void *);
+extern "C" void *NuDisplayListPrepareFaceonPS(VARIPTR *, void *, NUMTX *);
+
+extern "C" void NuDisplayListBurstRndrSpecial(nuhspecial_s *handle, u32 count, NUMTX *matrices, i32 clip) {
+    u16 visible[1024];
+    if (handle == NULL)
+        return;
+    NUDISPLAYSPECIAL *special = handle->display_special;
+    u32 visible_count;
+    if (clip != 0) {
+        visible_count = 0;
+        for (u32 i = 0; i != count; ++i) {
+            i32 result = NuCameraClipTestExtents(reinterpret_cast<NUVEC *>(&special->bounds_min),
+                                                 reinterpret_cast<NUVEC *>(&special->bounds_max), &matrices[i], 0, 0);
+            if (static_cast<u8>(result) != 0)
+                visible[visible_count++] = static_cast<u16>(i | (result << 8));
+        }
+    } else {
+        visible_count = count;
+    }
+    if (visible_count == 0)
+        return;
+    NUCLIPOBJECT *object = special->clip_objects;
+    f32 *range = special->clip_range;
+    while (*range > 0 && object->nmaterials == 0) {
+        ++range;
+        ++object;
+    }
+    NUDLDLISTSCENE *scene = handle->scene->display_list;
+    scene->flags |= 2;
+    for (u32 material = 0; material < static_cast<u32>(object->nmaterials); ++material) {
+        NUDISPLAYLIST *list = scene->mtls[object->material_ids[material]]->display_list;
+        scene->mtl_used[scene->render_buffer >> 7][list->mtl_id / 8] |= 1 << (list->mtl_id % 8);
+        DisplayListUpdateRenderState(list, &render_state);
+        VARIPTR *buffer = NuDisplayListLinkItems(list, visible_count * 2);
+        NUDISPLAYLISTITEM *geometry = &scene->items[object->indices[material]];
+        if (geometry->type == 0x8f) {
+            for (u32 i = 0; i != visible_count; ++i) {
+                NUMTX *matrix = &matrices[clip != 0 ? static_cast<u8>(visible[i]) : i];
+                void *transform = DisplayListCreateFaceonTransformPS(buffer, matrix, scene->mtls[list->mtl_id],
+                                                                     scene->items[object->indices[material]].next);
+                void *faceon =
+                    NuDisplayListPrepareFaceonPS(buffer, scene->items[object->indices[material]].next, matrix);
+                list->items->type = 0x90;
+                list->items->id = 3;
+                list->items->next = transform;
+                NUDISPLAYLISTITEM *first = list->items++;
+                list->items->type = 0x8f;
+                list->items->id = 3;
+                list->items->next = faceon;
+                NUDISPLAYLISTITEM *last = list->items++;
+                DisplayListSetAlphaPS(first, last, 1);
+            }
+        } else {
+            void *geometry_data = geometry->next;
+            if (clip != 0) {
+                for (u32 i = 0; i != visible_count; ++i) {
+                    NUMTX *matrix = &matrices[static_cast<u8>(visible[i])];
+                    void *transform = DisplayListCreateGeomTransformPS(buffer, matrix, scene->mtls[list->mtl_id],
+                                                                       geometry_data, NULL);
+                    list->items->type = 0x8c;
+                    list->items->id = 3;
+                    list->items->next = transform;
+                    NUDISPLAYLISTITEM *first = list->items++;
+                    list->items->type = 0x82;
+                    list->items->id = 3;
+                    list->items->next = geometry_data;
+                    NUDISPLAYLISTITEM *last = list->items++;
+                    DisplayListSetAlphaPS(first, last, 1);
+                }
+            } else {
+                for (u32 i = 0; i != visible_count; ++i) {
+                    NUMTX *matrix = &matrices[i];
+                    void *transform = DisplayListCreateGeomTransformPS(buffer, matrix, scene->mtls[list->mtl_id],
+                                                                       geometry_data, NULL);
+                    list->items->type = 0x8c;
+                    list->items->id = 3;
+                    list->items->next = transform;
+                    NUDISPLAYLISTITEM *first = list->items++;
+                    list->items->type = 0x82;
+                    list->items->id = 3;
+                    list->items->next = geometry_data;
+                    NUDISPLAYLISTITEM *last = list->items++;
+                    DisplayListSetAlphaPS(first, last, 1);
+                }
+            }
+        }
+    }
 }

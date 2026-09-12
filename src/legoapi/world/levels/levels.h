@@ -80,7 +80,10 @@ extern i32 LevForce;
 extern u8 dookuC_nodesNeedUpdating;
 // Vader C boss level state.
 struct vader_c_s {
-    char pad_0x00[0x94];
+    GIZAIMESSAGE_s *final_fight_message;
+    AILOCATOR_s *big_jump_locator;
+    nuhspecial_s rocks[10];
+    i16 platform_ids[10];
     u8 field_0x94; // 0x94
     u8 field_0x95; // 0x95
     char pad_0x96[2];

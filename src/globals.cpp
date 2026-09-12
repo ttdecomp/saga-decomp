@@ -42,13 +42,7 @@ u8 ForcePlayEndFrame = 0;
 u8 ForceEulerToQuat = 0;
 u8 QuatPushes[4] = {};
 i32 NumQuatPushes = 0;
-extern const u8 CurveGroupMasks[3] = {
-    NUANIMBUFF_JOINT_TRANSLATION,
-    NUANIMBUFF_JOINT_ROTATION,
-    NUANIMBUFF_JOINT_SCALE,
-};
 u8 BitCountTable[256] = {};
-i32 isBitCountTable = 0;
 f32 MAXFRAMETIME = 0;
 extern "C" {
     f32 partglobaltime = 0;
@@ -1762,6 +1756,7 @@ i32 LEGOCONTEXT_WALLSHUFFLE = -1;
 i32 LEGOCONTEXT_NETWAIT = -1;
 i16 LEGOACT_BUILD = -1;
 i32 LEGOHINT_BUILD = -1;
+i32 LEGOHINT_PUSHBLOCKS = -1;
 i32 LEGOHINT_FREEPLAYTOGGLE = -1;
 i32 LEGOCONTEXT_BEENTAKENOVER = -1;
 i32 LEGOCONTEXT_WEAPONIN = -1;

@@ -402,8 +402,15 @@ void GizPanel_GetAbsTargetPos(GIZPANEL_s *panel, nuvec_s *target_position, i32 p
     *target_position = offset;
 }
 
+#include "legoapi/gizmo/base/GizPanelObjectInterface.h"
+
 void GIZPANEL_s::ClearMechObjectInterface() {
+    delete mech_object_interface;
 }
 
-void GIZPANEL_s::GetMechObjectInterface() {
+MechObjectInterface *GIZPANEL_s::GetMechObjectInterface() {
+    if (mech_object_interface == NULL) {
+        new GizPanelObjectInterface(*this);
+    }
+    return mech_object_interface;
 }

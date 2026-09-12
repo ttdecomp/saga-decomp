@@ -58,15 +58,10 @@ static __used__ void Grab_type(nufpar_s *parser) {
     }
 }
 
-static NUFPCOMJMP Grabber_ConfigKeywords[] = {{"radius", Grab_radius},
-                                              {"speed", Grab_speed},
-                                              {"rotate", Grab_rotate},
-                                              {"scale", Grab_scale},
-                                              {"move_xy", Grab_move_xy},
-                                              {"type", Grab_type},
-                                              {"invert_x", Grab_invert_x},
-                                              {"shadow", Grab_shadow},
-                                              {NULL, NULL}};
+static NUFPCOMJMP Grabber_ConfigKeywords[] = {
+    {"radius", Grab_radius},     {"speed", Grab_speed},     {"rotate", Grab_rotate},
+    {"scale", Grab_scale},       {"move_xy", Grab_move_xy}, {"type", Grab_type},
+    {"invert_x", Grab_invert_x}, {"shadow", Grab_shadow},   {NULL, NULL}};
 
 void Grabber_Configure(WORLDINFO_s *world, char *config) {
     if (VehicleArea != 0 || (world->current_level->flags & 0xe0) != 0 || world->grabber != NULL) {

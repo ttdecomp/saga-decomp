@@ -372,7 +372,11 @@ void StartEndOfJump(GameObject_s *object) {
     object->airborne_collision_target = NULL;
 }
 
-void StartBallooning(GameObject_s *, i32) {
+void StartBallooning(GameObject_s *object, i32 movement_state) {
+    object->field_0x7a3 = movement_state;
+    object->character_context = 0x5d;
+    object->context_animation = object->apiobj.character_model->model_data_b[0xb1] != NULL ? 0xb1 : 0x101;
+    object->field_0x768 = 1000000000.0f;
 }
 
 void StartJetPackFall(GameObject_s *, i32) {

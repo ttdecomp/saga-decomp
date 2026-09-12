@@ -158,8 +158,8 @@ i32 GizSpinner_Spin(GIZSPINNER_s *spinner, i32 context) {
         return 2;
     }
 
-    if (spinner->rotation != spinner->target_rotation || spinner->field_0x090 > 0.0f ||
-        spinner->anim_set == NULL || spinner->room_index != -1) {
+    if (spinner->rotation != spinner->target_rotation || spinner->field_0x090 > 0.0f || spinner->anim_set == NULL ||
+        spinner->room_index != -1) {
         return 0;
     }
     if (GameAnimSet_GetVisibility(spinner->anim_set) != GAMEANIMSET_VISIBILITY_ALL) {

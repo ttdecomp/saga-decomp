@@ -10,6 +10,10 @@
 // only need a declaration.
 
 struct GameObject_s;
+GameObject_s *FindNearestGameObject(NUVEC *position, GameObject_s *exclude, u32 required_flags, f32 radius,
+                                    f32 extra_radius, i32 animation, i32 character_id, i32 player_index,
+                                    f32 *distance_squared, i32 horizontal_only, i32 (*filter)(GameObject_s *),
+                                    bool first_match);
 i32 NoLayerKill(GameObject_s *object);
 struct CABLE_s;
 struct AISYS_s;
@@ -49,6 +53,7 @@ void InitSurfaceInfo(GameObject_s *object);
 i32 SetObjOnSurface(GameObject_s *object, i32 mode);
 i32 Game_IgnoreInput();
 GameObject_s *GetNamedGameObject(AISYS_s *aisys, char *name);
+char *GameObj_GetName(i32 model, GameObject_s *object, char *buffer);
 APIOBJECT_s *GameAPIOBJECTFromObjID(u8 object_id);
 f32 GameShadow(GameObject_s *object, NUVEC *position, f32 scale, i32 flags);
 i32 GameDrawCharacterModel(CHARACTERMODEL_s *model, ANIMPACKET_s *animation, NUMTX *matrix, NUMTX *secondary_matrix,

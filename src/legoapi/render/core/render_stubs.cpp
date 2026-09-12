@@ -142,12 +142,6 @@ extern "C" {
     void AddColourPick(void) {
     }
 
-    void BuildCamSpaceClipPlanes(void) {
-    }
-
-    void BuildWorldSpaceClipPlanes(void) {
-    }
-
     void ChooseCorrectLOD(void) {
     }
 

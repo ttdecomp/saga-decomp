@@ -6,6 +6,3 @@ struct AIROW_s;
 struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
-
-void PartKill_Grabber(PART_s *, i32) {
-}

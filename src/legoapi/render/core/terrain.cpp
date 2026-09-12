@@ -40,6 +40,9 @@ extern i16 id_ATST;
 extern i16 id_SPEEDERBIKE;
 void GetSurfaceInfo(GameObject_s *object, i32 update_surface, f32 shadow_height);
 f32 FindReflectionNoPlatforms(NUVEC *position);
+extern i32 TimingBarSet;
+void TBOPENFN(char *, i32);
+void TBCLOSEFN(char *, i32);
 i32 NOTERRAINSTOP;
 extern GameObject_s *CarWashHack;
 GameObject_s *CharPlatform_FindObjFromPlatID(CHARPLATFORMSYS_s *system, i32 platform_id);
@@ -1688,7 +1691,7 @@ void TerrainPlayer(GameObject_s *object) {
                                       0x82) != 0;
         }
         bool shadow_grounding = false;
-        bool retain_floor = false;
+        i32 retain_floor = false;
         if (object == CarWashHack) {
             shadow_grounding = true;
         } else if ((api.character_data->game_character->flags_090 & 0x80) != 0) {
@@ -1788,18 +1791,24 @@ void TerrainPlayer(GameObject_s *object) {
             // query for these motion owners and action states.
             api.respawn_timer = 0.0f;
             object->field_0xe20 |= 2;
+            if (TimingBarSet == 2)
+                TBOPENFN("Ter", 2);
             api.field_0x27d = 0;
             api.supporting_platform_id = -1;
             object->field_0x6b0 = 0;
             api.position.x += api.velocity.x * FRAMETIME;
             api.position.y += api.velocity.y * FRAMETIME;
             api.position.z += api.velocity.z * FRAMETIME;
+            if (TimingBarSet == 2)
+                TBCLOSEFN("Ter", 2);
         } else if (shadow_grounding || retain_floor || (WORLD->current_level->flags & 0x10) != 0) {
             // Ordinary path-following AI uses the target's inexpensive shadow
             // grounding path.  Full swept collision is reserved for path
             // connections whose traversal flags require special collision.
             api.respawn_timer = 0.0f;
             if (!skip_motion) {
+                if (TimingBarSet == 2)
+                    TBOPENFN("Ter", 2);
                 object->field_0xe20 |= 2;
                 api.supporting_platform_id = -1;
                 api.position.x += api.velocity.x * FRAMETIME;
@@ -1861,6 +1870,8 @@ void TerrainPlayer(GameObject_s *object) {
                 } else {
                     object->field_0x6b0 = 0;
                 }
+                if (TimingBarSet == 2)
+                    TBCLOSEFN("Ter", 2);
             }
         } else {
             if (skip_motion) {
@@ -1878,6 +1889,8 @@ void TerrainPlayer(GameObject_s *object) {
                 // Original 0x1048e9 clears the complete contact metadata word.
                 object->field_0x6b0 = 0;
                 memset(object->pad_6b1, 0, sizeof(object->pad_6b1));
+                if (TimingBarSet == 2)
+                    TBOPENFN("Ter", 2);
                 // Original 0x1048fc..0x10497c and 0x10545f..0x105544.
                 if (object->use_model_origin != 0 && api.field_0x27d != 0 &&
                     (movement.x != 0.0f || movement.z != 0.0f) &&
@@ -1977,6 +1990,8 @@ void TerrainPlayer(GameObject_s *object) {
                 }
                 extern i32 TERRAINCALLS;
                 ++TERRAINCALLS;
+                if (TimingBarSet == 2)
+                    TBCLOSEFN("Ter", 2);
                 api.supporting_platform_id = static_cast<i16>(NewShadowOnPlatform());
 
                 object->field_0x1084 = static_cast<u8>(TerrImpact);
@@ -2079,11 +2094,9 @@ void TerrainPlayer(GameObject_s *object) {
             if (GameObjectNearFloor(object, 1.0f, NULL) != 0) {
                 api.field_0x27d |= APIOBJECT_TERRAIN_CONTACT_NEAR_FLOOR;
             }
-        }
-        if (api.field_0x27d != 0) {
-            // Target 0x103816 marks the object as terrain-supported here; the
-            // collision resolver owns the contact normal fields.
-            object->field_0xeff |= 2;
+            if (api.field_0x27d != 0) {
+                object->field_0xeff |= 2;
+            }
         }
 
         // Original 0x1029e6/0x103cb4 transfers vertical momentum only when
@@ -2138,7 +2151,7 @@ void TerrainPlayer(GameObject_s *object) {
             }
         } else {
             // Original 0x1032a0 checks swept contacts or the standing surface.
-            const bool check_terrain_hazards =
+            const i32 check_terrain_hazards =
                 object->character_context != 0x2b && (api.field_0x1f8 & 4) == 0 && gone_through_door_to_new_level == 0;
             // Original 0x1038b0 completes the doomed state on contact, timeout,
             // or a collision during the falling variant.
@@ -2504,8 +2517,26 @@ void ScanTerrainPlatform(i32 group_index, i32 terrain_mask) {
     terminator[0] = 0;
     terminator[1] = 0;
 }
-void TerrainBlockOnBlock(WORLDINFO_s *, pushblock_s *, nuvec_s *, float *) {
+i32 TerrainBlockOnBlock(WORLDINFO_s *world, pushblock_s *block, nuvec_s *points, float *heights) {
+    if (!heights || !points)
+        return 0;
+    heights[0] = heights[1] = heights[2] = heights[3] = -10000.0f;
+    for (i32 i = 0; i < world->push_block_count; ++i) {
+        pushblock_s *other = &world->push_blocks[i];
+        if (other == block)
+            continue;
+        f32 xmin = other->position->x - fabsf(other->bounds_min.x),
+            xmax = other->position->x + fabsf(other->bounds_max.x);
+        f32 zmin = other->position->z - fabsf(other->bounds_min.z),
+            zmax = other->position->z + fabsf(other->bounds_max.z);
+        f32 height = fabsf(other->bounds_max.y) + other->position->y;
+        for (i32 j = 0; j < 4; ++j)
+            if (points[j].x > xmin && points[j].x < xmax && points[j].z > zmin && points[j].z < zmax)
+                heights[j] = height;
+    }
+    return 1;
 }
+
 extern PLATSKININFO *PlatSkinInfo;
 extern PLATSKINMEMINFO *SkinMemInfo;
 extern i32 PlatSkinCnt;

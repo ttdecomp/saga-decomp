@@ -1,5 +1,11 @@
 // Nucore plain — C-linkage surface for the original libTTapp.so nucore TU.
 #include "nu2api/nu3d/nulgtlaser.h"
+#include "nu2api/nu3d/nuprim.h"
+#include "nu2api/numath/nuvec4.h"
+extern "C" {
+    NULGTARCMATERIAL NuLgtArcMtl[4] = {};
+    i32 NuLgtLaserOldCnt;
+}
 #include "nu2api/nucore/nuonline.h"
 struct NUGCUTLOCATORFNENTRY_s;
 extern "C" NUGCUTLOCATORFNENTRY_s *locatorfns;
@@ -81,6 +87,18 @@ struct nuanimdatachunk_s;
 nuanimdatachunk_s *NuAnimDataChunkCreate(i32 curve_set_count);
 
 extern "C" {
+    static i32 isBitCountTable;
+    void buildBitCountTable(void) {
+        for (u32 value = 0; value < 256; ++value) {
+            BitCountTable[value] = 0;
+            for (u32 bit = 0; bit < 8; ++bit) {
+                if ((value >> bit) & 1)
+                    ++BitCountTable[value];
+            }
+        }
+        isBitCountTable = 1;
+    }
+
     u8 CutSceneBoundingBoxTrackRoot = 0;
     i32 NuGCutAudioStream = 0;
     NUANIMBUFFEVALUATECB AnimBuffEvalCB = NULL;
@@ -712,8 +730,9 @@ extern "C" {
 
         NuDisplayListBeginCriticalSection();
         for (NUMTLANIMSET *set = global_dlist_manager.mtlanim_list; set != NULL; set = set->next) {
+            NUDLDLISTSCENE *scene = set->scene;
             for (i32 index = 0; index < set->material_count; ++index) {
-                NUMTL *material = set->scene->mtls[set->material_indices[index]];
+                NUMTL *material = scene->mtls[set->material_indices[index]];
                 if (material->disable_u_animation == 1 || material->disable_v_animation == 1) {
                     continue;
                 }
@@ -773,8 +792,6 @@ extern "C" {
     }
     void NuDisplayListBeginCriticalSection(void) {
         NuThreadCriticalSectionBegin(global_dlist_manager.loading_critical_section);
-    }
-    void NuDisplayListBurstRndrSpecial(void) {
     }
     void NuDisplayListClipSpecials(i32 enabled) {
         clip_special_objects = enabled;
@@ -1241,8 +1258,6 @@ extern "C" {
     // Scene / render-scene
     // ---------------------------------------------------------------------------
 
-    void NuDisplaySceneClone(void) {
-    }
     void NuDisplaySceneDebug(void) {
     }
 
@@ -1453,11 +1468,17 @@ extern "C" {
             buffer = static_cast<nuanimbuff_s *>(globalbuffer);
         }
 
-        static NUVEC scale_array[256];
-        scale_array[0xff] = {1.0f, 1.0f, 1.0f};
+        if (buffer->use_quaternions != 0) {
+            NuAnimBuffEvaluate_3_QuatB(NULL, buffer, reinterpret_cast<nugscn_s *>(object), matrices, animation, root_fn,
+                                       root_translation, root_data);
+            return;
+        }
 
-        void *callback_data[256] = {};
+        static NUVEC scale_array[256];
+
+        void *callback_data[256];
         if (AnimBuffEvalData != NULL && AnimBuffEvalJoint != NULL) {
+            memset(callback_data, 0, object->joint_count * sizeof(void *));
             for (i32 callback_index = 0; AnimBuffEvalData[callback_index] != NULL; ++callback_index) {
                 const i32 override_index = AnimBuffEvalJoint[callback_index];
                 if (override_index >= 0 && override_index < object->joint_override_map_count) {
@@ -1471,32 +1492,21 @@ extern "C" {
 
         const i32 evaluated_count =
             animation->node_count < object->joint_count ? animation->node_count : object->joint_count;
+        scale_array[0xff] = {1.0f, 1.0f, 1.0f};
         NUVEC root_values = {0.0f, 0.0f, 0.0f};
         for (i32 joint_index = 0; joint_index < evaluated_count; ++joint_index) {
             const nuanimbuffjoint_s &joint = buffer->joints[joint_index];
             const u8 flags = buffer->joint_flags[joint_index];
             const u8 parent_index = object->joints[joint_index].parent_index;
-            const NUVEC parent_scale = scale_array[parent_index];
 
-            NUMTX local_matrix;
+            NUMTX &local_matrix = matrices[joint_index];
             if ((flags & NUANIMBUFF_JOINT_ROTATION) != 0) {
-                if (buffer->use_quaternions != 0) {
-                    NUQUAT rotation = {
-                        joint.rotation.x,
-                        joint.rotation.y,
-                        joint.rotation.z,
-                        joint.rotation_w,
-                    };
-                    NuQuatToMtx(&rotation, &local_matrix);
-                } else {
-                    constexpr f32 kRadiansToNuAngle = 10430.378f;
-                    NUANGVEC angles = {
-                        static_cast<NUANG>(joint.rotation.x * kRadiansToNuAngle),
-                        static_cast<NUANG>(joint.rotation.y * kRadiansToNuAngle),
-                        static_cast<NUANG>(joint.rotation.z * kRadiansToNuAngle),
-                    };
-                    NuMtxSetRotateXYZ(&local_matrix, &angles);
-                }
+                NUANGVEC angles = {
+                    static_cast<NUANG>(joint.rotation.x * 10430.378f),
+                    static_cast<NUANG>(joint.rotation.y * 10430.378f),
+                    static_cast<NUANG>(joint.rotation.z * 10430.378f),
+                };
+                NuMtxSetRotateXYZVU0(&local_matrix, &angles);
                 if ((flags & NUANIMBUFF_JOINT_BIND_MATRIX) != 0) {
                     NuMtxMulRVU0(&local_matrix, &local_matrix, &object->joints[joint_index].animation_bind_matrix);
                 }
@@ -1507,36 +1517,35 @@ extern "C" {
             }
 
             if ((flags & NUANIMBUFF_JOINT_SCALE) != 0) {
-                NuMtxPreScaleVU0(&local_matrix, const_cast<NUVEC *>(&joint.scale));
-                scale_array[joint_index] = {
-                    joint.scale.x * parent_scale.x,
-                    joint.scale.y * parent_scale.y,
-                    joint.scale.z * parent_scale.z,
-                };
+                scale_array[joint_index] = joint.scale;
+                NuMtxPreScaleVU0(&local_matrix, &scale_array[joint_index]);
+                scale_array[joint_index].x *= scale_array[parent_index].x;
+                scale_array[joint_index].y *= scale_array[parent_index].y;
+                scale_array[joint_index].z *= scale_array[parent_index].z;
             } else {
-                scale_array[joint_index] = parent_scale;
+                scale_array[joint_index] = scale_array[object->joints[joint_index].parent_index];
             }
 
             if ((flags & NUANIMBUFF_JOINT_CANCEL_PARENT_SCALE) != 0) {
-                NUVEC inverse_parent_scale = {0.0f, 0.0f, 0.0f};
+                const NUVEC &parent_scale = scale_array[parent_index];
+                NUVEC inverse_parent_scale;
                 if (parent_scale.x != 0.0f && parent_scale.y != 0.0f && parent_scale.z != 0.0f) {
-                    inverse_parent_scale = {
-                        1.0f / parent_scale.x,
-                        1.0f / parent_scale.y,
-                        1.0f / parent_scale.z,
-                    };
+                    inverse_parent_scale = {1.0f / parent_scale.x, 1.0f / parent_scale.y, 1.0f / parent_scale.z};
+                    scale_array[joint_index].x *= inverse_parent_scale.x;
+                    scale_array[joint_index].y *= inverse_parent_scale.y;
+                    scale_array[joint_index].z *= inverse_parent_scale.z;
+                } else {
+                    inverse_parent_scale = {0.0f, 0.0f, 0.0f};
+                    scale_array[joint_index] = {0.0f, 0.0f, 0.0f};
                 }
-                scale_array[joint_index].x *= inverse_parent_scale.x;
-                scale_array[joint_index].y *= inverse_parent_scale.y;
-                scale_array[joint_index].z *= inverse_parent_scale.z;
                 NuMtxScaleVU0(&local_matrix, &inverse_parent_scale);
             }
 
             if ((flags & NUANIMBUFF_JOINT_TRANSLATION) != 0) {
                 NUVEC translation = joint.translation;
-                NuMtxTranslate(&local_matrix, &translation);
                 root_values = joint.translation;
                 root_values.z = -root_values.z;
+                NuMtxTranslate(&local_matrix, &translation);
             }
 
             local_matrix.m02 = -local_matrix.m02;
@@ -1548,21 +1557,19 @@ extern "C" {
 
             if (root_fn != NULL) {
                 root_fn(&local_matrix, root_data, &root_values, &root_values, root_translation, 0.0f);
-                root_fn = NULL;
             }
 
-            if (parent_index == 0xff) {
-                matrices[joint_index] = local_matrix;
-            } else {
+            if (parent_index != 0xff) {
                 NuMtxMulVU0(&matrices[joint_index], &local_matrix, &matrices[parent_index]);
             }
 
-            if ((flags & 0x40) != 0) {
+            else if ((flags & 0x40) != 0) {
                 scale_array[joint_index] = {1.0f, 1.0f, 1.0f};
             }
             if (AnimBuffEvalCB != NULL && callback_data[joint_index] != NULL) {
                 AnimBuffEvalCB(&matrices[joint_index], callback_data[joint_index], 0);
             }
+            root_fn = NULL;
         }
 
         for (i32 joint_index = evaluated_count; joint_index < object->joint_count; ++joint_index) {
@@ -1671,18 +1678,18 @@ extern "C" {
                       BitCountTable[reinterpret_cast<u8 *>(key_mask)[3] & time->time_mask];
                 break;
         }
-        key += data->key_offsets[time->chunk];
+        u32 key_offset = data->key_offsets[time->chunk];
         u8 *key_data = static_cast<u8 *>(data->key_data);
 
         switch (type) {
             case 1: {
-                f32 *first = reinterpret_cast<f32 *>(key_data + (key - 1) * 0x10);
+                f32 *first = reinterpret_cast<f32 *>(key_data + (key + key_offset - 1) * 0x10);
                 f32 span = first[4] - first[0];
                 f32 value_delta = first[2] - first[6];
                 f32 t = (time->time - first[0]) * first[1];
                 f32 tangent0 = first[3] * span;
                 f32 tangent1 = first[7] * span;
-                return (((((value_delta * 2.0f + tangent0 + tangent1) * t - value_delta * 3.0f) - tangent0 * 2.0f) -
+                return (((((value_delta * 2.0f + tangent0 + tangent1) * t + value_delta * -3.0f) - tangent0 * 2.0f) -
                          tangent1) *
                             t +
                         tangent0) *
@@ -1691,9 +1698,9 @@ extern "C" {
             }
             case 2: {
                 f32 *header = reinterpret_cast<f32 *>(key_data);
-                u8 *first = key_data + (key + 1) * 4;
-                f32 first_time = static_cast<f32>(first[3]);
-                f32 span = static_cast<f32>(first[7]) - first_time;
+                u8 *first = key_data + (key + key_offset + 1) * 4;
+                f32 first_time = static_cast<f32>(static_cast<u32>(first[3]));
+                f32 span = static_cast<f32>(static_cast<u32>(first[7])) - first_time;
                 f32 inverse_span = span == 0.0f ? 0.0f : 1.0f / span;
                 f32 tangent0 = static_cast<f32>(*reinterpret_cast<i8 *>(first + 2)) * header[0] * span;
                 f32 tangent1 = static_cast<f32>(*reinterpret_cast<i8 *>(first + 6)) * header[0] * span;
@@ -1708,16 +1715,22 @@ extern "C" {
                        value0;
             }
             case 3:
-                return *reinterpret_cast<f32 *>(key_data + (key - 1) * 8);
+                return *reinterpret_cast<f32 *>(key_data + (key + key_offset - 1) * 8);
             case 5: {
                 f32 *header = reinterpret_cast<f32 *>(key_data);
-                i16 *first = reinterpret_cast<i16 *>(key_data + key * 6 + 0x0c);
-                f32 span = static_cast<f32>(static_cast<u16>(first[5])) - static_cast<u16>(first[2]);
-                f32 tangent0 = static_cast<f32>(static_cast<i8>(first[1])) * header[0] * span;
-                f32 tangent1 = static_cast<f32>(static_cast<i8>(first[4])) * header[0] * span;
-                f32 value0 = static_cast<f32>(first[0]) * header[1] + header[2];
-                f32 value_delta = value0 - (static_cast<f32>(first[3]) * header[1] + header[2]);
-                f32 t = ((time->time - 1.0f) - static_cast<u16>(first[2])) / span;
+                f32 header_0 = header[0];
+                f32 header_1 = header[1];
+                f32 header_2 = header[2];
+                i16 *first = reinterpret_cast<i16 *>(key_data + (key + key_offset) * 6 + 0x0c);
+                f32 span = static_cast<f32>(static_cast<u32>(static_cast<u16>(first[5]))) -
+                           static_cast<f32>(static_cast<u32>(static_cast<u16>(first[2])));
+                f32 tangent0 = static_cast<f32>(static_cast<i8>(first[1])) * header_0 * span;
+                f32 tangent1 = static_cast<f32>(static_cast<i8>(first[4])) * header_0 * span;
+                f32 value0 = static_cast<f32>(first[0]) * header_1 + header_2;
+                f32 value_delta = value0 - (static_cast<f32>(first[3]) * header_1 + header_2);
+                f32 inverse_span = 1.0f / span;
+                f32 t = ((time->time - 1.0f) - static_cast<f32>(static_cast<u32>(static_cast<u16>(first[2])))) *
+                        inverse_span;
                 return (((((value_delta * 2.0f + tangent0 + tangent1) * t - value_delta * 3.0f) - tangent0 * 2.0f) -
                          tangent1) *
                             t +
@@ -1727,19 +1740,24 @@ extern "C" {
             }
             case 6: {
                 f32 *header = reinterpret_cast<f32 *>(key_data);
-                u8 *first = key_data + (key + 3) * 4;
-                f32 first_time = static_cast<f32>(first[3]) * header[3];
-                f32 next_time = static_cast<f32>(first[7]) * header[3];
+                f32 header_3 = header[3];
+                f32 header_2 = header[2];
+                f32 header_0 = header[0];
+                f32 header_1 = header[1];
+                u8 *first = key_data + (key + key_offset + 3) * 4;
+                f32 first_time = static_cast<f32>(static_cast<u32>(first[3])) * header_3;
+                f32 next_time = static_cast<f32>(static_cast<u32>(first[7])) * header_3;
                 if (next_time == first_time) {
                     next_time = first_time + 1.0f;
                 }
                 f32 span = next_time - first_time;
-                f32 tangent0 = static_cast<f32>(*reinterpret_cast<i8 *>(first + 2)) * header[0] * span;
-                f32 tangent1 = static_cast<f32>(*reinterpret_cast<i8 *>(first + 6)) * header[0] * span;
-                f32 value0 = static_cast<f32>(*reinterpret_cast<i16 *>(first)) * header[1] + header[2];
+                f32 tangent0 = static_cast<f32>(*reinterpret_cast<i8 *>(first + 2)) * header_0 * span;
+                f32 tangent1 = static_cast<f32>(*reinterpret_cast<i8 *>(first + 6)) * header_0 * span;
+                f32 value0 = static_cast<f32>(*reinterpret_cast<i16 *>(first)) * header_1 + header_2;
                 f32 value_delta =
-                    value0 - (static_cast<f32>(*reinterpret_cast<i16 *>(first + 4)) * header[1] + header[2]);
-                f32 t = ((time->time - 1.0f) - first_time) / span;
+                    value0 - (static_cast<f32>(*reinterpret_cast<i16 *>(first + 4)) * header_1 + header_2);
+                f32 inverse_span = 1.0f / span;
+                f32 t = ((time->time - 1.0f) - first_time) * inverse_span;
                 return (((((value_delta * 2.0f + tangent0 + tangent1) * t - value_delta * 3.0f) - tangent0 * 2.0f) -
                          tangent1) *
                             t +
@@ -1751,9 +1769,142 @@ extern "C" {
                 return 0.0f;
         }
     }
-    void NuAnimCurve2SetApplyToJoint(void) {
+    void NuAnimCurve2SetApplyToJointTransLoc(nuanimcurve2_s *curves, i8 *types, i8 flags, nuanimtime_s *time,
+                                             nuhgobjjoint_s *joint, NUVEC *scale, NUVEC *parent_scale, NUMTX *matrix,
+                                             NUJOINTANIM_s *override_anim, NUVEC *root_translation,
+                                             NUVEC *locator_translation) {
+        NUVEC translation, temporary;
+        NUANGVEC angles;
+        if (root_translation)
+            root_translation->x = root_translation->y = root_translation->z = 0.0f;
+        if (locator_translation)
+            locator_translation->x = locator_translation->y = locator_translation->z = 0.0f;
+        u8 override_flags, rotate, translate, rescale;
+        if (override_anim) {
+            override_flags = override_anim->flags;
+            rotate = override_flags & 1;
+            rescale = override_flags & 4;
+            translate = override_flags & 2;
+        } else
+            override_flags = rotate = translate = rescale = 0;
+        if ((flags & 1) || rotate) {
+            NUVEC rotation = {0.0f, 0.0f, 0.0f};
+            if (flags & 1) {
+                rotation.x = types[3] ? NuAnimCurve2CalcValEx(curves + 3, time, types[3]) : curves[3].data.constant;
+                rotation.y = types[4] ? NuAnimCurve2CalcValEx(curves + 4, time, types[4]) : curves[4].data.constant;
+                rotation.z = types[5] ? NuAnimCurve2CalcValEx(curves + 5, time, types[5]) : curves[5].data.constant;
+            }
+            if (rotate) {
+                rotation.x += override_anim->rotation.x;
+                rotation.y += override_anim->rotation.y;
+                rotation.z += override_anim->rotation.z;
+            }
+            angles.x = static_cast<i32>(rotation.x * 10430.3779296875f);
+            angles.y = static_cast<i32>(rotation.y * 10430.3779296875f);
+            angles.z = static_cast<i32>(rotation.z * 10430.3779296875f);
+            if (rotate) {
+                if (override_flags & 8) {
+                    angles.x &= 0xffff;
+                    if (angles.x > 32767)
+                        angles.x -= 65536;
+                    if (angles.x > override_anim->rotation_limit_start[0])
+                        angles.x = override_anim->rotation_limit_start[0];
+                    else if (angles.x < override_anim->rotation_limit_end[0])
+                        angles.x = override_anim->rotation_limit_end[0];
+                }
+                if (override_flags & 16) {
+                    angles.y &= 0xffff;
+                    if (angles.y > 32767)
+                        angles.y -= 65536;
+                    if (angles.y > override_anim->rotation_limit_start[1])
+                        angles.y = override_anim->rotation_limit_start[1];
+                    else if (angles.y < override_anim->rotation_limit_end[1])
+                        angles.y = override_anim->rotation_limit_end[1];
+                }
+                if (override_flags & 32) {
+                    angles.z &= 0xffff;
+                    if (angles.z > 32767)
+                        angles.z -= 65536;
+                    if (angles.z > override_anim->rotation_limit_start[2])
+                        angles.z = override_anim->rotation_limit_start[2];
+                    else if (angles.z < override_anim->rotation_limit_end[2])
+                        angles.z = override_anim->rotation_limit_end[2];
+                }
+            }
+            NuMtxSetRotateXYZVU0(matrix, &angles);
+        } else
+            NuMtxSetIdentity(matrix);
+        if (flags & 0x20)
+            NuMtxMulRVU0(matrix, matrix, &joint->animation_bind_matrix);
+        if ((flags & 8) || rescale) {
+            if (flags & 8) {
+                scale->x = types[6] ? NuAnimCurve2CalcValEx(curves + 6, time, types[6]) : curves[6].data.constant;
+                scale->y = types[7] ? NuAnimCurve2CalcValEx(curves + 7, time, types[7]) : curves[7].data.constant;
+                scale->z = types[8] ? NuAnimCurve2CalcValEx(curves + 8, time, types[8]) : curves[8].data.constant;
+            } else
+                scale->x = scale->y = scale->z = 0.0f;
+            if (rescale) {
+                scale->x += override_anim->scale.x;
+                scale->y += override_anim->scale.y;
+                scale->z += override_anim->scale.z;
+            }
+            NuMtxPreScaleVU0(matrix, scale);
+            scale->x *= parent_scale->x;
+            scale->y *= parent_scale->y;
+            scale->z *= parent_scale->z;
+        } else
+            *scale = *parent_scale;
+        if ((flags & 0x10) && parent_scale) {
+            if (parent_scale->x != 0.0f && parent_scale->y != 0.0f && parent_scale->z != 0.0f) {
+                temporary.x = 1.0f / parent_scale->x;
+                temporary.y = 1.0f / parent_scale->y;
+                temporary.z = 1.0f / parent_scale->z;
+            } else
+                temporary.x = temporary.y = temporary.z = 0.0f;
+            NuMtxScaleVU0(matrix, &temporary);
+            scale->x *= temporary.x;
+            scale->y *= temporary.y;
+            scale->z *= temporary.z;
+        }
+        translation.x = types[0] ? NuAnimCurve2CalcValEx(curves, time, types[0]) : curves[0].data.constant;
+        translation.y = types[1] ? NuAnimCurve2CalcValEx(curves + 1, time, types[1]) : curves[1].data.constant;
+        translation.z = types[2] ? NuAnimCurve2CalcValEx(curves + 2, time, types[2]) : curves[2].data.constant;
+        if (root_translation) {
+            root_translation->x = translation.x;
+            root_translation->y = translation.y;
+            root_translation->z = -translation.z;
+        }
+        if (translate) {
+            translation.x += override_anim->translation.x;
+            translation.y += override_anim->translation.y;
+            translation.z += override_anim->translation.z;
+        }
+        NuMtxTranslate(matrix, &translation);
+        if (joint->data_0x51[0] & 8) {
+            NUVEC *pivot = reinterpret_cast<NUVEC *>(joint->data_0x40);
+            NuMtxPreTranslate(matrix, pivot);
+            temporary.x = -pivot->x;
+            temporary.y = -pivot->y;
+            temporary.z = -pivot->z;
+            NuMtxTranslate(matrix, &temporary);
+            if (locator_translation) {
+                NuVecMtxRotate(locator_translation, pivot, matrix);
+                NuVecSub(locator_translation, locator_translation, pivot);
+                locator_translation->z = -locator_translation->z;
+            }
+        }
+        matrix->m02 = -matrix->m02;
+        matrix->m12 = -matrix->m12;
+        matrix->m20 = -matrix->m20;
+        matrix->m21 = -matrix->m21;
+        matrix->m23 = -matrix->m23;
+        matrix->m32 = -matrix->m32;
     }
-    void NuAnimCurve2SetApplyToJointTransLoc(void) {
+    void NuAnimCurve2SetApplyToJoint(nuanimcurve2_s *curves, i8 *types, i8 flags, nuanimtime_s *time,
+                                     nuhgobjjoint_s *joint, NUVEC *scale, NUVEC *parent_scale, NUMTX *matrix,
+                                     NUJOINTANIM_s *override_anim) {
+        NuAnimCurve2SetApplyToJointTransLoc(curves, types, flags, time, joint, scale, parent_scale, matrix,
+                                            override_anim, NULL, NULL);
     }
     void NuAnimCurve2SetApplyToMatrix_3(ani3_animheader_s *animation, i32 node, f32 frame, NUMTX *matrix) {
         u8 node_flags = animation->node_flags[node];
@@ -1783,7 +1934,43 @@ extern "C" {
         matrix->m23 = -matrix->m23;
         matrix->m32 = -matrix->m32;
     }
-    void NuAnimCurveCalcVal2(void) {
+    f32 NuAnimCurveCalcVal2(nuanimcurve_s *curve, nuanimtime_s *time) {
+        i32 key = 0;
+        switch (time->time_byte) {
+            case 0:
+                key = BitCountTable[curve->key_mask[0] & time->time_mask];
+                break;
+            case 1:
+                key = BitCountTable[curve->key_mask[0]] + BitCountTable[curve->key_mask[1] & time->time_mask];
+                break;
+            case 2:
+                key = BitCountTable[curve->key_mask[0]];
+                key += BitCountTable[curve->key_mask[1]];
+                key += BitCountTable[curve->key_mask[2] & time->time_mask];
+                break;
+            case 3:
+                key = BitCountTable[curve->key_mask[0]];
+                key += BitCountTable[curve->key_mask[1]];
+                key += BitCountTable[curve->key_mask[2]];
+                key += BitCountTable[curve->key_mask[3] & time->time_mask];
+                break;
+        }
+        nuanimkey_s *first = &curve->keys[key - 1];
+        if (curve->flags & 1) {
+            if ((curve->flags & 2) && key <= curve->key_count && time->time - first->time > first[1].time - time->time)
+                return first[1].value;
+            return first->value;
+        }
+        f32 value = first->value;
+        f32 span = first[1].time - first->time;
+        f32 delta = value - first[1].value;
+        f32 t = (time->time - first->time) * first->reciprocal_span;
+        f32 tangent0 = first->tangent * span;
+        f32 tangent1 = first[1].tangent * span;
+        return (((((delta + delta + tangent0 + tangent1) * t + delta * -3.0f) - (tangent0 + tangent0) - tangent1) * t +
+                 tangent0) *
+                t) +
+               value;
     }
     void *NuAnimCurveCreate(void) {
         return NULL;
@@ -1800,9 +1987,205 @@ extern "C" {
         ANI_Ani3ExtractAllNodeCurves(anim, frame - 1.0f, values, node, curve_mask);
         return values;
     }
-    void NuAnimCurveSetApplyBlendToJoint2(void) {
+    void NuAnimCurveSetApplyBlendToJoint2(nuanimcurveset_s *first, nuanimtime_s *first_time, nuanimcurveset_s *second,
+                                          nuanimtime_s *second_time, f32 blend, nuhgobjjoint_s *joint, NUVEC *scale,
+                                          NUVEC *parent_scale, NUMTX *matrix, NUJOINTANIM_s *override_anim) {
+        f32 inverse_blend = 1.0f - blend;
+        u8 flags = override_anim ? override_anim->flags : 0;
+        u8 rotate = flags & 1, rescale = flags & 4, translate = flags & 2;
+        NUANGVEC angles;
+        NUVEC r0, r1, s0, s1, translation, temporary;
+        if ((first->flags & 1) || (second->flags & 1) || rotate) {
+            for (i32 component = 0; component < 3; ++component) {
+                reinterpret_cast<f32 *>(&r0)[component] =
+                    first->curves[component + 3] ? NuAnimCurveCalcVal2(first->curves[component + 3], first_time)
+                                                 : first->constants[component + 3];
+                reinterpret_cast<f32 *>(&r1)[component] =
+                    second->curves[component + 3] ? NuAnimCurveCalcVal2(second->curves[component + 3], second_time)
+                                                  : second->constants[component + 3];
+            }
+            r0.x -= r0.x - r1.x > 3.1415927410125732f ? 6.2831854820251465f : 0.0f;
+            r1.x -= r1.x - r0.x > 3.1415927410125732f ? 6.2831854820251465f : 0.0f;
+            r0.y -= r0.y - r1.y > 3.1415927410125732f ? 6.2831854820251465f : 0.0f;
+            r1.y -= r1.y - r0.y > 3.1415927410125732f ? 6.2831854820251465f : 0.0f;
+            r0.z -= r0.z - r1.z > 3.1415927410125732f ? 6.2831854820251465f : 0.0f;
+            r1.z -= r1.z - r0.z > 3.1415927410125732f ? 6.2831854820251465f : 0.0f;
+            r0.x = r0.x * inverse_blend + r1.x * blend;
+            r0.y = r0.y * inverse_blend + r1.y * blend;
+            r0.z = r0.z * inverse_blend + r1.z * blend;
+            if (rotate) {
+                angles.x = static_cast<i32>((r0.x + override_anim->rotation.x) * 10430.3779296875f);
+                angles.y = static_cast<i32>((r0.y + override_anim->rotation.y) * 10430.3779296875f);
+                angles.z = static_cast<i32>((r0.z + override_anim->rotation.z) * 10430.3779296875f);
+                if (flags & 8) {
+                    angles.x &= 0xffff;
+                    if (angles.x > 32767)
+                        angles.x -= 65536;
+                    if (angles.x > override_anim->rotation_limit_start[0])
+                        angles.x = override_anim->rotation_limit_start[0];
+                    else if (angles.x < override_anim->rotation_limit_end[0])
+                        angles.x = override_anim->rotation_limit_end[0];
+                }
+                if (flags & 16) {
+                    angles.y &= 0xffff;
+                    if (angles.y > 32767)
+                        angles.y -= 65536;
+                    if (angles.y > override_anim->rotation_limit_start[1])
+                        angles.y = override_anim->rotation_limit_start[1];
+                    else if (angles.y < override_anim->rotation_limit_end[1])
+                        angles.y = override_anim->rotation_limit_end[1];
+                }
+                if (flags & 32) {
+                    angles.z &= 0xffff;
+                    if (angles.z > 32767)
+                        angles.z -= 65536;
+                    if (angles.z > override_anim->rotation_limit_start[2])
+                        angles.z = override_anim->rotation_limit_start[2];
+                    else if (angles.z < override_anim->rotation_limit_end[2])
+                        angles.z = override_anim->rotation_limit_end[2];
+                }
+            } else {
+                angles.x = static_cast<i32>(r0.x * 10430.3779296875f);
+                angles.y = static_cast<i32>(r0.y * 10430.3779296875f);
+                angles.z = static_cast<i32>(r0.z * 10430.3779296875f);
+            }
+            NuMtxSetRotateXYZVU0(matrix, &angles);
+        } else
+            NuMtxSetIdentity(matrix);
+        if ((first->flags & 0x20) || (second->flags & 0x20))
+            NuMtxMulRVU0(matrix, matrix, &joint->animation_bind_matrix);
+        if ((first->flags & 8) || (second->flags & 8) || rescale) {
+            for (i32 component = 0; component < 3; ++component) {
+                reinterpret_cast<f32 *>(&s0)[component] =
+                    first->curves[component + 6] ? NuAnimCurveCalcVal2(first->curves[component + 6], first_time)
+                                                 : first->constants[component + 6];
+                reinterpret_cast<f32 *>(&s1)[component] =
+                    second->curves[component + 6] ? NuAnimCurveCalcVal2(second->curves[component + 6], second_time)
+                                                  : second->constants[component + 6];
+            }
+            scale->x = blend * s0.x + inverse_blend * s1.x;
+            scale->y = blend * s0.y + inverse_blend * s1.y;
+            scale->z = blend * s0.z + inverse_blend * s1.z;
+            if (rescale) {
+                scale->x += override_anim->scale.x;
+                scale->y += override_anim->scale.y;
+                scale->z += override_anim->scale.z;
+            }
+            NuMtxPreScaleVU0(matrix, scale);
+            scale->x *= parent_scale->x;
+            scale->y *= parent_scale->y;
+            scale->z *= parent_scale->z;
+        } else
+            *scale = *parent_scale;
+        if ((first->flags | second->flags) & 0x10) {
+            if (parent_scale->x != 0.0f && parent_scale->y != 0.0f && parent_scale->z != 0.0f) {
+                temporary.x = 1.0f / parent_scale->x;
+                temporary.y = 1.0f / parent_scale->y;
+                temporary.z = 1.0f / parent_scale->z;
+            } else
+                temporary.x = temporary.y = temporary.z = 0.0f;
+            NuMtxScaleVU0(matrix, &temporary);
+            scale->x *= temporary.x;
+            scale->y *= temporary.y;
+            scale->z *= temporary.z;
+        }
+        for (i32 component = 0; component < 3; ++component) {
+            reinterpret_cast<f32 *>(&translation)[component] =
+                (first->curves[component] ? NuAnimCurveCalcVal2(first->curves[component], first_time)
+                                          : first->constants[component]) *
+                inverse_blend;
+            reinterpret_cast<f32 *>(&translation)[component] +=
+                (second->curves[component] ? NuAnimCurveCalcVal2(second->curves[component], second_time)
+                                           : second->constants[component]) *
+                blend;
+        }
+        if (translate) {
+            translation.x += override_anim->translation.x;
+            translation.y += override_anim->translation.y;
+            translation.z += override_anim->translation.z;
+        }
+        NuMtxTranslate(matrix, &translation);
+        if (joint->data_0x51[0] & 8) {
+            NUVEC *pivot = reinterpret_cast<NUVEC *>(joint->data_0x40);
+            NuMtxPreTranslate(matrix, pivot);
+            temporary.x = -pivot->x;
+            temporary.y = -pivot->y;
+            temporary.z = -pivot->z;
+            NuMtxTranslate(matrix, &temporary);
+        }
+        matrix->m02 = -matrix->m02;
+        matrix->m12 = -matrix->m12;
+        matrix->m20 = -matrix->m20;
+        matrix->m21 = -matrix->m21;
+        matrix->m23 = -matrix->m23;
+        matrix->m32 = -matrix->m32;
     }
-    void NuAnimCurveSetApplyToMatrix(void) {
+    void NuAnimCurveSetApplyToMatrix(nuanimcurveset_s *set, nuanimtime_s *time, NUMTX *matrix) {
+        NUVEC rotation, translation, scale;
+        NUANGVEC angles;
+        if (set->flags & 1) {
+            if (set->curves[3] != NULL) {
+                rotation.x = NuAnimCurveCalcVal2(set->curves[3], time);
+            } else {
+                rotation.x = set->constants[3];
+            }
+            if (set->curves[4] != NULL) {
+                rotation.y = NuAnimCurveCalcVal2(set->curves[4], time);
+            } else {
+                rotation.y = set->constants[4];
+            }
+            if (set->curves[5] != NULL) {
+                rotation.z = NuAnimCurveCalcVal2(set->curves[5], time);
+            } else {
+                rotation.z = set->constants[5];
+            }
+            angles.x = static_cast<NUANG>(rotation.x * 10430.378f);
+            angles.y = static_cast<NUANG>(rotation.y * 10430.378f);
+            angles.z = static_cast<NUANG>(rotation.z * 10430.378f);
+            NuMtxSetRotateXYZVU0(matrix, &angles);
+        } else {
+            NuMtxSetIdentity(matrix);
+        }
+        if (set->flags & 8) {
+            if (set->curves[6] != NULL) {
+                scale.x = NuAnimCurveCalcVal2(set->curves[6], time);
+            } else {
+                scale.x = set->constants[6];
+            }
+            if (set->curves[7] != NULL) {
+                scale.y = NuAnimCurveCalcVal2(set->curves[7], time);
+            } else {
+                scale.y = set->constants[7];
+            }
+            if (set->curves[8] != NULL) {
+                scale.z = NuAnimCurveCalcVal2(set->curves[8], time);
+            } else {
+                scale.z = set->constants[8];
+            }
+            NuMtxPreScaleVU0(matrix, &scale);
+        }
+        if (set->curves[0] != NULL) {
+            translation.x = NuAnimCurveCalcVal2(set->curves[0], time);
+        } else {
+            translation.x = set->constants[0];
+        }
+        if (set->curves[1] != NULL) {
+            translation.y = NuAnimCurveCalcVal2(set->curves[1], time);
+        } else {
+            translation.y = set->constants[1];
+        }
+        if (set->curves[2] != NULL) {
+            translation.z = NuAnimCurveCalcVal2(set->curves[2], time);
+        } else {
+            translation.z = set->constants[2];
+        }
+        NuMtxTranslate(matrix, &translation);
+        matrix->m02 = -matrix->m02;
+        matrix->m12 = -matrix->m12;
+        matrix->m20 = -matrix->m20;
+        matrix->m21 = -matrix->m21;
+        matrix->m23 = -matrix->m23;
+        matrix->m32 = -matrix->m32;
     }
     void *NuAnimCurveSetCreate(i32 curve_count) {
         if (curve_count == 0) {
@@ -1900,7 +2283,7 @@ extern "C" {
         time->time_mask = (1u << ((chunk_frame & 7) + 1)) - 1u;
     }
     void *NuAnimData2FixPtrs(void *data, isize delta, isize external_delta, i32 flags) {
-        extern void buildBitCountTable(void);
+
         buildBitCountTable();
 
         if (data == NULL) {
@@ -2080,79 +2463,49 @@ extern "C" {
         NuFileClose(file);
         return static_cast<i32>(header[0]);
     }
+    static inline void *NuLegacyRelocatePointer(void *pointer, isize delta) {
+        return pointer == NULL ? NULL : reinterpret_cast<void *>(reinterpret_cast<usize>(pointer) + delta);
+    }
     void *NuAnimDataFixPtrs(void *animation, isize delta) {
-        extern void buildBitCountTable(void);
-        if (isBitCountTable == 0) {
+
+        if (isBitCountTable == 0)
             buildBitCountTable();
-        }
-        if (animation != NULL) {
-            animation = reinterpret_cast<void *>(reinterpret_cast<usize>(animation) + delta);
-        }
-
+        animation = NuLegacyRelocatePointer(animation, delta);
         u8 *data = static_cast<u8 *>(animation);
-        void *name = *reinterpret_cast<void **>(data + 4);
-        *reinterpret_cast<void **>(data + 4) =
-            name == NULL ? NULL : reinterpret_cast<void *>(reinterpret_cast<usize>(name) + delta);
-
-        void **chunks = *reinterpret_cast<void ***>(data + 0xc);
-        if (chunks == NULL) {
-            *reinterpret_cast<void ***>(data + 0xc) = NULL;
-            return animation;
-        }
-        chunks = reinterpret_cast<void **>(reinterpret_cast<usize>(chunks) + delta);
-        *reinterpret_cast<void ***>(data + 0xc) = chunks;
-
-        const i32 chunk_count = *reinterpret_cast<i32 *>(data + 8);
-        for (i32 chunk_index = 0; chunk_index < chunk_count; ++chunk_index) {
-            if (chunks[chunk_index] != NULL) {
-                chunks[chunk_index] = reinterpret_cast<void *>(reinterpret_cast<usize>(chunks[chunk_index]) + delta);
-            }
-            u8 *chunk = static_cast<u8 *>(chunks[chunk_index]);
-            if (chunk == NULL) {
-                continue;
-            }
-
-            void **curve_sets = *reinterpret_cast<void ***>(chunk + 8);
-            if (curve_sets == NULL) {
-                *reinterpret_cast<void ***>(chunk + 8) = NULL;
-                continue;
-            }
-            curve_sets = reinterpret_cast<void **>(reinterpret_cast<usize>(curve_sets) + delta);
-            *reinterpret_cast<void ***>(chunk + 8) = curve_sets;
-
-            const i32 curve_set_count = *reinterpret_cast<i32 *>(chunk);
-            for (i32 set_index = 0; set_index < curve_set_count; ++set_index) {
-                if (curve_sets[set_index] != NULL) {
-                    curve_sets[set_index] =
-                        reinterpret_cast<void *>(reinterpret_cast<usize>(curve_sets[set_index]) + delta);
-                }
-                u8 *curve_set = static_cast<u8 *>(curve_sets[set_index]);
-                if (curve_set == NULL) {
-                    continue;
-                }
-
-                void *curve_flags = *reinterpret_cast<void **>(curve_set + 4);
-                *reinterpret_cast<void **>(curve_set + 4) =
-                    curve_flags == NULL ? NULL : reinterpret_cast<void *>(reinterpret_cast<usize>(curve_flags) + delta);
-                void **curves = *reinterpret_cast<void ***>(curve_set + 8);
-                if (curves == NULL) {
-                    *reinterpret_cast<void ***>(curve_set + 8) = NULL;
-                    continue;
-                }
-                curves = reinterpret_cast<void **>(reinterpret_cast<usize>(curves) + delta);
-                *reinterpret_cast<void ***>(curve_set + 8) = curves;
-
-                const i32 curve_count = *reinterpret_cast<i8 *>(curve_set + 0xc);
-                for (i32 curve_index = 0; curve_index < curve_count; ++curve_index) {
-                    if (curves[curve_index] != NULL) {
-                        curves[curve_index] =
-                            reinterpret_cast<void *>(reinterpret_cast<usize>(curves[curve_index]) + delta);
-                    }
-                    u8 *curve = static_cast<u8 *>(curves[curve_index]);
-                    if (curve != NULL) {
-                        void *keys = *reinterpret_cast<void **>(curve + 4);
-                        *reinterpret_cast<void **>(curve + 4) =
-                            keys == NULL ? NULL : reinterpret_cast<void *>(reinterpret_cast<usize>(keys) + delta);
+        void *&name = *reinterpret_cast<void **>(data + 4);
+        name = NuLegacyRelocatePointer(name, delta);
+        void **&chunks = *reinterpret_cast<void ***>(data + 0xc);
+        chunks = static_cast<void **>(NuLegacyRelocatePointer(chunks, delta));
+        if (chunks != NULL) {
+            i32 chunk_count = *reinterpret_cast<i32 *>(data + 8);
+            for (i32 i = 0; i < chunk_count; ++i) {
+                chunks[i] = NuLegacyRelocatePointer(chunks[i], delta);
+                u8 *chunk = static_cast<u8 *>(chunks[i]);
+                if (chunk != NULL) {
+                    void **&sets = *reinterpret_cast<void ***>(chunk + 8);
+                    sets = static_cast<void **>(NuLegacyRelocatePointer(sets, delta));
+                    if (sets != NULL) {
+                        i32 set_count = *reinterpret_cast<i32 *>(chunk);
+                        for (i32 j = 0; j < set_count; ++j) {
+                            sets[j] = NuLegacyRelocatePointer(sets[j], delta);
+                            u8 *set = static_cast<u8 *>(sets[j]);
+                            if (set != NULL) {
+                                void *&constants = *reinterpret_cast<void **>(set + 4);
+                                constants = NuLegacyRelocatePointer(constants, delta);
+                                void **&curves = *reinterpret_cast<void ***>(set + 8);
+                                curves = static_cast<void **>(NuLegacyRelocatePointer(curves, delta));
+                                if (curves != NULL) {
+                                    for (i32 k = 0; k < *reinterpret_cast<i8 *>(set + 0xc); ++k) {
+                                        curves[k] = NuLegacyRelocatePointer(curves[k], delta);
+                                        u8 *curve = static_cast<u8 *>(curves[k]);
+                                        if (curve != NULL) {
+                                            void *&keys = *reinterpret_cast<void **>(curve + 4);
+                                            keys = NuLegacyRelocatePointer(keys, delta);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2172,7 +2525,7 @@ extern "C" {
         return animation;
     }
     void *NuAnimDataRead(NUFILE file) {
-        extern void buildBitCountTable(void);
+
         if (isBitCountTable == 0) {
             buildBitCountTable();
         }
@@ -2189,12 +2542,12 @@ extern "C" {
         u8 *animation = static_cast<u8 *>(NuAnimDataCreate(chunk_count));
         *reinterpret_cast<f32 *>(animation) = duration;
         *reinterpret_cast<char **>(animation + 4) = name;
-        void **chunks = *reinterpret_cast<void ***>(animation + 0xc);
 
-        for (i32 chunk_index = 0; chunk_index < chunk_count; ++chunk_index) {
+        for (i32 chunk_index = 0; chunk_index < *reinterpret_cast<i32 *>(animation + 8); ++chunk_index) {
             const i32 curve_set_count = NuFileReadInt(file);
+            void **chunk_slot = *reinterpret_cast<void ***>(animation + 0xc) + chunk_index;
             u8 *chunk = reinterpret_cast<u8 *>(NuAnimDataChunkCreate(curve_set_count));
-            chunks[chunk_index] = chunk;
+            *chunk_slot = chunk;
             *reinterpret_cast<i32 *>(chunk) = curve_set_count;
 
             u8 *curve_data = NULL;
@@ -2204,6 +2557,7 @@ extern "C" {
                 curve_data = static_cast<u8 *>(NU_ALLOC(curve_data_size, 4, 1, "", 0));
                 *reinterpret_cast<void **>(chunk + 0xc) = curve_data;
                 NuFileRead(file, curve_data, curve_data_size);
+                curve_data = *reinterpret_cast<u8 **>(chunk + 0xc);
             } else {
                 *reinterpret_cast<void **>(chunk + 0xc) = NULL;
             }
@@ -2219,35 +2573,40 @@ extern "C" {
                 *reinterpret_cast<void **>(chunk + 0x10) = NULL;
             }
 
-            void **curve_sets = *reinterpret_cast<void ***>(chunk + 8);
             for (i32 set_index = 0; set_index < curve_set_count; ++set_index) {
                 const i32 curve_count = NuFileReadChar(file);
                 if (curve_count == 0) {
                     continue;
                 }
 
-                u8 *curve_set = static_cast<u8 *>(NuAnimCurveSetCreate(curve_count));
-                curve_sets[set_index] = curve_set;
+                void **set_slot = *reinterpret_cast<void ***>(chunk + 8) + set_index;
+                *set_slot = NuAnimCurveSetCreate(curve_count);
+                u8 *curve_set = static_cast<u8 *>((*reinterpret_cast<void ***>(chunk + 8))[set_index]);
                 *reinterpret_cast<i32 *>(curve_set) = NuFileReadInt(file);
-                f32 *curve_flags = *reinterpret_cast<f32 **>(curve_set + 4);
-                for (i32 curve_index = 0; curve_index < curve_count; ++curve_index) {
-                    curve_flags[curve_index] = NuFileReadFloat(file);
+                for (i32 curve_index = 0;
+                     curve_index < *reinterpret_cast<i8 *>(
+                                       static_cast<u8 *>((*reinterpret_cast<void ***>(chunk + 8))[set_index]) + 0xc);
+                     ++curve_index) {
+                    curve_set = static_cast<u8 *>((*reinterpret_cast<void ***>(chunk + 8))[set_index]);
+                    f32 *value = *reinterpret_cast<f32 **>(curve_set + 4) + curve_index;
+                    *value = NuFileReadFloat(file);
                 }
             }
 
-            u8 *shared_cursor = shared_curves;
+            u8 *shared_cursor = *reinterpret_cast<u8 **>(chunk + 0x10);
             u8 *curve_data_cursor = curve_data;
-            for (i32 set_index = 0; set_index < curve_set_count; ++set_index) {
-                u8 *curve_set = static_cast<u8 *>(curve_sets[set_index]);
+            for (i32 set_index = 0; set_index < *reinterpret_cast<i32 *>(chunk); ++set_index) {
+                u8 *curve_set = static_cast<u8 *>((*reinterpret_cast<void ***>(chunk + 8))[set_index]);
                 if (curve_set == NULL) {
                     continue;
                 }
-                const i32 curve_count = *reinterpret_cast<i8 *>(curve_set + 0xc);
-                f32 *curve_flags = *reinterpret_cast<f32 **>(curve_set + 4);
-                void **curves = *reinterpret_cast<void ***>(curve_set + 8);
-                for (i32 curve_index = 0; curve_index < curve_count; ++curve_index) {
-                    if (curve_flags[curve_index] == FLT_MAX) {
-                        curves[curve_index] = shared_cursor;
+                for (i32 curve_index = 0;
+                     curve_index < *reinterpret_cast<i8 *>(
+                                       static_cast<u8 *>((*reinterpret_cast<void ***>(chunk + 8))[set_index]) + 0xc);
+                     ++curve_index) {
+                    curve_set = static_cast<u8 *>((*reinterpret_cast<void ***>(chunk + 8))[set_index]);
+                    if ((*reinterpret_cast<f32 **>(curve_set + 4))[curve_index] == FLT_MAX) {
+                        (*reinterpret_cast<void ***>(curve_set + 8))[curve_index] = shared_cursor;
                         ++*reinterpret_cast<i32 *>(chunk + 4);
                         *reinterpret_cast<void **>(shared_cursor + 4) = curve_data_cursor;
                         curve_data_cursor += *reinterpret_cast<i32 *>(shared_cursor + 8) << 4;
@@ -2277,7 +2636,7 @@ extern "C" {
         return ForceEulerToQuat;
     }
     void NuAnimInit(i32 max_joints, VARIPTR *buf, VARIPTR buf_end) {
-        extern void buildBitCountTable(void);
+
         buildBitCountTable();
         NuAnimBuffInit(max_joints, buf, buf_end);
     }
@@ -2314,8 +2673,6 @@ extern "C" {
     // Bridge / file / heap / memory
     // ---------------------------------------------------------------------------
 
-    void NuBridgeUpdate(void *) {
-    }
     void NuDatClose(NUDATHDR *header) {
         extern NUDATFILEINFO dat_file_infos[20];
 
@@ -2406,31 +2763,7 @@ extern "C" {
         void *block = NuMemFileAddr(file);
         return NuPtrBlockFix(block);
     }
-    i32 NuPPGetSize(NUFILE file) {
-        struct PackedHeader {
-            u32 magic;
-            u32 unpacked_size;
-            u32 packed_size;
-        } header;
 
-        const i32 original_position = static_cast<i32>(NuFileSeek(file, 0, NUFILE_SEEK_CURRENT));
-        NuFileSeek(file, 0, NUFILE_SEEK_START);
-        NuFileRead(file, &header, sizeof(header));
-
-        i32 size;
-        if (header.magic == 0x02434e52) {
-            header.unpacked_size = __builtin_bswap32(header.unpacked_size);
-            header.packed_size = __builtin_bswap32(header.packed_size) + 6;
-            size = static_cast<i32>(header.unpacked_size);
-        } else {
-            size = static_cast<i32>(NuFileOpenSize(file));
-        }
-
-        NuFileSeek(file, original_position, NUFILE_SEEK_START);
-        return size;
-    }
-    void NuPPUnpack(void) {
-    }
     void NuSysDirClose(void) {
     }
     i32 NuSysDirOpen(void) {
@@ -2654,12 +2987,15 @@ extern "C" {
             memcpy(&currentScene.unknown_54, &value, sizeof(value));
     }
     void NuDepthOfFieldEffect(f32 strength, f32 near_distance, f32 far_distance) {
+        currentScene.dof.enabled = 1;
         currentScene.dof.strength = strength;
         currentScene.dof.near_distance = near_distance;
         currentScene.dof.bias = 0.0f;
         currentScene.dof.far_distance = far_distance;
         currentScene.dof.mode = 3;
-        currentScene.dof.enabled = NuRndrDoingScreenGrab == 0;
+        if (NuRndrDoingScreenGrab != 0) {
+            currentScene.dof.enabled = 0;
+        }
     }
     void NuDepthOfFieldEffect1(f32 near_distance, f32 far_distance) {
         near_distance =
@@ -2814,7 +3150,11 @@ extern "C" {
         NuLightsx = x;
         NuLightsy = y;
     }
-    void NuLgtArcLaser(void) {
+    NULGTARCLASER NuLgtArcLaserData[16];
+    i32 NuLgtArcLaserOldCnt;
+    void NuLgtArcLaser(i32 type, NUVEC *start, NUVEC *end, NUVEC *bend, f32 width, f32 segment_length, f32 wobble,
+                       f32 bend_amount, i32 colour) {
+        NuLgtArcLaserEx(type, start, end, bend, width, segment_length, wobble, bend_amount, colour, 0);
     }
     i32 NuLgtLaserCnt;
     i32 NuLgtArcLaserCnt;
@@ -2850,10 +3190,233 @@ extern "C" {
         NuLgtRand();
         ++NuLgtLaserCnt;
     }
-    void NuLgtLaserDraw(i32 paused) {
-        (void)paused;
+    static inline u16 NuLgtHalf(f32 value) {
+        union {
+            f32 value;
+            u32 bits;
+        } conversion = {value};
+        i32 sign = conversion.bits >> 31;
+        i32 exponent = (conversion.bits >> 23) & 0xff;
+        i32 mantissa = conversion.bits & 0x7fffff;
+        // Preserve the original truncation and exponent clamp, including subnormals.
+        exponent -= 112;
+        if (exponent < 0)
+            exponent = 0;
+        if (exponent > 31)
+            exponent = 31;
+        return (sign << 15) | ((exponent & 31) << 10) | (mantissa >> 13);
     }
-    void NuLgtSetArcMat(void) {
+    static inline void NuLgtVertex(NUVEC4 *position, i32 colour, f32 u, f32 v) {
+        g_NuPrim_StreamBufferPtr->u32_ptr[3] =
+            g_NuPrim_NeedsOverbrightening ? colour : ((colour >> 1) & 0x7f7f7f) | (colour & 0xff000000);
+        if (g_NuPrim_NeedsHalfUVs) {
+            ((u16 *)g_NuPrim_StreamBufferPtr->u8_ptr)[8] = NuLgtHalf(u);
+            ((u16 *)g_NuPrim_StreamBufferPtr->u8_ptr)[9] = NuLgtHalf(v);
+        } else {
+            g_NuPrim_StreamBufferPtr->f32_ptr[4] = u;
+            g_NuPrim_StreamBufferPtr->f32_ptr[5] = v;
+        }
+        NuPrim2DAddXYZ(position->x, -position->y, position->z * 0.91f);
+    }
+    void NuLgtLaserDraw(i32 paused) {
+        if (paused)
+            NuLgtLaserCnt = NuLgtLaserOldCnt;
+        if (NuLgtArcMtl[0].material == NULL || NuLgtLaserCnt == 0) {
+            NuLgtLaserOldCnt = 0;
+            return;
+        }
+        f32 v0 = NuLgtArcMtl[0].v0;
+        f32 v1 = NuLgtArcMtl[0].v1;
+        u32 saved_seed = NuLgtSeed;
+        // Four strip corners, two projected endpoints, and two clipped world endpoints.
+        NUVEC4 *vertices = (NUVEC4 *)NuScratchAlloc32(0x80);
+        NUMTX clip_matrix;
+        NuCameraGetClipMtx(&clip_matrix, NULL);
+        f32 aspect = (f32)PS2_REZ_W / (f32)PS2_REZ_H;
+        for (i32 i = 0; i < NuLgtLaserCnt; ++i) {
+            NULGTLASER *laser = &NuLgtLaserData[i];
+            vertices[4].x = laser->start.x;
+            vertices[4].y = laser->start.y;
+            vertices[4].z = laser->start.z;
+            vertices[4].w = 1.0f;
+            NuVec4MtxTransformVU0(&vertices[4], &vertices[4], &clip_matrix);
+            vertices[5].x = laser->end.x;
+            vertices[5].y = laser->end.y;
+            vertices[5].z = laser->end.z;
+            vertices[5].w = 1.0f;
+            NuVec4MtxTransformVU0(&vertices[5], &vertices[5], &clip_matrix);
+            if (!(vertices[4].w >= 0.5f) && !(vertices[5].w >= 0.5f))
+                continue;
+            i32 red = laser->colour & 0xff;
+            i32 green = (laser->colour >> 8) & 0xff;
+            i32 blue = (laser->colour >> 16) & 0xff;
+            i32 alpha = laser->colour >> 24;
+            if (vertices[4].w < 0.5f) {
+                f32 numerator = vertices[5].w - 0.5f;
+                f32 denominator = vertices[5].w - vertices[4].w;
+                if (laser->arc) {
+                    red = (i32)((f32)red * numerator / denominator);
+                    green = (i32)((f32)green * numerator / denominator);
+                    blue = (i32)((f32)blue * numerator / denominator);
+                    alpha = (i32)((f32)alpha * numerator / denominator);
+                }
+                vertices[6].x = (laser->start.x - laser->end.x) * numerator / denominator + laser->end.x;
+                vertices[6].y = (laser->start.y - laser->end.y) * numerator / denominator + laser->end.y;
+                vertices[6].z = (laser->start.z - laser->end.z) * numerator / denominator + laser->end.z;
+            } else {
+                vertices[6].x = laser->start.x;
+                vertices[6].y = laser->start.y;
+                vertices[6].z = laser->start.z;
+            }
+            vertices[6].w = 1.0f;
+            f32 dx = vertices[6].x - laser->end.x;
+            f32 dy = vertices[6].y - laser->end.y;
+            f32 dz = vertices[6].z - laser->end.z;
+            f32 remaining = NuFsqrt(dx * dx + dy * dy + dz * dz);
+            if (vertices[5].w < 0.5f) {
+                f32 numerator = vertices[4].w - 0.5f;
+                f32 denominator = vertices[4].w - vertices[5].w;
+                vertices[7].x = (laser->end.x - laser->start.x) * numerator / denominator + laser->start.x;
+                vertices[7].y = (laser->end.y - laser->start.y) * numerator / denominator + laser->start.y;
+                vertices[7].z = (laser->end.z - laser->start.z) * numerator / denominator + laser->start.z;
+            } else {
+                vertices[7].x = laser->end.x;
+                vertices[7].y = laser->end.y;
+                vertices[7].z = laser->end.z;
+            }
+            vertices[7].w = 1.0f;
+            NuVec4MtxTransformVU0(&vertices[4], &vertices[6], &clip_matrix);
+            NuVec4ScaleXYZVU0(&vertices[4], &vertices[4], 1.0f / vertices[4].w);
+            NuVec4MtxTransformVU0(&vertices[5], &vertices[7], &clip_matrix);
+            NuVec4ScaleXYZVU0(&vertices[5], &vertices[5], 1.0f / vertices[5].w);
+            if (vertices[4].x < -1.0f && vertices[5].x < -1.0f)
+                continue;
+            if (vertices[4].x > 1.0f && vertices[5].x > 1.0f)
+                continue;
+            if (vertices[4].y < -1.0f && vertices[5].y < -1.0f)
+                continue;
+            if (vertices[4].y > 1.0f && vertices[5].y > 1.0f)
+                continue;
+            NUVEC perpendicular = {(vertices[5].y - vertices[4].y) * aspect, vertices[4].x - vertices[5].x, 0.0f};
+            NuVecNorm(&perpendicular, &perpendicular);
+            perpendicular.x *= laser->width * aspect;
+            perpendicular.y *= laser->width;
+            vertices[7].x -= vertices[6].x;
+            vertices[7].y -= vertices[6].y;
+            vertices[7].z -= vertices[6].z;
+            vertices[7].w -= vertices[6].w;
+            f32 length =
+                NuFsqrt(vertices[7].x * vertices[7].x + vertices[7].y * vertices[7].y + vertices[7].z * vertices[7].z);
+            if (!(length > 0.0f))
+                continue;
+            f32 step = laser->segment_length / length;
+            if (step > 1.0f)
+                step = 1.0f;
+            // Per-laser seeds make repeated and paused rendering deterministic.
+            NuLgtSeed = laser->seed;
+            f32 u0 = NuLgtArcMtl[0].u0;
+            f32 u1 = NuLgtArcMtl[0].u1;
+            vertices[4].x = vertices[6].x;
+            vertices[4].y = vertices[6].y;
+            vertices[4].z = vertices[6].z;
+            vertices[4].w = 1.0f;
+            NuVec4MtxTransformVU0(&vertices[4], &vertices[4], &clip_matrix);
+            f32 width_scale = 1.0f / vertices[4].w;
+            NuVec4ScaleXYZVU0(&vertices[4], &vertices[4], width_scale);
+            if (laser->length > remaining) {
+                if (remaining < 0.0f)
+                    width_scale *= laser->end_width_ratio;
+                else
+                    width_scale += (laser->end_width_ratio * width_scale - width_scale) * (laser->length - remaining) /
+                                   laser->length;
+            }
+            vertices[1].x = vertices[4].x - perpendicular.x * width_scale;
+            vertices[1].y = vertices[4].y - perpendicular.y * width_scale;
+            vertices[1].z = vertices[4].z;
+            vertices[3].x = vertices[4].x + perpendicular.x * width_scale;
+            vertices[3].y = vertices[4].y + perpendicular.y * width_scale;
+            vertices[3].z = vertices[4].z;
+            remaining -= laser->segment_length;
+            f32 fraction = 0.0f;
+            i32 start_alpha = alpha;
+            for (;;) {
+                f32 next_fraction = fraction + step;
+                i32 end_alpha = start_alpha;
+                if (next_fraction < 1.0f) {
+                    if (laser->arc)
+                        end_alpha = (i32)((1.0f - fraction - step) * (f32)alpha);
+                    vertices[5].x = next_fraction * vertices[7].x + vertices[6].x;
+                    vertices[5].y = next_fraction * vertices[7].y + vertices[6].y;
+                    vertices[5].z = next_fraction * vertices[7].z + vertices[6].z;
+                } else {
+                    if (laser->arc)
+                        end_alpha = 0;
+                    vertices[5].x = vertices[6].x + vertices[7].x;
+                    vertices[5].y = vertices[6].y + vertices[7].y;
+                    vertices[5].z = vertices[6].z + vertices[7].z;
+                    u0 = NuLgtArcMtl[0].u1 + (1.0f - fraction) * (NuLgtArcMtl[0].u0 - NuLgtArcMtl[0].u1) / step;
+                }
+                vertices[5].w = 1.0f;
+                NuVec4MtxTransformVU0(&vertices[5], &vertices[5], &clip_matrix);
+                width_scale = 1.0f / vertices[5].w;
+                NuVec4ScaleXYZVU0(&vertices[5], &vertices[5], width_scale);
+                if (laser->length > remaining) {
+                    if (remaining < 0.0f)
+                        width_scale *= laser->end_width_ratio;
+                    else
+                        width_scale += (width_scale * laser->end_width_ratio - width_scale) *
+                                       (laser->length - remaining) / laser->length;
+                }
+                f32 wobble_x = 0.0f, wobble_y = 0.0f;
+                if (1.0f - 1.5f * step > fraction && laser->seed != 0) {
+                    f32 random = (f32)((NuLgtRand() & 0xff) - 128);
+                    wobble_x = perpendicular.x * random * laser->width_wobble * width_scale;
+                    wobble_y = perpendicular.y * random * laser->width_wobble * width_scale;
+                }
+                vertices[0].x = vertices[5].x - perpendicular.x * width_scale + wobble_x;
+                vertices[0].y = vertices[5].y - perpendicular.y * width_scale + wobble_y;
+                vertices[0].z = vertices[5].z;
+                vertices[2].x = vertices[5].x + perpendicular.x * width_scale + wobble_x;
+                vertices[2].y = vertices[5].y + perpendicular.y * width_scale + wobble_y;
+                vertices[2].z = vertices[5].z;
+                ++NuPrimCSPos;
+                NuPrimSetCoordinateSystem(NUPRIM_SCALEMODE_NORMALISED);
+                NuPrim2DBegin(1, 7, NuLgtArcMtl[0].material);
+                NuLgtVertex(&vertices[0],
+                            ((red & 255) | ((green & 255) << 8) | ((blue & 255) << 16)) | ((u32)end_alpha << 24), u0,
+                            v0);
+                NuLgtVertex(&vertices[1],
+                            ((red & 255) | ((green & 255) << 8) | ((blue & 255) << 16)) | ((u32)start_alpha << 24), u1,
+                            v0);
+                NuLgtVertex(&vertices[2],
+                            ((red & 255) | ((green & 255) << 8) | ((blue & 255) << 16)) | ((u32)end_alpha << 24), u0,
+                            v1);
+                NuLgtVertex(&vertices[3],
+                            ((red & 255) | ((green & 255) << 8) | ((blue & 255) << 16)) | ((u32)start_alpha << 24), u1,
+                            v1);
+                NuPrim2DEnd();
+                NuPrimSetCoordinateSystem(NuPrimCoordSystemStack[--NuPrimCSPos]);
+                vertices[1].x = vertices[0].x;
+                vertices[1].y = vertices[0].y;
+                vertices[1].z = vertices[0].z;
+                vertices[3].x = vertices[2].x;
+                vertices[3].y = vertices[2].y;
+                vertices[3].z = vertices[2].z;
+                remaining -= laser->segment_length;
+                if (!(1.0f > next_fraction))
+                    break;
+                fraction = next_fraction;
+                start_alpha = end_alpha;
+            }
+        }
+        NuLgtSeed = saved_seed;
+        NuLgtLaserOldCnt = NuLgtLaserCnt;
+        NuLgtLaserCnt = 0;
+        NuScratchRelease();
+    }
+
+    void NuLgtSetArcMat(NUMTL *material, f32 u0, f32 v0, f32 u1, f32 v1) {
+        NuLgtSetArcMatEx(0, material, u0, v0, u1, v1);
     }
     void NuPostBloom(i32, const NuBloomParameters *parameters) {
         currentScene.bloom = *parameters;
@@ -3288,17 +3851,23 @@ extern "C" {
     // Light / wind / particles / debris
     // ---------------------------------------------------------------------------
 
-    void NuDynamicLightAddRenderScene(i32, i32, i32) {
+    void NuDynamicLightAddRenderScene(NuDynamicLight *light, i32 index, i32 scene_id) {
+        NuDynamicLight::RenderSet &set = light->render_sets[index];
+        set.reserved_33c[set.geometry_count++] = scene_id;
     }
-    void NuDynamicLightAddShadowCasterScene(void) {
+    void NuDynamicLightAddShadowCasterScene(NuDynamicLight *light, nugscn_s *scene) {
+        light->addShadowCasterScene(scene);
     }
     void NuDynamicLightBeginCapture(void) {
     }
-    void NuDynamicLightClone(void) {
+    NuDynamicLight *NuDynamicLightClone(NuDynamicLight *light, VARIPTR *arena, VARIPTR end) {
+        return light->clone(arena, end);
     }
-    void NuDynamicLightCreate(void) {
+    NuDynamicLight *NuDynamicLightCreate() {
+        return NuDynamicLight::create();
     }
-    void NuDynamicLightDestroy(void) {
+    void NuDynamicLightDestroy(NuDynamicLight *light) {
+        NuDynamicLight::destroy(light);
     }
     void NuDynamicLightEndCapture(void) {
     }
@@ -3349,7 +3918,8 @@ extern "C" {
     void NuDynamicLightSetUsedOnSpecials(NuDynamicLight *light, i32 enabled) {
         light->used_on_specials = enabled;
     }
-    void NuDynamicLightSetupCustomCameraFrustum(void) {
+    void NuDynamicLightSetupCustomCameraFrustum(NuDynamicLight *light, NUCAMERA *camera, const f32 *splits, i32 count) {
+        light->setupCustomCameraFrustum(camera, splits, count);
     }
     void NuDynamicLightTestShadowExtrusionExtent(void) {
     }
@@ -3475,16 +4045,73 @@ extern "C" {
                           NUJOINTANIM_s *overrides, NUMTX *matrices) {
         NuHGobjEvalAnim2Root(object, animation, time, override_count, overrides, matrices, NULL, NULL);
     }
+    i32 ddmaxjoints;
     void NuHGobjEvalAnim2Root(nuhgobj_s *object, ani3_animheader_s *animation, f32 time, i32 override_count,
                               NUJOINTANIM_s *overrides, NUMTX *matrices, NUHGOBJROOTFN root_fn, void *root_data) {
-        if (animation != NULL && (animation->magic == 0x414e4934 || animation->magic == 0x414e4935)) {
+        if (animation->magic == 0x414e4934 || animation->magic == 0x414e4935) {
             NuHGobjEvalAnim2Root_3(object, animation, time, override_count, overrides, matrices, root_fn, root_data);
             return;
         }
-
-        // Older NuAnimData2 animations use the curve evaluator below this
-        // branch in the original function; that legacy path remains pending.
+        if (object->joint_count > ddmaxjoints) {
+            ddmaxjoints = object->joint_count;
+        }
+        nuanimdata2_s *legacy = reinterpret_cast<nuanimdata2_s *>(animation);
+        NUVEC scales[256];
+        NUJOINTANIM_s *joint_overrides[256];
+        NUMTX local_matrix __attribute__((aligned(16)));
+        nuanimtime_s anim_time;
+        NUVEC translation, locator_translation;
+        scales[255] = {1.0f, 1.0f, 1.0f};
+        NuAnimData2CalcTime(legacy, time, &anim_time);
+        if (override_count != 0) {
+            memset(joint_overrides, 0, object->joint_count * sizeof(*joint_overrides));
+            for (u8 i = 0; i < override_count; ++i) {
+                if (overrides[i].joint_index < object->joint_override_map_count) {
+                    u8 index = object->joint_override_map[overrides[i].joint_index];
+                    if (index != 255) {
+                        joint_overrides[index] = &overrides[i];
+                    }
+                }
+            }
+        }
+        for (u8 i = 0; i < object->joint_count; ++i) {
+            NUMTX *output = &matrices[i];
+            if (i >= static_cast<i16>(legacy->node_count)) {
+                *output = numtx_identity;
+                continue;
+            }
+            NUJOINTANIM_s *override_anim = NULL;
+            if (override_count != 0) {
+                override_anim = joint_overrides[i];
+            }
+            nuanimcurve2_s *curves = &legacy->curves[i * static_cast<i16>(legacy->curve_count)];
+            i8 *types = reinterpret_cast<i8 *>(legacy->curve_types) + i * static_cast<i16>(legacy->curve_count);
+            u8 flags = legacy->node_flags[i];
+            NUVEC *scale = &scales[i];
+            if (i == 0) {
+                NuAnimCurve2SetApplyToJointTransLoc(curves, types, static_cast<i8>(flags), &anim_time,
+                                                    &object->joints[i], scale, &scales[object->joints[i].parent_index],
+                                                    &local_matrix, override_anim, &translation, &locator_translation);
+                if (root_fn != NULL) {
+                    root_fn(&local_matrix, root_data, &translation, NULL, &locator_translation, 0.0f);
+                }
+            } else {
+                NuAnimCurve2SetApplyToJoint(curves, types, static_cast<i8>(flags), &anim_time, &object->joints[i],
+                                            scale, &scales[object->joints[i].parent_index], &local_matrix,
+                                            override_anim);
+            }
+            u8 parent = object->joints[i].parent_index;
+            if (parent != 255) {
+                NuMtxMulVU0(output, &local_matrix, &matrices[parent]);
+            } else {
+                if ((flags & 0x40) != 0) {
+                    *scale = {1.0f, 1.0f, 1.0f};
+                }
+                *output = local_matrix;
+            }
+        }
     }
+
     // Original @0x2cd150.
     void NuHGobjEvalAnim2Root_3(nuhgobj_s *object, ani3_animheader_s *animation, f32 time, i32 override_count,
                                 NUJOINTANIM_s *overrides, NUMTX *matrices, NUHGOBJROOTFN root_fn, void *root_data) {
@@ -3569,7 +4196,76 @@ extern "C" {
         }
         return reinterpret_cast<void **>(weights_by_render);
     }
-    void NuHGobjEvalDwaBlend(void) {
+    struct NuLegacyDwaChunk {
+        i32 node_count;
+        i32 reserved_04;
+        nuanimcurveset_s **curve_sets;
+    };
+    static inline NuLegacyDwaChunk *NuLegacyDwaGetChunk(void *animation, i32 index) {
+        NuLegacyDwaChunk **chunks = *reinterpret_cast<NuLegacyDwaChunk ***>(static_cast<u8 *>(animation) + 0xc);
+        return chunks[index];
+    }
+    void **NuHGobjEvalDwaBlend(i32 render_count, i16 *render_indices, void *animation_a, f32 frame_a, void *animation_b,
+                               f32 frame_b, f32 blend) {
+        bool has_a = animation_a != NULL;
+        bool has_b = animation_b != NULL;
+        if ((!has_a && !has_b) || render_count == 0)
+            return NULL;
+        nuanimtime_s time_a __attribute__((aligned(16)));
+        nuanimtime_s time_b __attribute__((aligned(16)));
+        if (has_a)
+            NuAnimDataCalcTime(animation_a, frame_a, &time_a);
+        if (has_b)
+            NuAnimDataCalcTime(animation_b, frame_b, &time_b);
+        f32 **weights_by_render;
+        if (render_indices != NULL) {
+            weights_by_render = NuRndrCreateBlendShapeDWAPointers(render_count);
+            memset(weights_by_render, 0, (static_cast<usize>(render_count) * sizeof(void *) + 15) >> 4);
+        } else {
+            weights_by_render = NuRndrCreateBlendShapeDWAPointers(1);
+            memset(weights_by_render, 0, 1);
+            render_count = 1;
+        }
+        if (weights_by_render == NULL)
+            return NULL;
+        for (i32 render = 0; render < render_count; ++render) {
+            i32 node = render_indices == NULL ? 0 : render_indices[render];
+            if (node < 0)
+                continue;
+            i32 count_a = 0;
+            if (has_a) {
+                NuLegacyDwaChunk *chunk = NuLegacyDwaGetChunk(animation_a, time_a.chunk);
+                if (node < chunk->node_count && chunk->curve_sets[node])
+                    count_a = static_cast<i8>(chunk->curve_sets[node]->curve_count);
+            }
+            i32 count_b = 0;
+            if (has_b) {
+                NuLegacyDwaChunk *chunk = NuLegacyDwaGetChunk(animation_b, time_b.chunk);
+                if (node < chunk->node_count && chunk->curve_sets[node])
+                    count_b = static_cast<i8>(chunk->curve_sets[node]->curve_count);
+            }
+            i32 curve_count = count_a < count_b ? count_b : count_a;
+            f32 *weights = NuRndrCreateBlendShapeDeformerWeightsArray(curve_count);
+            weights_by_render[render] = weights;
+            if (weights == NULL || curve_count <= 0)
+                continue;
+            for (i32 curve = 0; curve < curve_count; ++curve) {
+                f32 value_a = 0.0f;
+                if (curve < count_a) {
+                    nuanimcurveset_s *set = NuLegacyDwaGetChunk(animation_a, time_a.chunk)->curve_sets[node];
+                    value_a =
+                        set->curves[curve] ? NuAnimCurveCalcVal2(set->curves[curve], &time_a) : set->constants[curve];
+                }
+                f32 value_b = 0.0f;
+                if (curve < count_b) {
+                    nuanimcurveset_s *set = NuLegacyDwaGetChunk(animation_b, time_b.chunk)->curve_sets[node];
+                    value_b =
+                        set->curves[curve] ? NuAnimCurveCalcVal2(set->curves[curve], &time_b) : set->constants[curve];
+                }
+                weights[curve + 1] = value_b * blend + (1.0f - blend) * value_a;
+            }
+        }
+        return reinterpret_cast<void **>(weights_by_render);
     }
     void **NuHGobjEvalDwaBlend2(i32 render_count, i16 *render_indices, nuanimdata2_s *animation_a, f32 frame_a,
                                 nuanimdata2_s *animation_b, f32 frame_b, f32 blend) {
@@ -3863,7 +4559,86 @@ extern "C" {
     void NuGCutCharAnimProcess(NUGCUTCHAR_s *character, f32 frame, NUMTX *matrix, i32 *visible, u32 *animation_index,
                                f32 *animation_rate, f32 *blend_time, f32 *animation_start_frame, i32 *layer_mask) {
         nuanimdata2_s *animation = character->animation;
-        if (animation == NULL) {
+        if (animation != NULL) {
+            const u32 magic = *reinterpret_cast<u32 *>(animation);
+            if (magic == ANI3_MAGIC_VERSION_4 || magic == ANI3_MAGIC_VERSION_5) {
+                NuGCutCharAnimProcess_3(character, frame, matrix, visible, animation_index, animation_rate, blend_time,
+                                        animation_start_frame, layer_mask);
+                return;
+            }
+
+            nuanimtime_s time;
+            NuAnimData2CalcTime(animation, frame, &time);
+            animation = character->animation;
+            nuanimcurve2_s *curves = animation->curves;
+            i8 *types = reinterpret_cast<i8 *>(animation->curve_types);
+            const u8 node_flags = animation->node_flags[0];
+#define NUGCUT_CURVE_VALUE(curve)                                                                                      \
+    (types[curve] == 0 ? curves[curve].data.constant : NuAnimCurve2CalcValEx(&curves[curve], &time, types[curve]))
+
+            *visible = static_cast<i16>(character->animation->curve_count) < 7
+                           ? character->flags & 1
+                           : static_cast<i32>(NUGCUT_CURVE_VALUE(6));
+            if (animation_index != NULL) {
+                if (static_cast<i16>(character->animation->curve_count) < 8) {
+                    *animation_index = character->animation_index;
+                } else {
+                    const f32 value = NUGCUT_CURVE_VALUE(7);
+                    *animation_index = value < 0.0f ? 0xff : static_cast<i32>(value);
+                }
+            }
+            if (animation_start_frame != NULL) {
+                if (animation_index != NULL && *animation_index != 0 && *animation_index != 0xff) {
+                    *animation_start_frame = static_cast<i16>(character->animation->curve_count) < 11
+                                                 ? static_cast<f32>(character->animation_start_frame)
+                                                 : NUGCUT_CURVE_VALUE(10);
+                } else {
+                    *animation_start_frame = 0.0f;
+                }
+            }
+            if (*visible == 0) {
+                return;
+            }
+            if (layer_mask != NULL) {
+                *layer_mask = static_cast<i16>(character->animation->curve_count) < 12
+                                  ? -1
+                                  : static_cast<i32>(NUGCUT_CURVE_VALUE(11));
+            }
+
+            if ((node_flags & NUANIM_NODE_HAS_ROTATION) != 0) {
+                const f32 rx = NUGCUT_CURVE_VALUE(3);
+                const f32 ry = NUGCUT_CURVE_VALUE(4);
+                const f32 rz = NUGCUT_CURVE_VALUE(5);
+                NUANGVEC rotation = {
+                    static_cast<NUANG>(rx * 10430.378f),
+                    static_cast<NUANG>(ry * 10430.378f),
+                    static_cast<NUANG>(rz * 10430.378f),
+                };
+                NuMtxSetRotateXYZ(matrix, &rotation);
+            } else {
+                NuMtxSetIdentity(matrix);
+            }
+            NUVEC translation = {NUGCUT_CURVE_VALUE(0), NUGCUT_CURVE_VALUE(1), NUGCUT_CURVE_VALUE(2)};
+            NuMtxTranslate(matrix, &translation);
+            matrix->m02 = -matrix->m02;
+            matrix->m12 = -matrix->m12;
+            matrix->m20 = -matrix->m20;
+            matrix->m21 = -matrix->m21;
+            matrix->m23 = -matrix->m23;
+            matrix->m32 = -matrix->m32;
+            NUVEC scale;
+            scale = NuMtxGetScale(&character->base_matrix);
+            NuMtxPreScale(matrix, &scale);
+            if (animation_rate != NULL) {
+                *animation_rate = static_cast<i16>(character->animation->curve_count) < 10 ? character->animation_rate
+                                                                                           : NUGCUT_CURVE_VALUE(9);
+            }
+            if (blend_time != NULL) {
+                *blend_time = static_cast<i16>(character->animation->curve_count) < 9
+                                  ? static_cast<f32>(character->blend_time)
+                                  : NUGCUT_CURVE_VALUE(8);
+            }
+        } else {
             *visible = character->flags & 1;
             if (animation_index != NULL) {
                 *animation_index = character->animation_index;
@@ -3875,75 +4650,9 @@ extern "C" {
             if (blend_time != NULL) {
                 *blend_time = static_cast<f32>(character->blend_time);
             }
-            return;
-        }
-        const u32 magic = *reinterpret_cast<u32 *>(animation);
-        if (magic == ANI3_MAGIC_VERSION_4 || magic == ANI3_MAGIC_VERSION_5) {
-            NuGCutCharAnimProcess_3(character, frame, matrix, visible, animation_index, animation_rate, blend_time,
-                                    animation_start_frame, layer_mask);
-            return;
-        }
-
-        nuanimtime_s time;
-        NuAnimData2CalcTime(animation, frame, &time);
-        nuanimcurve2_s *curves = animation->curves;
-        u8 *types = animation->curve_types;
-        const auto curve_value = [&](i32 curve) -> f32 {
-            return types[curve] == 0 ? curves[curve].data.constant
-                                     : NuAnimCurve2CalcValEx(&curves[curve], &time, types[curve]);
-        };
-
-        *visible = animation->curve_count < 7 ? character->flags & 1 : static_cast<i32>(curve_value(6));
-        if (animation_index != NULL) {
-            if (animation->curve_count < 8) {
-                *animation_index = character->animation_index;
-            } else {
-                const f32 value = curve_value(7);
-                *animation_index = value < 0.0f ? 0xff : static_cast<u32>(value);
-            }
-        }
-        if (animation_start_frame != NULL) {
-            if (animation_index != NULL && *animation_index != 0 && *animation_index != 0xff) {
-                *animation_start_frame =
-                    animation->curve_count < 11 ? static_cast<f32>(character->animation_start_frame) : curve_value(10);
-            } else {
-                *animation_start_frame = 0.0f;
-            }
-        }
-        if (*visible == 0) {
-            return;
-        }
-        if (layer_mask != NULL) {
-            *layer_mask = animation->curve_count < 12 ? -1 : static_cast<i32>(curve_value(11));
-        }
-
-        if ((animation->node_flags[0] & NUANIM_NODE_HAS_ROTATION) != 0) {
-            NUANGVEC rotation = {
-                static_cast<NUANG>(curve_value(3) * 10430.378f),
-                static_cast<NUANG>(curve_value(4) * 10430.378f),
-                static_cast<NUANG>(curve_value(5) * 10430.378f),
-            };
-            NuMtxSetRotateXYZ(matrix, &rotation);
-        } else {
-            NuMtxSetIdentity(matrix);
-        }
-        NUVEC translation = {curve_value(0), curve_value(1), curve_value(2)};
-        NuMtxTranslate(matrix, &translation);
-        matrix->m02 = -matrix->m02;
-        matrix->m12 = -matrix->m12;
-        matrix->m20 = -matrix->m20;
-        matrix->m21 = -matrix->m21;
-        matrix->m23 = -matrix->m23;
-        matrix->m32 = -matrix->m32;
-        NUVEC scale = NuMtxGetScale(&character->base_matrix);
-        NuMtxPreScale(matrix, &scale);
-        if (animation_rate != NULL) {
-            *animation_rate = animation->curve_count < 10 ? character->animation_rate : curve_value(9);
-        }
-        if (blend_time != NULL) {
-            *blend_time = animation->curve_count < 9 ? static_cast<f32>(character->blend_time) : curve_value(8);
         }
     }
+#undef NUGCUT_CURVE_VALUE
     void NuGCutSceneDestroy(NUGCUTSCENE_s *cutscene) {
         if (cutscene->character_system != NULL && NuCutSceneDestroyCharacters != NULL) {
             NuCutSceneDestroyCharacters(cutscene);
@@ -4526,4 +5235,49 @@ void NuShaderObject360LoadShader(nushaderobject_s *) {
 void NuShaderObject360LoadPackFile(char *, variptr_u *, variptr_u) {
 }
 void NuShaderObject360UnloadShader(nushaderobject_s *) {
+}
+
+void NuLgtSetArcMatEx(i32 type, numtl_s *material, f32 u0, f32 v0, f32 u1, f32 v1) {
+    if (type > 3)
+        return;
+    NuLgtArcMtl[type].material = material;
+    NuLgtArcMtl[type].u0 = u0;
+    NuLgtArcMtl[type].v0 = v0;
+    NuLgtArcMtl[type].u1 = u1;
+    NuLgtArcMtl[type].v1 = v1;
+}
+
+void NuLgtArcLaserEx(i32 type, NUVEC *start, NUVEC *end, NUVEC *bend, f32 width, f32 segment_length, f32 wobble,
+                     f32 bend_amount, i32 colour, i32 flags) {
+    i32 index = NuLgtArcLaserCnt;
+    if (index >= 16)
+        return;
+    NULGTARCLASER *laser = &NuLgtArcLaserData[index];
+    laser->type = (u8)type;
+    laser->start = *start;
+    laser->end = *end;
+    laser->bend = *bend;
+    laser->width = width;
+    laser->segment_length = segment_length;
+    laser->wobble = wobble;
+    laser->bend_amount = bend_amount;
+    u32 red = ((u32)colour & 0xff) * 2;
+    u32 green = ((u32)colour & 0xff00) * 2;
+    u32 blue = ((u32)colour & 0xff0000) >> 15;
+    u32 alpha = ((u32)colour >> 24) * 2;
+    if (red > 255)
+        red = 255;
+    if (green > 0xff00)
+        green = 0xff00;
+    if (blue > 255)
+        blue = 255;
+    if (alpha > 255)
+        alpha = 255;
+    laser->colour = blue | (red << 16) | green | (alpha << 24);
+    laser->flags = flags;
+    if ((NuLgtArcLaserFrame & 1) == 0 || laser->seed == 0)
+        laser->seed = NuLgtRand();
+    for (i32 i = 0; i < 6; ++i)
+        NuLgtRand();
+    ++NuLgtArcLaserCnt;
 }

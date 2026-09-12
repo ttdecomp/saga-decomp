@@ -18,6 +18,14 @@
 #include "legoapi/gizmos/traps/attractos.h"
 #include "legoapi/gizmos/door/zipups.h"
 #include "legoapi/world/area.h"
+
+void NarrowSockExceptions_Init(NARROWSOCKEXCEPTION *);
+NARROWSOCKEXCEPTION NarrowSockException_LSW[] = {
+    {const_cast<char *>("deathstarbattle_d"), -1, 1, 67.5f, 999.0f},
+    {const_cast<char *>("deathstar2battle_b"), -1, 0, 67.5f, 999.0f},
+    {const_cast<char *>("deathstar2battle_c"), -1, 0, 30.0f, 999.0f},
+    {NULL, 0, 0, 0.0f, 0.0f},
+};
 extern "C" {
     extern void (*APIObjResetShadowMapRenderingFn)(void);
     extern void (*APIObjEnableShadowMapRenderingFn)(void);
@@ -879,7 +887,7 @@ void InitGameAfterConfig(void) {
     //  PLAYERHITPOINTS_2HEARTSIN1 = 1;
     CutScenes_InitSystem(&CutSceneSys_LSW);
     //  NuGCutDebFixUp_SearchAllPages = 1;
-    //  NarrowSockExceptions_Init((NARROWSOCKEXCEPTION *)NarrowSockException_LSW);
+    NarrowSockExceptions_Init(NarrowSockException_LSW);
     //  APIObjectRegisterAnimRedirect(RedirectAnim, AnimRedirectList_LSW, "chars\\commonanims");
     //  SurfaceMaskOff(&TERRAINMASK_NONWEAPON);
     //  SurfaceMaskOn(&TERRAINMASK_NONDROID);
@@ -896,7 +904,8 @@ void InitGameAfterConfig(void) {
     //  troopers_gdeb._8_4_ = 0x4a;
     //  troopers_gdeb._12_4_ = 0x4b;
     //  LEGOHINT_SHOOTCAMERAS = 0x266;
-    //  LEGOHINT_PUSHBLOCKS = 0x267;
+    extern i32 LEGOHINT_PUSHBLOCKS;
+    LEGOHINT_PUSHBLOCKS = 0x267;
     LEGOHINT_BUILD = 0x25c;
     LEGOHINT_FREEPLAYTOGGLE = 600;
     //  PUNCHGAP = 0.3;

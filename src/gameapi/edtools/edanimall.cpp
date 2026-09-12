@@ -73,8 +73,7 @@ static void edanimcbLocalSoundMenu(eduimenu_s *, eduiitem_s *, u32) {
 static void edanimcbMCTBCardFormat(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void edanimcbSetSoundTiming(eduimenu_s *, eduiitem_s *item, u32) {
-    AnimParams[edanim_nearest_param_id].sound_values[edanim_nearest_sound] =
-        static_cast<edui_slider_s *>(item)->value;
+    AnimParams[edanim_nearest_param_id].sound_values[edanim_nearest_sound] = static_cast<edui_slider_s *>(item)->value;
 }
 static void edanimcbSetSwitchDelay(eduimenu_s *, eduiitem_s *item, u32) {
     if (edanim_nearest == -1 || edanim_nearest_param_id == -1) {

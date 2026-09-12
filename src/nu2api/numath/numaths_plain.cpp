@@ -570,8 +570,7 @@ extern "C" {
 
     i16 NuFloatToHalf(f32 value) {
         i32 exponent;
-        u32 bits;
-        memcpy(&bits, &value, sizeof(bits));
+        u32 bits = *reinterpret_cast<const u32 *>(&value);
         i32 sign = bits >> 31;
         exponent = (bits >> 23) & 0xff;
         i32 mantissa = bits & 0x7fffff;
@@ -582,7 +581,8 @@ extern "C" {
             exponent = 0;
         if (exponent > 31)
             exponent = 31;
-        return (sign << 15) | ((exponent & 31) << 10) | (mantissa >> 13);
+        i16 result = (sign << 15) | ((exponent & 31) << 10) | (mantissa >> 13);
+        return *reinterpret_cast<const u16 *>(&result);
     }
     void NuHalfVec4ToNuVec4(NUHALFVEC4 *v, NUVEC4 *out) {
         out->x = NuHalfToFloat(v->x);

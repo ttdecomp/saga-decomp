@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include "nu2api/nufile/nufile.h"
+#include "nu2api/nu3d/nuvport.h"
 // nurndr_plain.cpp — Host "plain" renderer backend.
 //
 // This TU is the host replacement for the PS2 rendering TU (nurndr).
@@ -496,7 +499,18 @@ extern "C" void NuMtlSpecialSetUV(void) {
 }
 
 // Debug / visualisation geometry
-extern "C" void NuRndr3dLine(void) {
+static inline void NuRndrPrimSetColour(i32 colour);
+static inline void NuRndrPrimPosition(f32 x, f32 y, f32 z);
+static inline void NuRndrPrimUV(f32 u, f32 v);
+extern "C" void NuRndr3dLine(f32 x0, f32 y0, f32 z0, f32 x1, f32 y1, f32 z1, i32 colour) {
+    NuPrim3DBegin(2, 5, NULL, &numtx_identity);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimUV(0.0f, 0.0f);
+    NuRndrPrimPosition(x0, y0, z0);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimUV(1.0f, 1.0f);
+    NuRndrPrimPosition(x1, y1, z1);
+    NuPrim3DEnd();
 }
 extern "C" void NuRndrAnglesZX(NUVEC *direction, NUVEC *angles) {
     NUVEC rotated;
@@ -522,18 +536,188 @@ void NuLightBurnoutEffect(i32, f32 threshold, f32 intensity, f32 flare) {
     currentScene.bloom.blend = 0.0f;
     currentScene.bloom.threshold = threshold;
 }
-extern "C" void NuRndrAxes(void) {
+extern "C" void NuRndrAxes(NUMTX *matrix, f32 length) {
+    NuRndrAxisBright(matrix, length, 255);
 }
-extern "C" void NuRndrAxisArrows(void) {
+static inline void NuRndrPrimSetColour(i32 colour);
+static inline void NuRndrPrimPosition(f32 x, f32 y, f32 z);
+extern "C" void NuRndrAxisArrowsMtx(NUMTX *matrix, f32 length, NUMTL *material) {
+    f32 base = length * 0.8f;
+    f32 width = length * 0.1f;
+    NuPrim3DBegin(2, 5, material, matrix);
+    NuRndrPrimSetColour(0xff0000ff);
+    NuRndrPrimPosition(0, 0, 0);
+    NuRndrPrimSetColour(0xff0000ff);
+    NuRndrPrimPosition(length, 0, 0);
+    NuRndrPrimSetColour(0xff00ff00);
+    NuRndrPrimPosition(0, 0, 0);
+    NuRndrPrimSetColour(0xff00ff00);
+    NuRndrPrimPosition(0, length, 0);
+    NuRndrPrimSetColour(0xffff0000);
+    NuRndrPrimPosition(0, 0, 0);
+    NuRndrPrimSetColour(0xffff0000);
+    NuRndrPrimPosition(0, 0, length);
+    NuPrim3DEnd();
+    NuPrim3DBegin(3, 5, material, matrix);
+    NuRndrPrimSetColour(0xff0000ff);
+    NuRndrPrimPosition(base, -width, 0);
+    NuRndrPrimSetColour(0xff0000ff);
+    NuRndrPrimPosition(length, 0, 0);
+    NuRndrPrimSetColour(0xff0000ff);
+    NuRndrPrimPosition(base, width, 0);
+    NuPrim3DEnd();
+    NuPrim3DBegin(3, 5, material, matrix);
+    NuRndrPrimSetColour(0xff00ff00);
+    NuRndrPrimPosition(0, base, width);
+    NuRndrPrimSetColour(0xff00ff00);
+    NuRndrPrimPosition(0, length, 0);
+    NuRndrPrimSetColour(0xff00ff00);
+    NuRndrPrimPosition(0, base, -width);
+    NuPrim3DEnd();
+    NuPrim3DBegin(3, 5, material, matrix);
+    NuRndrPrimSetColour(0xffff0000);
+    NuRndrPrimPosition(0, width, base);
+    NuRndrPrimSetColour(0xffff0000);
+    NuRndrPrimPosition(0, 0, length);
+    NuRndrPrimSetColour(0xffff0000);
+    NuRndrPrimPosition(0, -width, base);
+    NuPrim3DEnd();
 }
-extern "C" void NuRndrAxisArrowsMtx(void *, f32, void *) {
+extern "C" void NuRndrAxisArrows(NUVEC *position, void *, f32 length, NUMTL *material) {
+    NUMTX matrix;
+    NuMtxSetIdentity(&matrix);
+    NuMtxTranslate(&matrix, position);
+    NuRndrAxisArrowsMtx(&matrix, length, material);
 }
-extern "C" void NuRndrAxisBright(void) {
+
+static inline void NuRndrPrimSetColour(i32 colour);
+static inline void NuRndrPrimPosition(f32 x, f32 y, f32 z);
+extern "C" void NuRndrAxisBright(NUMTX *matrix, f32 length, i32 brightness) {
+    f32 base = length * 0.8f;
+    f32 width = length * 0.1f;
+    i32 red = 0xff000000u | (brightness & 255);
+    i32 green = 0xff000000u | ((static_cast<u32>(brightness) << 8) & 0xffff);
+    i32 blue = 0xff000000u | ((brightness & 255) << 16);
+    NuPrim3DBegin(2, 5, NULL, matrix);
+    NuRndrPrimSetColour(red);
+    NuRndrPrimPosition(0, 0, 0);
+    NuRndrPrimSetColour(red);
+    NuRndrPrimPosition(length, 0, 0);
+    NuRndrPrimSetColour(green);
+    NuRndrPrimPosition(0, 0, 0);
+    NuRndrPrimSetColour(green);
+    NuRndrPrimPosition(0, length, 0);
+    NuRndrPrimSetColour(blue);
+    NuRndrPrimPosition(0, 0, 0);
+    NuRndrPrimSetColour(blue);
+    NuRndrPrimPosition(0, 0, length);
+    NuPrim3DEnd();
+    NuPrim3DBegin(3, 5, NULL, matrix);
+    NuRndrPrimSetColour(red);
+    NuRndrPrimPosition(base, -width, 0);
+    NuRndrPrimSetColour(red);
+    NuRndrPrimPosition(length, 0, 0);
+    NuRndrPrimSetColour(red);
+    NuRndrPrimPosition(base, width, 0);
+    NuPrim3DEnd();
+    NuPrim3DBegin(3, 5, NULL, matrix);
+    NuRndrPrimSetColour(green);
+    NuRndrPrimPosition(0, base, width);
+    NuRndrPrimSetColour(green);
+    NuRndrPrimPosition(0, length, 0);
+    NuRndrPrimSetColour(green);
+    NuRndrPrimPosition(0, base, -width);
+    NuPrim3DEnd();
+    NuPrim3DBegin(3, 5, NULL, matrix);
+    NuRndrPrimSetColour(blue);
+    NuRndrPrimPosition(0, width, base);
+    NuRndrPrimSetColour(blue);
+    NuRndrPrimPosition(0, 0, length);
+    NuRndrPrimSetColour(blue);
+    NuRndrPrimPosition(0, -width, base);
+    NuPrim3DEnd();
 }
-extern "C" void NuRndrBoundingBox(void) {
+
+static inline void NuRndrPrimSetColour(i32 colour);
+static inline void NuRndrPrimPosition(f32 x, f32 y, f32 z);
+
+extern "C" void NuRndrBoundingBox(NUVEC *minimum, NUVEC *maximum, NUMTX *matrix, i32 colour) {
+    NuPrim3DBegin(3, 5, NULL, matrix);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(minimum->x, minimum->y, minimum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(minimum->x, maximum->y, minimum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(maximum->x, maximum->y, minimum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(maximum->x, minimum->y, minimum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(minimum->x, minimum->y, minimum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(minimum->x, minimum->y, maximum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(minimum->x, maximum->y, maximum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(maximum->x, maximum->y, maximum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(maximum->x, minimum->y, maximum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(minimum->x, minimum->y, maximum->z);
+    NuPrim3DEnd();
+    NuPrim3DBegin(2, 5, NULL, matrix);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(minimum->x, maximum->y, minimum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(minimum->x, maximum->y, maximum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(maximum->x, maximum->y, minimum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(maximum->x, maximum->y, maximum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(maximum->x, minimum->y, minimum->z);
+    NuRndrPrimSetColour(colour);
+    NuRndrPrimPosition(maximum->x, minimum->y, maximum->z);
+    NuPrim3DEnd();
 }
-extern "C" void NuRndrCircle(void) {
+f32 circle_scale_radius = 0.5f;
+static inline void NuRndrPrimSetColour(i32 colour);
+static inline void NuRndrPrimUV(f32 u, f32 v);
+extern "C" void NuRndrCircle(f32 x, f32 y, f32 radius, f32 aspect, i32 count, f32 u0, f32 v0, f32 u1, f32 v1,
+                             i32 colour, numtl_s *material) {
+    NuPrim2DBegin(0, 7, material);
+    radius *= circle_scale_radius;
+    u1 -= u0;
+    v1 -= v0;
+    f32 previous_x = radius * 0.0f * aspect + x;
+    f32 previous_y = radius + y;
+    f32 previous_u = 0.0f + u0;
+    f32 previous_v = v1 + v0;
+    f32 step = 6.284f / static_cast<f32>(count - 1);
+    for (i32 i = 0; i < count; ++i) {
+        f32 angle = static_cast<f32>(i) * step;
+        f32 sine = NuSinf(angle);
+        f32 cosine = NuCosf(angle);
+        f32 next_x = sine * radius * aspect + x;
+        f32 next_y = cosine * radius + y;
+        f32 next_u = (0.5f * sine + 0.5f) * u1 + u0;
+        f32 next_v = v1 * (0.5f - 0.5f * cosine) + v0;
+        NuRndrPrimSetColour(colour);
+        NuRndrPrimUV(0.5f * u1 + u0, 0.5f * v1 + v0);
+        NuPrim2DAddXYZ(static_cast<f32>(PS2_VREZ_W) * x, static_cast<f32>(PS2_VREZ_H) * y, 0.0f);
+        NuRndrPrimSetColour(colour);
+        NuRndrPrimUV(previous_u, previous_v);
+        NuPrim2DAddXYZ(static_cast<f32>(PS2_VREZ_W) * previous_x, static_cast<f32>(PS2_VREZ_H) * previous_y, 0.0f);
+        NuRndrPrimSetColour(colour);
+        NuRndrPrimUV(next_u, next_v);
+        NuPrim2DAddXYZ(static_cast<f32>(PS2_VREZ_W) * next_x, static_cast<f32>(PS2_VREZ_H) * next_y, 0.0f);
+        previous_x = next_x;
+        previous_y = next_y;
+        previous_u = next_u;
+        previous_v = next_v;
+    }
+    NuPrim2DEnd();
 }
+
 extern "C" void NuRndrEndReflectionRender(void) {
     NuSpecialReflection(0);
 }
@@ -683,8 +867,184 @@ extern "C" void NuRndrGradRectUV2di(i32 x, i32 y, i32 w, i32 h, f32 u0, f32 v0, 
     NuPrim2DAddXYZ(ex, ey, 0.0f);
     NuPrim2DEnd();
 }
-extern "C" void NuRndrHighResScreenGrab(void) {
+static i32 dump_state = -1;
+struct ScreenGrabTileParams {
+    i8 channels[4];
+    u16 width;
+};
+extern "C" void NuRndrScreenGrabTileInit(void *, i32, f32, f32, f32);
+extern "C" void NuRndrScreenGrabTileDeInit(void *);
+extern "C" void NuRndrScreenGrabTileBegin(void **);
+extern "C" void NuRndrScreenGrabTileEnd(void **);
+extern "C" i32 NuRndrDoingScreenGrab;
+extern "C" void NuVpResetRegions();
+extern "C" i32 NuRndrHighResScreenGrab(char *prefix, f32 scale, f32 a, f32 b, f32 c, i32 number) {
+    static f32 yTiles, xTiles, yPos, xPos;
+    static ScreenGrabTileParams params;
+    static NUFILE fh;
+    static i32 header_size, delay, xOffsetHack;
+    void *tile = NULL;
+    f32 remainder = NuFmod(scale, 0.5f);
+    scale -= remainder;
+    if (remainder > 0.25f)
+        scale += 0.5f;
+    f32 tiles;
+    if (scale < 0.5f) {
+        scale = 0.5f;
+        tiles = 1.0f;
+    } else if (scale > 4.0f) {
+        scale = 4.0f;
+        tiles = 6.0f;
+    } else {
+        f32 n = scale / 0.75f;
+        tiles = static_cast<f32>(static_cast<i32>(n));
+        if (n > tiles)
+            tiles += 1.0f;
+    }
+    yTiles = tiles;
+    xTiles = tiles;
+    if (dump_state == -1) {
+        NuRndrDoingScreenGrab = 1;
+        NuRndrScreenGrabTileInit(&params, static_cast<i32>(tiles * tiles), b, a, c);
+        char path[256];
+        if (number >= 0)
+            sprintf(path, "%s%d.bmp", prefix, number);
+        else {
+            sprintf(path, "%s.bmp", prefix);
+            i32 index = 0;
+            while (NuFileSize(path) > 0)
+                sprintf(path, "%s%03d.bmp", prefix, index++);
+        }
+        struct __attribute__((packed)) BitmapHeader {
+            u16 type;
+            u32 file_size;
+            u16 reserved1, reserved2;
+            u32 offset;
+            u32 info_size, width, height;
+            u16 planes, bits;
+            u32 compression, image_size, xppm, yppm, colours, important;
+        } header;
+        header.type = 0x4d42;
+        header.file_size = PS2_REZ_W * 12 * PS2_REZ_H + 56;
+        header.reserved1 = header.reserved2 = 0;
+        header.offset = 56;
+        header.info_size = 40;
+        header.width = static_cast<u32>(static_cast<f32>(PS2_REZ_W) * scale);
+        header.height = static_cast<u32>(static_cast<f32>(PS2_REZ_H) * scale);
+        header.planes = 1;
+        header.bits = 24;
+        header.compression = 0;
+        header.image_size = header.width * header.height * 3;
+        header.xppm = header.yppm = 1;
+        header.colours = header.important = 0;
+        fh = NuFileOpen(path, static_cast<NUFILEMODE>(1));
+        if (fh != 0) {
+            NuFileWrite(fh, &header, 16);
+            NuFileWrite(fh, &header.info_size, 40);
+            NuFileSeek(fh, static_cast<u32>(header.image_size - 1), static_cast<NUFILESEEK>(1));
+            u8 padding = 0;
+            NuFileWrite(fh, &padding, 1);
+            dump_state = 0;
+            header_size = header.offset;
+            delay = 3;
+            xOffsetHack = 0;
+            xPos = yPos = 0.0f;
+            f32 w = static_cast<f32>(PS2_VREZ_W), h = static_cast<f32>(PS2_VREZ_H);
+            f32 sx = w * 0.0f * 0.75f, sy = h * 0.0f * 0.75f;
+            NuVpSetRegions((sx + -0.125f * w) / scale, (sy + -0.125f * h) / scale, (w + sx + -0.125f * w) / scale,
+                           (h + sy + -0.125f * h) / scale, 0, 0, w, h);
+            return 1;
+        }
+        NuRndrScreenGrabTileDeInit(&params);
+        dump_state = -1;
+        yPos = xPos = yTiles = xTiles = 0.0f;
+        NuVpResetRegions();
+        return 0;
+    }
+    if (delay != 0) {
+        --delay;
+        return 1;
+    }
+    NuRndrScreenGrabTileBegin(&tile);
+    if (tile == NULL) {
+        NuRndrScreenGrabTileDeInit(&params);
+        dump_state = -1;
+        NuFileClose(fh);
+        yPos = xPos = yTiles = xTiles = 0.0f;
+        NuVpResetRegions();
+        return 0;
+    }
+    u8 *pixels = static_cast<u8 *>(tile);
+    i32 bytes = params.channels[3] == -1 ? 3 : 4;
+    if (!(bytes == 3 && params.channels[0] == 0 && params.channels[1] == 1 && params.channels[2] == 2)) {
+        u8 *out = pixels;
+        for (i32 y = 0; y < PS2_REZ_H; ++y) {
+            for (i32 x = 0; x < bytes * PS2_REZ_W; x += bytes) {
+                u8 rgba[4];
+                u8 *in = static_cast<u8 *>(tile) + params.width * y * bytes + x;
+                rgba[0] = in[0];
+                rgba[1] = in[1];
+                rgba[2] = in[2];
+                rgba[3] = in[3];
+                out[0] = rgba[params.channels[0]];
+                out[1] = rgba[params.channels[1]];
+                out[2] = rgba[params.channels[2]];
+                out += 3;
+            }
+        }
+    }
+    f32 w = static_cast<f32>(PS2_REZ_W), h = static_cast<f32>(PS2_REZ_H);
+    i32 width = static_cast<i32>(xPos == xTiles - 1.0f ? scale * w - ((xTiles - 1.0f) * 0.75f) * w : 0.75f * w);
+    f32 full_height = scale * h;
+    i32 height = static_cast<i32>(yPos == yTiles - 1.0f ? full_height - ((yTiles - 1.0f) * 0.75f) * h : 0.75f * h);
+    u8 *data = pixels + static_cast<u32>(((static_cast<f32>(params.width) * 3.0f) * 0.125f) * h) +
+               static_cast<u32>((0.125f * w) * 3.0f) +
+               static_cast<u32>(((static_cast<f32>(xOffsetHack * 3) * w) / static_cast<f32>(PS2_VREZ_W)) * scale);
+    if (yPos == yTiles - 1.0f)
+        data += static_cast<u32>(((0.75f * h - static_cast<f32>(height)) * w) * 3.0f);
+    i64 offset = static_cast<i64>(header_size) +
+                 static_cast<i32>((((full_height - (0.75f * yPos) * h) * w) * scale) * 3.0f) +
+                 static_cast<i32>(((0.75f * xPos) * w) * 3.0f) -
+                 static_cast<i32>((static_cast<f32>(height * PS2_REZ_W) * scale) * 3.0f);
+    for (i32 y = 0; y < height; ++y) {
+        NuFileSeek(fh, offset, static_cast<NUFILESEEK>(0));
+        offset += static_cast<i32>((static_cast<f32>(PS2_REZ_W) * scale) * 3.0f);
+        NuFileWrite(fh, data, width * 3);
+        data += params.width * 3;
+    }
+    NuRndrScreenGrabTileEnd(&tile);
+    ++dump_state;
+    if (!(static_cast<f32>(dump_state) < yTiles * xTiles)) {
+        NuRndrScreenGrabTileDeInit(&params);
+        dump_state = -1;
+        NuFileClose(fh);
+        yPos = xPos = yTiles = xTiles = 0.0f;
+        NuVpResetRegions();
+        NuRndrDoingScreenGrab = 0;
+        return 0;
+    }
+    xPos += 1.0f;
+    if (xPos >= xTiles) {
+        xPos = 0.0f;
+        yPos += 1.0f;
+    }
+    w = static_cast<f32>(PS2_VREZ_W);
+    h = static_cast<f32>(PS2_VREZ_H);
+    f32 x = (xPos * w) * 0.75f;
+    f32 left = (-0.125f * w + x) / scale;
+    f32 right = (x + w + -0.125f * w) / scale;
+    xOffsetHack = 0;
+    if (right > w) {
+        xOffsetHack = static_cast<i32>(right - w);
+        left -= static_cast<f32>(xOffsetHack);
+        right = w;
+    }
+    f32 y = (yPos * h) * 0.75f;
+    NuVpSetRegions(left, (y + -0.125f * h) / scale, right, (h + y + -0.125f * h) / scale, 0, 0, w, h);
+    delay = 3;
+    return 1;
 }
+
 struct NuLineVertex2D {
     f32 x, y;
     f32 unused[2];
@@ -1206,8 +1566,6 @@ extern "C" void NuRndrSetWind(f32 speed, f32 scale) {
     global_windspeed = speed;
     global_windscale = scale;
 }
-extern "C" void NuRndrShadPolys(void *) {
-}
 static inline void NuRndrPrimPosition(f32 x, f32 y, f32 z) {
     PrimVertexRaw *vertex = (PrimVertexRaw *)g_NuPrim_StreamBufferPtr->void_ptr;
     vertex->x = x;
@@ -1461,7 +1819,23 @@ extern "C" i32 NuRndrStrip3d(NURND_VERTEX3D *vertices, numtl_s *material, NUMTX 
     NuPrim3DEnd();
     return 1;
 }
-extern "C" void NuRndrTri3dClip(void) {
+extern "C" i32 NuRndrTri3dClip(NURND_VERTEX3D *vertices, i32 count, NUMTX *matrix, numtl_s *material) {
+    if (count == 0)
+        return 1;
+    NuPrim3DBegin(0, 7, material, matrix);
+    for (i32 i = 0; i < count; ++i) {
+        NuRndrPrimSetColour(vertices[i].colour);
+        NuRndrPrimUV(vertices[i].u, vertices[i].v);
+        PrimVertexRaw *vertex = (PrimVertexRaw *)g_NuPrim_StreamBufferPtr->void_ptr;
+        vertex->x = vertices[i].position.x;
+        vertex->y = vertices[i].position.y;
+        vertex->z = vertices[i].position.z;
+        g_NuPrim_StreamBufferPtr->addr += 24;
+    }
+    if (count > 0)
+        g_NuPrim_VertexCount += count;
+    NuPrim3DEnd();
+    return 1;
 }
 extern "C" void NuRndrTriStrip2di(i32 *positions, f32 *uvs, i32 count, i32 colour, NUMTL *material) {
     NuPrim2DBegin(1, 7, material);

@@ -55,8 +55,8 @@ static void UpdateTotalPtls(debinftype *effect) {
         }
     }
 
-    i16 particle_count = static_cast<i16>(static_cast<i32>(
-        static_cast<f32>(effect->frequency) * (active_time / elapsed_time) * effect->particle_lifetime));
+    i16 particle_count = static_cast<i16>(static_cast<i32>(static_cast<f32>(effect->frequency) *
+                                                           (active_time / elapsed_time) * effect->particle_lifetime));
     if (particle_count < 1) {
         particle_count = 1;
     }

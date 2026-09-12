@@ -140,8 +140,8 @@ bool NetSimpleReplicator::AllowPush(EdClass const *, void const *, ReplicatorDat
     return false;
 }
 
-bool NetChangedReplicator::AllowPush(EdClass const *object_class, void const *object, ReplicatorData &data,
-                                     i32 force, i32 skip_checksum) {
+bool NetChangedReplicator::AllowPush(EdClass const *object_class, void const *object, ReplicatorData &data, i32 force,
+                                     i32 skip_checksum) {
     u32 checksum = 0xffffffffu;
     u32 *last_push = reinterpret_cast<u32 *>((reinterpret_cast<uintptr_t>(data.cursor) + 3) & ~3u);
     u32 *last_checksum = last_push + 1;
@@ -194,7 +194,7 @@ void NetChangedReplicator::CheckSumObject(EdClass const *object_class, void cons
             u8 data[256];
             member->vtable->get_member_data(member, object, member->type_id, data, sizeof(data));
             CheckSum(data, static_cast<u32>(size), checksum);
-    }
+        }
         member = member->next;
     }
 }

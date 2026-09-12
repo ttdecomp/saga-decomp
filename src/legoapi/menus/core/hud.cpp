@@ -1,3 +1,8 @@
+#include "MechInputTouch/MechInputTouch_types.h"
+void RndrTexQuad(f32, f32, f32, f32, i32, numtl_s *, i32);
+#include "gameapi/gui/apimenu.h"
+#include "gameframework/saveload.h"
+#include "legoapi/cutscenes/cutscenes.h"
 #include "decomp.h"
 #include "globals.h"
 #include "legoapi/legoapi_types.h"
@@ -50,72 +55,82 @@ i32 HudRadarPulse::IsFinished() {
     return 0;
 }
 
-void HudRadarPulse::Process(float) {
+extern i32 NewMode;
+extern i32 editor_active;
+extern i32 CutSceneWaiting;
+extern "C" i32 Paused;
+void HudRadarPulse::Process(float delta) {
+    if (active) {
+        active = 0;
+        if (NewMode == 0 && NewLData == NULL && editor_active == 0 && GameTimer.time_elapsed > 0.0f &&
+            GameTimer.update_count != 0 && WORLD != NULL && CutSceneWaiting == 0 &&
+            (Paused == 0 || GetMenuID() == 0x19 || GetMenuID() == 0x15) &&
+            (CUTSTOPGAME == 0 || CutScene_IsSkippable(static_cast<CUTINFO *>(CutStopInfo))) && MiniCutCam == 0 &&
+            (paused || (WORLD->current_level != TITLES_LDATA && WORLD->current_level != STATUS_LDATA &&
+                        !(WORLD->current_level->flags & 0x400) && memcard_autosavestarted == 0 &&
+                        !(memcard_autosavepostdelay > 0.0f) && !(memcard_autosavepredelay > 0.0f))))
+            active = 1;
+    }
+    for (i32 i = 0; i < 3; ++i) {
+        HudRadarPulseStage &pulse = pulses[i];
+        if (!pulse.delay_finished) {
+            pulse.delay -= delta;
+            if (pulse.delay <= 0.0f)
+                pulse.delay_finished = 1;
+        }
+        if (pulse.delay_finished && !pulse.finished) {
+            pulse.radius += pulse.speed * delta;
+            float speed = pulse.speed - 0.4f * delta;
+            pulse.speed = speed > 0.0f ? speed : 0.0f;
+            pulse.angle += static_cast<i32>(32768.0f * delta);
+            if (pulse.angle > 0x7fff)
+                pulse.finished = 1;
+        }
+    }
 }
 
 void HudRadarPulse::Render() {
+    if (active) {
+        if (pulses[0].delay_finished && !pulses[0].finished) {
+            f32 x = position.x + 1.0f;
+            f32 y = 1.0f - position.y;
+            numtl_s *material = MechSystems::Get()->radar_pulse_material;
+            i32 alpha = static_cast<i32>(90.0f * NU_SIN_LUT(pulses[0].angle));
+            f32 radius = pulses[0].radius;
+            f32 width = GetAspectRatio() * radius;
+            RndrTexQuad(x * 0.5f, y * 0.5f, width, radius, static_cast<i32>((static_cast<u32>(alpha) << 24) | 0x808080),
+                        material, 0);
+        }
+        if (pulses[1].delay_finished && !pulses[1].finished) {
+            f32 x = position.x + 1.0f;
+            f32 y = 1.0f - position.y;
+            numtl_s *material = MechSystems::Get()->radar_pulse_material;
+            i32 alpha = static_cast<i32>(90.0f * NU_SIN_LUT(pulses[1].angle));
+            f32 radius = pulses[1].radius;
+            f32 width = GetAspectRatio() * radius;
+            RndrTexQuad(x * 0.5f, y * 0.5f, width, radius, static_cast<i32>((static_cast<u32>(alpha) << 24) | 0x808080),
+                        material, 0);
+        }
+        if (pulses[2].delay_finished && !pulses[2].finished) {
+            f32 x = position.x + 1.0f;
+            f32 y = 1.0f - position.y;
+            numtl_s *material = MechSystems::Get()->radar_pulse_material;
+            i32 alpha = static_cast<i32>(90.0f * NU_SIN_LUT(pulses[2].angle));
+            f32 radius = pulses[2].radius;
+            f32 width = GetAspectRatio() * radius;
+            RndrTexQuad(x * 0.5f, y * 0.5f, width, radius, static_cast<i32>((static_cast<u32>(alpha) << 24) | 0x808080),
+                        material, 0);
+        }
+    }
 }
 
 static __used__ void RefreshUI() {
-}
-
-enum COIN_TOTAL_SOURCE {
-    COIN_TOTAL_SAVED_GAME = 0,
-    COIN_TOTAL_SUPER_STORY = 1,
-    COIN_TOTAL_BONUS = 2,
-};
-
-static __used__ void DrawCoinTotal(i32 source, i32 hide_super_story_target) {
-    if (FadeSys.fade != 0.0f || (WORLD->current_level->flags & LEVEL_GAMEPLAY) == 0) {
-        return;
-    }
-
-    const f32 timer = source == COIN_TOTAL_BONUS ? statstime : cointotaltime;
-    const i32 angle = static_cast<i32>(timer * static_cast<f32>(NUANG_90DEG));
-    const f32 y = NuTrigTable[(angle >> 1) & 0x7fff] * (STATSPOSY - STATSPOS2Y) + STATSPOS2Y + COINTOTAL_SCOREDY;
-
-    i32 total;
-    i32 red = 255;
-    i32 green = 191;
-    i32 blue = 0;
-
-    if (source == COIN_TOTAL_SUPER_STORY) {
-        const EPISODESAVE_s &episode = Game.episode_save[SuperStoryEpisode];
-        DrawSuperStoryTime(-y, SuperStoryTimer[0], episode.superstory_time_limit, 0, 1);
-        total = static_cast<i32>(SuperStoryScore);
-
-        if (episode.superstory_score_target != 0) {
-            if (hide_super_story_target == 0) {
-                char target[64];
-                char text[64];
-                Text_MakeScore(static_cast<u32>(episode.superstory_score_target), target);
-                NuStrCpy(text, const_cast<char *>("("));
-                NuStrCat(text, target);
-                NuStrCat(text, const_cast<char *>(")"));
-                Text3DEx(text, 0.0f, y - 0.1f, 1.0f, 0.35f, 0.35f, 0.35f, 0, 255, 255, 255, 48);
-            }
-            if (SuperStoryScore < static_cast<u32>(episode.superstory_score_target)) {
-                red = 63;
-                green = 255;
-                blue = 31;
-            }
-        }
-    } else if (source == COIN_TOTAL_BONUS) {
-        total = BonusCoinTotal;
-    } else {
-        total = static_cast<i32>(Game.coins);
-    }
-
-    CoinTotal_Draw(total, y, CoinTotalScale, 1, 1.0f, red, green, blue);
 }
 
 static __used__ void DrawSpaceLevel(spacelevel_s *) {
 }
 
 static __used__ void DrawEpisodesMenu(int, float) {
-}
-
-static __used__ void InitUI() {
 }
 
 namespace {

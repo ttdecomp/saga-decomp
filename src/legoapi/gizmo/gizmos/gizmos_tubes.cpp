@@ -71,9 +71,8 @@ void TorpedoCode(GameObject_s *object, i32 fire, f32 fire_cooldown) {
     if (object->torpedo_fire_cooldown > 0.0f)
         object->torpedo_fire_cooldown -= FRAMETIME;
 
-    const i32 bolt_type = WORLD != NULL && WORLD->area != NULL && (WORLD->area->flags & AREAFLAG_BONUS_AREA) != 0
-                              ? 16
-                              : 15;
+    const i32 bolt_type =
+        WORLD != NULL && WORLD->area != NULL && (WORLD->area->flags & AREAFLAG_BONUS_AREA) != 0 ? 16 : 15;
     if (Bolt_Find(bolt_type, NULL, object) != NULL)
         packet->field_0x1 |= 2;
     else
@@ -95,9 +94,8 @@ void TorpedoCode(GameObject_s *object, i32 fire, f32 fire_cooldown) {
 
     const i32 maximum = getMaxTorpedos(object);
     while (packet->count > maximum) {
-        const i32 debris = WORLD != NULL && WORLD->area != NULL && (WORLD->area->flags & AREAFLAG_BONUS_AREA) != 0
-                               ? 72
-                               : 71;
+        const i32 debris =
+            WORLD != NULL && WORLD->area != NULL && (WORLD->area->flags & AREAFLAG_BONUS_AREA) != 0 ? 72 : 71;
         AddVariableShotDebrisEffect(WORLD->debris_sys->entries[debris].effect,
                                     &packet->pickup_positions[packet->count - 1], 30, 0, 0);
         --packet->count;
@@ -109,8 +107,8 @@ void TorpedoCode(GameObject_s *object, i32 fire, f32 fire_cooldown) {
             packet->field_03 = 0;
     } else {
         if (Cheat_IsOn(42) != 0 && static_cast<i8>(object->apiobj.flags_low) < 0 &&
-            object->torpedo_fire_cooldown <= 0.0f && object->apiobj.field_0x287 == 0 &&
-            (packet->field_0x1 & 2) == 0 && packet->count < maximum) {
+            object->torpedo_fire_cooldown <= 0.0f && object->apiobj.field_0x287 == 0 && (packet->field_0x1 & 2) == 0 &&
+            packet->count < maximum) {
             packet->pickup_positions[packet->count] = object->apiobj.position;
             ++packet->count;
             packet->field_08 = 0.0f;
@@ -120,8 +118,7 @@ void TorpedoCode(GameObject_s *object, i32 fire, f32 fire_cooldown) {
         if (packet->count < maximum) {
             f32 distance;
             GIZTORPMACHINE *machine = GizTorpMachine_FindNearest(WORLD, &object->apiobj.collision_position, &distance);
-            if (machine != NULL && (machine->flags & GIZTORPMACHINE_FLAG_ACTIVE) != 0 &&
-                distance < TORPEDOGRABRANGE2) {
+            if (machine != NULL && (machine->flags & GIZTORPMACHINE_FLAG_ACTIVE) != 0 && distance < TORPEDOGRABRANGE2) {
                 NewRumble(object->pad_gamepad->pad, qrand() * 1.5259022e-05f * 0.4f, 0);
                 if (packet->count < maximum) {
                     NewBuzz(object->pad_gamepad->pad, 0.1f, 0);
@@ -179,8 +176,8 @@ void TorpedoCode(GameObject_s *object, i32 fire, f32 fire_cooldown) {
                 target_position = &static_cast<GIZMOBLOWUP_s *>(packet->target)->mid_position;
                 break;
             case 1:
-                target_position = NuSpecialGetDrawPos(
-                    &static_cast<GIZTURRET_s *>(packet->target)->primary_anim_obj->special);
+                target_position =
+                    NuSpecialGetDrawPos(&static_cast<GIZTURRET_s *>(packet->target)->primary_anim_obj->special);
                 break;
             case 2:
                 target_position = &static_cast<GIZOBSTACLE_s *>(packet->target)->evaluated_position;
@@ -388,8 +385,8 @@ void DrawTorpedos(GameObject_s *object) {
     for (i32 index = 0; index < packet->count; ++index) {
         i32 x_rotation = -NUANG_90DEG - static_cast<u16>(packet->pickup_flags[index]);
         if (packet->field_08 < 0.8f && index == packet->count - 1) {
-            x_rotation = static_cast<i32>(
-                RotDiff(0, static_cast<u16>(x_rotation)) * NU_SIN_LUT(packet->field_08 / 0.8f * 16384.0f));
+            x_rotation = static_cast<i32>(RotDiff(0, static_cast<u16>(x_rotation)) *
+                                          NU_SIN_LUT(packet->field_08 / 0.8f * 16384.0f));
         }
 
         NUMTX matrix;
@@ -400,8 +397,7 @@ void DrawTorpedos(GameObject_s *object) {
 
         f32 blend = 1.0f;
         if (packet->field_03 == 0 && index == packet->count - 1) {
-            blend = 1.0f -
-                    (NU_SIN_LUT(packet->field_08 / 0.8f * 32768.0f + 16384.0f) + 1.0f) * 0.5f;
+            blend = 1.0f - (NU_SIN_LUT(packet->field_08 / 0.8f * 32768.0f + 16384.0f) + 1.0f) * 0.5f;
         }
         const f32 machine_scale = 4.0f * WORLD->giz_torp_machine_sys->scale;
         const f32 scale = (2.0f * object->apiobj.field_0x1dc - machine_scale) * blend + machine_scale;
@@ -683,21 +679,18 @@ void Torpedo_UpdateJobbies(GameObject_s *object) {
             NUVEC direction;
             NuVecSub(&direction, &packet->pickup_positions[index], &packet->pickup_positions[index - 1]);
             GetRotationAngles(&direction, &target_z_rotation, &target_y_rotation);
-            AddVariableShotDebrisEffectTimed1(WORLD->debris_sys->entries[129].effect,
-                                              &packet->pickup_positions[index - 1], 90, FRAMETIME,
-                                              static_cast<i16>(target_y_rotation),
-                                              static_cast<i16>(target_z_rotation), NULL);
+            AddVariableShotDebrisEffectTimed1(
+                WORLD->debris_sys->entries[129].effect, &packet->pickup_positions[index - 1], 90, FRAMETIME,
+                static_cast<i16>(target_y_rotation), static_cast<i16>(target_z_rotation), NULL);
         }
 
         const f32 distance = object->apiobj.field_0x1dc * (1.5f + static_cast<f32>(index) * 1.25f);
         const u16 z_rotation = static_cast<u16>(packet->pickup_data[index]);
         const u16 y_rotation = static_cast<u16>(packet->pickup_flags[index]);
         NUVEC position;
-        position.x = NU_SIN_LUT(z_rotation) * NU_COS_LUT(y_rotation) * distance +
-                     object->apiobj.collision_position.x;
+        position.x = NU_SIN_LUT(z_rotation) * NU_COS_LUT(y_rotation) * distance + object->apiobj.collision_position.x;
         position.y = NU_SIN_LUT(y_rotation) * distance + object->apiobj.collision_position.y;
-        position.z = NU_COS_LUT(z_rotation) * NU_COS_LUT(y_rotation) * distance +
-                     object->apiobj.collision_position.z;
+        position.z = NU_COS_LUT(z_rotation) * NU_COS_LUT(y_rotation) * distance + object->apiobj.collision_position.z;
 
         if (packet->field_08 < 0.8f && index + 1 == packet->count) {
             NUVEC direction;
@@ -718,13 +711,11 @@ void Torpedo_UpdateJobbies(GameObject_s *object) {
         }
 
         packet->pickup_data[index] = SeekRot(static_cast<u16>(packet->pickup_data[index]), target_z_rotation, 5.0f);
-        packet->pickup_flags[index] =
-            SeekRot(static_cast<u16>(packet->pickup_flags[index]), target_y_rotation, 5.0f);
+        packet->pickup_flags[index] = SeekRot(static_cast<u16>(packet->pickup_flags[index]), target_y_rotation, 5.0f);
 
         if (index == 0) {
             AddVariableShotDebrisEffectTimed1(WORLD->debris_sys->entries[129].effect, &object->apiobj.position, 90,
-                                              FRAMETIME,
-                                              static_cast<i16>(packet->pickup_flags[0] - NUANG_90DEG),
+                                              FRAMETIME, static_cast<i16>(packet->pickup_flags[0] - NUANG_90DEG),
                                               static_cast<i16>(packet->pickup_data[0] - NUANG_90DEG), NULL);
         }
     }

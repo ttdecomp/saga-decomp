@@ -1,3 +1,6 @@
+#include <math.h>
+#include "nu2api/nu3d/nuspecial.h"
+#include "nu2api/numath/numath.h"
 #include "decomp.h"
 #include "globals.h"
 #include "legoapi/core/input/qrand.h"
@@ -13,7 +16,7 @@ struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
 
-void BlockInBlock(WORLDINFO_s *, pushblock_s *, i32, pushblock_s **);
+pushblock_s *BlockInBlock(WORLDINFO_s *, pushblock_s *, i32, pushblock_s **);
 
 enum PushBlockCompletionFlags {
     PUSH_BLOCK_FIRST_OUTPUT_FLAG = 1 << 3,
@@ -70,10 +73,46 @@ pushblock_s *NearestPushBlock(WORLDINFO_s *world, nuvec_s *position, float range
     return nearest;
 }
 
-void PushSeekComplete(pushblock_s *, i32) {
+extern "C" f32 NuFmax(f32, f32);
+void NewBuzz(nupad_s *, f32, i32);
+void PushSeekComplete(pushblock_s *block, i32 index) {
+    block->completion_flags =
+        (block->completion_flags & 0xf807) | ((((block->completion_flags >> 3) | (1u << (index & 31))) & 0xff) << 3);
+    block->runtime_flags_0c9 &= ~2;
+    if (!(block->flags_0cb & 0x20)) {
+        block->flags_0cb |= 2;
+        block->runtime_flags_0c9 |= 1;
+    }
+    if (block->pushing_object)
+        NewBuzz(block->pushing_object->pad_gamepad->pad, 0.1f, 0);
 }
 
-void OtherBlockInRange(WORLDINFO_s *, pushblock_s *, nuvec_s *, i32) {
+i32 OtherBlockInRange(WORLDINFO_s *world, pushblock_s *block, nuvec_s *position, i32 excluded) {
+    NUVEC centre;
+    f32 radius;
+    NuSpecialGetRadius(&block->special, &centre, &radius);
+    radius *= radius;
+    for (i32 i = 0; i < world->push_block_count; ++i) {
+        if (i == excluded)
+            continue;
+        pushblock_s *other = &world->push_blocks[i];
+        if ((other->packed_state_flags & 0x01040000) != 0x01040000 || (other->flags_0cb & 4))
+            continue;
+        if (!NuSpecialGetVisibilityFn(&other->special))
+            continue;
+        NUVEC minimum, maximum;
+        NuSpecialGetBounds(&other->special, &minimum, &maximum);
+        NuFmax(fabsf(minimum.x), maximum.x);
+        NuFmax(fabsf(minimum.z), maximum.z);
+        f32 other_radius;
+        NuSpecialGetRadius(&other->special, &centre, &other_radius);
+        centre = *other->position;
+        f32 x = centre.x - position->x, z = centre.z - position->z;
+        f32 distance = (x * x + z * z) - other_radius * other_radius;
+        if (radius >= distance || 0.0f >= distance)
+            return 1;
+    }
+    return 0;
 }
 
 void ResetSinglePushBlock(WORLDINFO_s *, pushblock_s *, i32) {

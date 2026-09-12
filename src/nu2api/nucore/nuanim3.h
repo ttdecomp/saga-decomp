@@ -10,7 +10,16 @@ struct nuanimbuff_s;
 struct nuanimdata_s;
 struct nuanimtime_s;
 struct numtx_s;
-using NUANIMBUFFEVALUATECB = void (*)(struct numtx_s *, void *, i32);
+struct nuhgobjjoint_s;
+struct NUJOINTANIM_s;
+struct nuquat_s;
+struct nugscn_s;
+using NUANIMBUFFEVALUATECB = void (*)(struct numtx_s *, void *, nuquat_s *);
+
+void NuAnimBuffEvaluate_3_QuatB(numtx_s *base, nuanimbuff_s *buffer, nugscn_s *scene, numtx_s *matrices,
+                                ani3_animheader_s *animation,
+                                void (*root_fn)(numtx_s *, void *, nuvec_s *, nuvec_s *, nuvec_s *, float),
+                                nuvec_s *root_translation, void *root_data);
 
 enum ANI3_MAGIC : u32 {
     ANI3_MAGIC_VERSION_4 = 0x414e4934,
@@ -45,6 +54,23 @@ union nuanimcurve2data_u {
     nuanimcurvedata_s *curvedata;
 };
 
+struct nuanimkey_s {
+    f32 time, reciprocal_span, tangent, value;
+};
+struct nuanimcurve_s {
+    u8 key_mask[4];
+    nuanimkey_s *keys;
+    i32 key_count;
+    u32 flags;
+};
+struct nuanimcurveset_s {
+    u32 flags;
+    f32 *constants;
+    nuanimcurve_s **curves;
+    u8 curve_count;
+    u8 padding[3];
+};
+
 struct nuanimcurve2_s {
     nuanimcurve2data_u data;
 };
@@ -77,6 +103,18 @@ extern "C" {
     void *NuAnimGetAnimLOD(void *animation, i32 lod);
     i32 NuAnimNumNodes(void *animation);
     f32 NuAnimCurve2CalcValEx(nuanimcurve2_s *curve, nuanimtime_s *time, u32 type);
+    f32 NuAnimCurveCalcVal2(nuanimcurve_s *curve, nuanimtime_s *time);
+    void NuAnimCurveSetApplyToMatrix(nuanimcurveset_s *set, nuanimtime_s *time, struct numtx_s *matrix);
+    void NuAnimCurve2SetApplyToJointTransLoc(nuanimcurve2_s *curves, i8 *types, i8 flags, nuanimtime_s *time,
+                                             nuhgobjjoint_s *joint, NUVEC *scale, NUVEC *parent_scale, numtx_s *matrix,
+                                             NUJOINTANIM_s *override_anim, NUVEC *root_translation,
+                                             NUVEC *locator_translation);
+    void NuAnimCurve2SetApplyToJoint(nuanimcurve2_s *curves, i8 *types, i8 flags, nuanimtime_s *time,
+                                     nuhgobjjoint_s *joint, NUVEC *scale, NUVEC *parent_scale, numtx_s *matrix,
+                                     NUJOINTANIM_s *override_anim);
+    void NuAnimCurveSetApplyBlendToJoint2(nuanimcurveset_s *first, nuanimtime_s *first_time, nuanimcurveset_s *second,
+                                          nuanimtime_s *second_time, f32 blend, nuhgobjjoint_s *joint, NUVEC *scale,
+                                          NUVEC *parent_scale, numtx_s *matrix, NUJOINTANIM_s *override_anim);
     f32 NuAnimEndFrame(void *animation);
     f32 NuAnimEndFrameOld(void *animation);
     void ANI_Ani3ExtractAllNodeCurves(ani3_animheader_s *anim, f32 frame, f32 *values, i32 node, char *curve_mask);

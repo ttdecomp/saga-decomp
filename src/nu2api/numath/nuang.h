@@ -22,7 +22,7 @@ extern "C" {
 #endif
     NUANG NuAngAdd(NUANG a, NUANG b);
     NUANG NuAngSub(NUANG a, NUANG b);
-    NUANG NuAng2AltSol(NUANG theta);
+    void NuAng2AltSol(NUANG *out_x, NUANG *out_y, NUANG *out_z, NUANG x, NUANG y, NUANG z);
 #ifdef __cplusplus
 }
 #endif

@@ -656,6 +656,9 @@ void Level_RegisterGameConfigKeywords(nufpcomjmp_s *beforeLoadKeywords, nufpcomj
     Level_ConfigAfterLoad_GameKeywords = afterLoadKeywords;
 }
 
+LEVELDATA *ANEWHOPELEVELS[4];
+void Credits_Load(WORLDINFO_s *, variptr_u *, variptr_u *);
+
 void FixUpLevels(LEVELFIXUP *fixup) {
     Levels_FixUp(fixup);
 
@@ -668,17 +671,12 @@ void FixUpLevels(LEVELFIXUP *fixup) {
         level->flags &= ~(LEVEL_GAMEPLAY | LEVEL_TERRAIN);
         level->music_index = (i16)GetMusicIndex("titles", MusicInfo, -1);
 
-        i32 handle = music_man.GetTrackHandle(TRACK_CLASS_QUIET, "titles");
-        level->music_tracks[0][1] = handle;
-        level->music_tracks[0][0] = handle;
-
-        handle = music_man.GetTrackHandle(TRACK_CLASS_ACTION, "titles");
-        level->music_tracks[1][1] = handle;
-        level->music_tracks[1][0] = handle;
-
-        handle = music_man.GetTrackHandle(TRACK_CLASS_NOMUSIC, "titles");
-        level->music_tracks[2][1] = handle;
-        level->music_tracks[2][0] = handle;
+        TITLES_LDATA->music_tracks[0][0] = TITLES_LDATA->music_tracks[0][1] =
+            music_man.GetTrackHandle(TRACK_CLASS_QUIET, "titles");
+        TITLES_LDATA->music_tracks[1][0] = TITLES_LDATA->music_tracks[1][1] =
+            music_man.GetTrackHandle(TRACK_CLASS_ACTION, "titles");
+        TITLES_LDATA->music_tracks[2][0] = TITLES_LDATA->music_tracks[2][1] =
+            music_man.GetTrackHandle(TRACK_CLASS_NOMUSIC, "titles");
     }
 
     level = Level_FindByName("status", NULL);
@@ -693,6 +691,7 @@ void FixUpLevels(LEVELFIXUP *fixup) {
         LEVELDATA *level = Level_FindByName("credits", NULL);
         CREDITS_LDATA = level;
         if (level != NULL) {
+            level->load_fn = Credits_Load;
             level->init_fn = Credits_Init_Game;
             level->update_fn = Credits_Update_Game;
             level->draw_fn = Credits_Draw_Game;
@@ -855,12 +854,14 @@ void FixUpLevels(LEVELFIXUP *fixup) {
 
     {
         LEVELDATA *level = Level_FindByName("ANewHope_Intro", NULL);
+        ANEWHOPELEVELS[0] = level;
         if (level != NULL) {
         }
     }
 
     {
         LEVELDATA *level = Level_FindByName("ANewHope_A", NULL);
+        ANEWHOPELEVELS[1] = level;
         if (level != NULL) {
             level->init_fn = ANewHopeA_Init;
         }
@@ -868,12 +869,14 @@ void FixUpLevels(LEVELFIXUP *fixup) {
 
     {
         LEVELDATA *level = Level_FindByName("ANewHope_B", NULL);
+        ANEWHOPELEVELS[2] = level;
         if (level != NULL) {
         }
     }
 
     {
         LEVELDATA *level = Level_FindByName("ANewHope_Status", NULL);
+        ANEWHOPELEVELS[3] = level;
         if (level != NULL) {
         }
     }
@@ -916,7 +919,7 @@ void FixUpLevels(LEVELFIXUP *fixup) {
     }
 
     {
-        LEVELDATA *level = Level_FindByName("?", NULL);
+        LEVELDATA *level = Level_FindByName("PodRace_Outro1", NULL);
         PODRACEOUTRO1_LDATA = level;
         if (level != NULL) {
         }
@@ -1158,6 +1161,7 @@ void FixUpLevels(LEVELFIXUP *fixup) {
 
     {
         LEVELDATA *level = Level_FindByName("dogfight_a", NULL);
+        DOGFIGHTA_LDATA = level;
         if (level != NULL) {
             level->init_fn = ChrisDogFightAInit;
             level->reset_fn = ChrisDogFightAReset;
@@ -1219,14 +1223,16 @@ void FixUpLevels(LEVELFIXUP *fixup) {
     }
 
     {
-        LEVELDATA *level = Level_FindByName("Dooku_Outro", NULL);
+        LEVELDATA *level = Level_FindByName("Kamino_A", NULL);
+        KAMINOA_LDATA = level;
         if (level != NULL) {
             level->always_update_fn = KaminoA_AlwaysUpdate;
         }
     }
 
     {
-        LEVELDATA *level = Level_FindByName("?", NULL);
+        LEVELDATA *level = Level_FindByName("Kamino_C", NULL);
+        KAMINOC_LDATA = level;
         if (level != NULL) {
             level->reset_fn = KaminoC_Reset;
             level->init_fn = KaminoC_Init;
@@ -1251,13 +1257,14 @@ void FixUpLevels(LEVELFIXUP *fixup) {
     }
 
     {
-        LEVELDATA *level = Level_FindByName("Kamino_Outro1", NULL);
+        LEVELDATA *level = Level_FindByName("Kamino_A", NULL);
+        KAMINOA_LDATA = level;
         if (level != NULL) {
         }
     }
 
     {
-        LEVELDATA *level = Level_FindByName("?", NULL);
+        LEVELDATA *level = Level_FindByName("Kamino_C", NULL);
         KAMINOC_LDATA = level;
         if (level != NULL) {
         }
@@ -1500,9 +1507,7 @@ void FixUpLevels(LEVELFIXUP *fixup) {
     {
         LEVELDATA *level = Level_FindByName("tatooine_c", NULL);
         TATOOINEC_LDATA = level;
-        if (level != NULL) {
-            level->init_fn = TatooineC_Init;
-        }
+        level->init_fn = TatooineC_Init;
     }
 
     {
@@ -1558,7 +1563,8 @@ void FixUpLevels(LEVELFIXUP *fixup) {
     }
 
     {
-        LEVELDATA *level = Level_FindByName("tatooine_a", NULL);
+        LEVELDATA *level = Level_FindByName("tatooine_b", NULL);
+        TATOOINEB_LDATA = level;
         if (level != NULL) {
         }
     }
@@ -2008,9 +2014,7 @@ void FixUpLevels(LEVELFIXUP *fixup) {
     {
         LEVELDATA *level = Level_FindByName("endorbattle_c", NULL);
         ENDORBATTLEC_LDATA = level;
-        if (level != NULL) {
-            level->init_fn = EndorBattleC_Init;
-        }
+        level->init_fn = EndorBattleC_Init;
     }
 
     {
@@ -2134,9 +2138,7 @@ void FixUpLevels(LEVELFIXUP *fixup) {
     {
         LEVELDATA *level = Level_FindByName("Senate_a", NULL);
         SENATEA_LDATA = level;
-        if (level != NULL) {
-            level->init_fn = SenateA_Init;
-        }
+        level->init_fn = SenateA_Init;
     }
 
     {
@@ -2161,9 +2163,7 @@ void FixUpLevels(LEVELFIXUP *fixup) {
     {
         LEVELDATA *level = Level_FindByName("E1CharacterBonus_A", NULL);
         E1CHARACTERBONUSA_LDATA = level;
-        if (level != NULL) {
-            level->init_fn = E1CharacterBonus_Init;
-        }
+        level->init_fn = E1CharacterBonus_Init;
     }
 
     {
@@ -2173,11 +2173,9 @@ void FixUpLevels(LEVELFIXUP *fixup) {
         }
     }
 
-    const i32 count = LEVELCOUNT;
-    LEVELDATA *status_level = STATUS_LDATA;
     LEVELDATA *entry = LDataList;
-    for (i32 i = 0; i < count; ++i, ++entry) {
-        if ((entry->flags & LEVEL_STATUS) != 0 || entry == status_level) {
+    for (i32 i = 0; i < LEVELCOUNT; ++i, ++entry) {
+        if ((entry->flags & LEVEL_STATUS) != 0 || entry == STATUS_LDATA) {
             entry->update_fn = UpdateStatusScreen;
             entry->draw_status_fn = DrawStatusScreen;
         }

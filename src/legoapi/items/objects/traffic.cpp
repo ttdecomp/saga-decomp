@@ -145,8 +145,8 @@ void TrafficAnimSys_Draw(TRAFFICANIMSYS_s *system) {
             }
         }
 
-        TRAFFICANIMINSTANCE_s *instance = reinterpret_cast<TRAFFICANIMINSTANCE_s *>(
-            NuLinkedListGetHead(&system->active_instances));
+        TRAFFICANIMINSTANCE_s *instance =
+            reinterpret_cast<TRAFFICANIMINSTANCE_s *>(NuLinkedListGetHead(&system->active_instances));
         while (instance != NULL) {
             TRAFFICANIM_s *animation = instance->animation;
             i32 frame_index = static_cast<i32>((instance->frame - 1.0f) / animation->room_frame_interval);
@@ -173,8 +173,8 @@ void TrafficAnimSys_Draw(TRAFFICANIMSYS_s *system) {
                 NuLinkedListGetNext(&system->active_instances, &instance->link));
         }
     } else {
-        TRAFFICANIMINSTANCE_s *instance = reinterpret_cast<TRAFFICANIMINSTANCE_s *>(
-            NuLinkedListGetHead(&system->active_instances));
+        TRAFFICANIMINSTANCE_s *instance =
+            reinterpret_cast<TRAFFICANIMINSTANCE_s *>(NuLinkedListGetHead(&system->active_instances));
         while (instance != NULL) {
             TRAFFICANIM_s *animation = instance->animation;
             if (animation->disabled == 0) {
@@ -213,8 +213,8 @@ void TrafficAnimSys_Reset(TRAFFICANIMSYS_s *system) {
         f32 frame = 0.0f;
         if (animation->end_frame > 0.0f && animation->vehicle_count != 0) {
             while (frame < animation->end_frame && animation->vehicle_count != 0) {
-                TRAFFICANIMINSTANCE_s *instance = reinterpret_cast<TRAFFICANIMINSTANCE_s *>(
-                    NuLinkedListGetHead(&system->free_instances));
+                TRAFFICANIMINSTANCE_s *instance =
+                    reinterpret_cast<TRAFFICANIMINSTANCE_s *>(NuLinkedListGetHead(&system->free_instances));
                 if (instance == NULL) {
                     break;
                 }
@@ -230,8 +230,8 @@ void TrafficAnimSys_Reset(TRAFFICANIMSYS_s *system) {
             }
         }
 
-        animation->next_spawn_time = animation->frame_interval - animation->random_interval +
-                                     animation->random_interval * 2.0f * NuRandFloat();
+        animation->next_spawn_time =
+            animation->frame_interval - animation->random_interval + animation->random_interval * 2.0f * NuRandFloat();
     }
 }
 
@@ -240,11 +240,11 @@ void TrafficAnimSys_Update(TRAFFICANIMSYS_s *system) {
         return;
     }
 
-    TRAFFICANIMINSTANCE_s *instance = reinterpret_cast<TRAFFICANIMINSTANCE_s *>(
-        NuLinkedListGetHead(&system->active_instances));
+    TRAFFICANIMINSTANCE_s *instance =
+        reinterpret_cast<TRAFFICANIMINSTANCE_s *>(NuLinkedListGetHead(&system->active_instances));
     while (instance != NULL) {
-        TRAFFICANIMINSTANCE_s *next = reinterpret_cast<TRAFFICANIMINSTANCE_s *>(
-            NuLinkedListGetNext(&system->active_instances, &instance->link));
+        TRAFFICANIMINSTANCE_s *next =
+            reinterpret_cast<TRAFFICANIMINSTANCE_s *>(NuLinkedListGetNext(&system->active_instances, &instance->link));
         TRAFFICANIM_s *animation = instance->animation;
         instance->frame += animation->tfactor * FRAMETIME * 60.0f;
         if (instance->frame > animation->end_frame) {
@@ -260,16 +260,14 @@ void TrafficAnimSys_Update(TRAFFICANIMSYS_s *system) {
         animation->next_spawn_time -= animation->tfactor * FRAMETIME * 60.0f;
         if (animation->next_spawn_time <= 0.0f) {
             if (animation->vehicle_count != 0) {
-                instance = reinterpret_cast<TRAFFICANIMINSTANCE_s *>(
-                    NuLinkedListGetHead(&system->free_instances));
+                instance = reinterpret_cast<TRAFFICANIMINSTANCE_s *>(NuLinkedListGetHead(&system->free_instances));
                 if (instance != NULL) {
                     NuLinkedListRemove(&system->free_instances, &instance->link);
                     NuLinkedListAppend(&system->active_instances, &instance->link);
                     instance->frame = 0.0f;
                     i32 random = qrand();
                     instance->animation = animation;
-                    instance->vehicle_index =
-                        random / (0xffff / static_cast<i32>(animation->vehicle_count) + 1);
+                    instance->vehicle_index = random / (0xffff / static_cast<i32>(animation->vehicle_count) + 1);
                 }
             }
 
@@ -345,8 +343,8 @@ void TrafficAnimSys_Configure(WORLDINFO_s *world, char *config) {
                 EvalAnim(&animation->special, frame_index * animation->room_frame_interval + 1.0f, &matrix, 1);
                 matrix.m31 += animation->y_offset;
                 animation->rooms[frame_index] = 0xff;
-                i16 room = static_cast<i16>(
-                    NuPortalWhichRoom(world->current_gscn, reinterpret_cast<NUVEC *>(&matrix.m30)));
+                i16 room =
+                    static_cast<i16>(NuPortalWhichRoom(world->current_gscn, reinterpret_cast<NUVEC *>(&matrix.m30)));
                 if (room >= 0 && room <= 63) {
                     animation->rooms[frame_index] = static_cast<u8>(room);
                 }

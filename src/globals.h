@@ -375,7 +375,6 @@ extern u8 ForceEulerToQuat;
 extern u8 QuatPushes[4];
 extern i32 NumQuatPushes;
 extern u8 BitCountTable[256];
-extern i32 isBitCountTable;
 extern f32 MAXFRAMETIME;
 struct MAIN_FRAME_COUNTERS_s {
     u8 warmup_frame;

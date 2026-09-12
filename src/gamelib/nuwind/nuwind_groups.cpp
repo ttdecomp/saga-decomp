@@ -149,12 +149,12 @@ extern "C" {
 
     void NuWindUpdateArray(NUVEC **positions) {
         NuWindGType *group = NuWindGroup;
-        NuWindDir2 = (i32)((u32)NuWindDir2 + 501);
-        NuWindWave = (i32)((u32)NuWindWave + 133);
-        NuWindDir = (i32)((u32)NuWindDir + 377);
-        f32 wind_x = NU_SIN_LUT((i32)(16384.0f + NU_SIN_LUT(NuWindWave) * 8192.0f)) * 0.75f +
-                     NU_SIN_LUT((i32)((u32)NuWindDir + 0x4000)) * 0.15f;
-        f32 wind_z = NU_SIN_LUT((i32)(NU_SIN_LUT(NuWindWave) * 8192.0f)) * 0.75f - NU_SIN_LUT(NuWindDir) * 0.15f;
+        NuWindWave = (i32)((u32)NuWindWave + 501);
+        NuWindDir = (i32)((u32)NuWindDir + 133);
+        NuWindDir2 = (i32)((u32)NuWindDir2 + 377);
+        f32 wind_x = NU_SIN_LUT((i32)(16384.0f + NU_SIN_LUT(NuWindDir) * 8192.0f)) * 0.75f +
+                     NU_SIN_LUT((i32)((u32)NuWindDir2 + 0x4000)) * 0.15f;
+        f32 wind_z = NU_SIN_LUT((i32)(NU_SIN_LUT(NuWindDir) * 8192.0f)) * 0.75f - NU_SIN_LUT(NuWindDir2) * 0.15f;
         i32 any_interaction = 0;
         i32 nearby[8];
         for (i32 index = 0; index < maxgroups; ++index, ++group) {
@@ -227,13 +227,28 @@ extern "C" {
                         contact_z = (matrix->m32 + matrix->m12 * contact_height) - positions[closest]->z;
                         contact_squared = contact_x * contact_x + contact_z * contact_z;
                     }
-                    f32 phase = (f32)NuWindDir2 + (matrix->m30 + matrix->m32) * 8192.0f;
-                    f32 target_x = matrix->m33 * wind_x * (NU_SIN_LUT((i32)phase) * 0.5f + 1.0f);
-                    f32 target_z = matrix->m33 * wind_z * (NU_SIN_LUT((i32)(16384.0f + phase)) * 0.5f + 1.0f);
                     if (!interacting) {
+                        f32 target_x =
+                            matrix->m33 * wind_x *
+                            (NU_SIN_LUT((i32)((f32)NuWindWave + (matrix->m30 + matrix->m32) * 8192.0f)) * 0.5f + 1.0f);
+                        f32 target_z =
+                            matrix->m33 * wind_z *
+                            (NU_SIN_LUT((i32)(16384.0f + ((f32)NuWindWave + (matrix->m30 + matrix->m32) * 8192.0f))) *
+                                 0.5f +
+                             1.0f);
+
                         matrix->m10 += (target_x - matrix->m10) * 0.2f;
                         matrix->m12 += (target_z - matrix->m12) * 0.2f;
                     } else if (contact_squared >= contact_radius * contact_radius) {
+                        f32 target_x =
+                            matrix->m33 * wind_x *
+                            (NU_SIN_LUT((i32)((f32)NuWindWave + (matrix->m30 + matrix->m32) * 8192.0f)) * 0.5f + 1.0f);
+                        f32 target_z =
+                            matrix->m33 * wind_z *
+                            (NU_SIN_LUT((i32)(16384.0f + ((f32)NuWindWave + (matrix->m30 + matrix->m32) * 8192.0f))) *
+                                 0.5f +
+                             1.0f);
+
                         f32 x = 0.2f * (target_x - matrix->m10);
                         f32 z = 0.2f * (target_z - matrix->m12);
                         f32 squared = x * x + z * z;
@@ -271,6 +286,14 @@ extern "C" {
                         }
                         matrix->m10 += contact_x;
                         matrix->m12 += contact_z;
+                        f32 target_x =
+                            matrix->m33 * wind_x *
+                            (NU_SIN_LUT((i32)((f32)NuWindWave + (matrix->m30 + matrix->m32) * 8192.0f)) * 0.5f + 1.0f);
+                        f32 target_z =
+                            matrix->m33 * wind_z *
+                            (NU_SIN_LUT((i32)(16384.0f + ((f32)NuWindWave + (matrix->m30 + matrix->m32) * 8192.0f))) *
+                                 0.5f +
+                             1.0f);
                         matrix->m10 += (target_x - matrix->m10) * 0.05f;
                         matrix->m12 += (target_z - matrix->m12) * 0.05f;
                     }

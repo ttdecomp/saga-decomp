@@ -442,14 +442,35 @@ extern "C" void NuTexAnimEnvProc(nutexanimenv_s *env) {
         i16 *instruction = program->instructions + env->instruction_index;
         i32 next_instruction;
         switch (static_cast<u16>(instruction[0])) {
-            case 0:
+            // Each texture opcode commits the material and yields immediately.
+            case 0: {
                 env->texture_index = instruction[1];
                 next_instruction = env->instruction_index + 2;
-                break;
-            case 1:
+                u16 *texture_id = &env->texture_ids[env->texture_index];
+                material->tex_id = *texture_id;
+                material->shader_desc.diffuse_map_tex_id[0] = *texture_id & 0x7fff;
+                env->instruction_index = next_instruction;
+                env->wait_remaining += env->wait_base;
+                if (env->wait_random != 0)
+                    env->wait_remaining += NuRand(&texanim_rand) % env->wait_random;
+                if (env->wait_remaining < 0)
+                    env->wait_remaining = 0;
+                return;
+            }
+            case 1: {
                 env->texture_index = NuRand(&texanim_rand) % instruction[1];
                 next_instruction = env->instruction_index + 2;
-                break;
+                u16 *texture_id = &env->texture_ids[env->texture_index];
+                material->tex_id = *texture_id;
+                material->shader_desc.diffuse_map_tex_id[0] = *texture_id & 0x7fff;
+                env->instruction_index = next_instruction;
+                env->wait_remaining += env->wait_base;
+                if (env->wait_random != 0)
+                    env->wait_remaining += NuRand(&texanim_rand) % env->wait_random;
+                if (env->wait_remaining < 0)
+                    env->wait_remaining = 0;
+                return;
+            }
             case 2: {
                 i32 texture = env->texture_index + instruction[1];
                 if (texture < instruction[2])
@@ -458,7 +479,16 @@ extern "C" void NuTexAnimEnvProc(nutexanimenv_s *env) {
                     texture = instruction[3];
                 env->texture_index = texture;
                 next_instruction = env->instruction_index + 4;
-                break;
+                u16 *texture_id = &env->texture_ids[env->texture_index];
+                material->tex_id = *texture_id;
+                material->shader_desc.diffuse_map_tex_id[0] = *texture_id & 0x7fff;
+                env->instruction_index = next_instruction;
+                env->wait_remaining += env->wait_base;
+                if (env->wait_random != 0)
+                    env->wait_remaining += NuRand(&texanim_rand) % env->wait_random;
+                if (env->wait_remaining < 0)
+                    env->wait_remaining = 0;
+                return;
             }
             case 3: {
                 i32 texture = NuRand(&texanim_rand) % (instruction[2] - instruction[1] + 1);
@@ -469,7 +499,16 @@ extern "C" void NuTexAnimEnvProc(nutexanimenv_s *env) {
                     texture = instruction[4];
                 env->texture_index = texture;
                 next_instruction = env->instruction_index + 5;
-                break;
+                u16 *texture_id = &env->texture_ids[env->texture_index];
+                material->tex_id = *texture_id;
+                material->shader_desc.diffuse_map_tex_id[0] = *texture_id & 0x7fff;
+                env->instruction_index = next_instruction;
+                env->wait_remaining += env->wait_base;
+                if (env->wait_random != 0)
+                    env->wait_remaining += NuRand(&texanim_rand) % env->wait_random;
+                if (env->wait_remaining < 0)
+                    env->wait_remaining = 0;
+                return;
             }
             case 4:
                 env->wait_remaining += instruction[1];
@@ -552,16 +591,6 @@ extern "C" void NuTexAnimEnvProc(nutexanimenv_s *env) {
             default:
                 continue;
         }
-        u16 texture = env->texture_ids[env->texture_index];
-        material->tex_id = texture;
-        material->shader_desc.diffuse_map_tex_id[0] = texture & 0x7fff;
-        env->instruction_index = next_instruction;
-        env->wait_remaining += env->wait_base;
-        if (env->wait_random != 0)
-            env->wait_remaining += NuRand(&texanim_rand) % env->wait_random;
-        if (env->wait_remaining < 0)
-            env->wait_remaining = 0;
-        return;
     }
 }
 

@@ -327,7 +327,40 @@ extern f32 drop_back_in_timer;
 extern i32 LIFTPLAYER;
 extern f32 OFFSCREEN_CATCHUP_TIME;
 
-void MoveBlocks(WORLDINFO_s *, pushblock_s *, i32, nuvec_s *) {
+pushblock_s *BlockInBlock(WORLDINFO_s *, pushblock_s *, i32, pushblock_s **);
+void MoveBlocksOverBlock(WORLDINFO_s *, pushblock_s *, i32, nuvec_s *);
+void MoveBlocks(WORLDINFO_s *world, pushblock_s *block, i32 index, nuvec_s *velocity) {
+    NUVEC delta = {velocity->x, 0.0f, velocity->z};
+    block->position->x += delta.x;
+    block->position->z += delta.z;
+    NuSpecialUpdate(&block->special);
+    for (i32 i = 0; i < block->end_position_count; ++i) {
+        NUMTX *matrix = NuSpecialGetInstanceMtx(&block->end_position_specials[i]);
+        matrix->m30 = block->position->x;
+        matrix->m32 = block->position->z;
+        NuSpecialUpdate(&block->end_position_specials[i]);
+    }
+    if (BlockInBlock(world, block, index, &block->supporting_block))
+        block->runtime_flags_0c9 |= 4;
+    else {
+        MoveBlocksOverBlock(world, block, index, &delta);
+        if (block->pushing_object && (fabsf(delta.x) > 0.001f || fabsf(delta.z) > 0.001f) &&
+            NuFmod(GameTimer.time_elapsed, 0.25f) < 0.1f)
+            NewRumble(block->pushing_object->pad_gamepad->pad, ((f32)qrand() * 1.5259022e-5f) * 0.05f, 0);
+    }
+    if (block->runtime_flags_0c8 & 8) {
+        delta.y = velocity->y;
+        delta.x = delta.z = 0;
+        block->position->y -= delta.y;
+        block->ground_offset -= delta.y;
+        pushblock_s *hit = BlockInBlock(world, block, index, &block->supporting_block);
+        if (hit) {
+            block->settled_height = hit->position->y + hit->bounds_max.y;
+            block->runtime_flags_0c9 |= 8;
+        } else
+            MoveBlocksOverBlock(world, block, index, &delta);
+        NuSpecialUpdate(&block->special);
+    }
 }
 
 // Original: 3,219 bytes.
@@ -549,262 +582,6 @@ void Move_DRAGBOMB(GameObject_s *) {
 }
 
 void Move_DROIDEKA(GameObject_s *) {
-}
-
-static void PlayerCamPos(GameObject_s *object, NUVEC *camera_position, NUVEC *) {
-    CHARACTERDATA *character = object->apiobj.character_data;
-    f32 centre_height = (character->field15_0x34 + character->field16_0x38) * character->field17_0x3c * 0.5f;
-
-    // This is the common character path in the original. Special vehicles,
-    // grapples and targetable objects select a different focus point below
-    // this branch; ordinary hub characters use their world position plus the
-    // vertical centre of the configured character bounds.
-    *camera_position = object->apiobj.position;
-    camera_position->y += centre_height;
-}
-
-static void GameCam_UpdateJudder(GAMECAMERA_s *camera) {
-    if (camera->judder_time <= 0.0f) {
-        return;
-    }
-
-    camera->judder_time -= FRAMETIME;
-    if (camera->judder_time <= 0.0f) {
-        return;
-    }
-
-    constexpr f32 kJudderPeriod = 1.0f / 3.0f;
-    constexpr f32 kJudderAngleScale = 546.0f;
-    const i32 cycles = static_cast<i32>(camera->judder_duration / kJudderPeriod) + 1;
-    const f32 elapsed_ratio = (camera->judder_duration - camera->judder_time) / camera->judder_duration;
-    const NUANG phase = static_cast<NUANG>(static_cast<i32>(static_cast<f32>(cycles * 0x10000) * elapsed_ratio));
-    f32 angle = kJudderAngleScale * camera->judder_time * NU_SIN_LUT(phase);
-    if (camera->judder_reverse != 0) {
-        angle = -angle;
-    }
-
-    const NUANG rotation = static_cast<NUANG>(static_cast<i32>(angle));
-    if (camera->judder_axis == 0) {
-        NuMtxPreRotateX(&camera->render_mtx, rotation);
-    } else if (camera->judder_axis == 1) {
-        NuMtxPreRotateY(&camera->render_mtx, rotation);
-    } else {
-        NuMtxPreRotateZ(&camera->render_mtx, rotation);
-    }
-}
-
-static void SetGameCameraView(GAMECAMERA_s *camera, const NUVEC &position, const NUVEC &target, bool snap_angles,
-                              f32 camera_shake) {
-    NUVEC delta;
-    NuVecSub(&delta, const_cast<NUVEC *>(&target), const_cast<NUVEC *>(&position));
-
-    u16 desired_pitch = static_cast<u16>(-NuAtan2D(delta.y, NuFsqrt(delta.x * delta.x + delta.z * delta.z)));
-    u16 desired_yaw = static_cast<u16>(NuAtan2D(delta.x, delta.z));
-    u16 desired_roll = 0;
-    if (camera->blend_duration > camera->blend_time && camera->blend_mode == 2) {
-        const f32 blend = MIN(2.0f * (camera->blend_time / camera->blend_duration), 1.0f);
-        desired_pitch =
-            camera->blend_start_pitch + static_cast<i32>(RotDiff(camera->blend_start_pitch, desired_pitch) * blend);
-        desired_yaw = camera->blend_start_yaw + static_cast<i32>(RotDiff(camera->blend_start_yaw, desired_yaw) * blend);
-        desired_roll =
-            camera->blend_start_roll + static_cast<i32>(RotDiff(camera->blend_start_roll, desired_roll) * blend);
-    }
-    camera->desired_pitch = desired_pitch;
-    camera->desired_yaw = desired_yaw;
-    camera->desired_roll = desired_roll;
-
-    if (snap_angles) {
-        camera->pitch = desired_pitch;
-        camera->yaw = desired_yaw;
-        camera->roll = desired_roll;
-    } else {
-        camera->pitch = SeekRot(static_cast<u16>(camera->pitch), desired_pitch, camera->angle_seek);
-        camera->yaw = SeekRot(static_cast<u16>(camera->yaw), desired_yaw, camera->angle_seek);
-        camera->roll = SeekRot(static_cast<u16>(camera->roll), desired_roll, camera->angle_seek);
-    }
-
-    camera->pos = position;
-    camera->target = target;
-    GameCam_UpdateLookRot(camera);
-
-    const NUANG render_pitch = camera->pitch + static_cast<u16>(static_cast<i32>(camera->field_0x214));
-    const NUANG render_yaw = camera->yaw + static_cast<u16>(static_cast<i32>(camera->field_0x218));
-
-    NuMtxSetRotationZ(&camera->mtx, camera->roll);
-    NuMtxRotateX(&camera->mtx, render_pitch);
-    NuMtxRotateY(&camera->mtx, render_yaw);
-    NuMtxTranslate(&camera->mtx, const_cast<NUVEC *>(&position));
-    camera->render_mtx = camera->mtx;
-    GameCam_UpdateJudder(camera);
-    GameCam_UpdateShake(camera, camera_shake);
-
-    NuMtxSetRotationZ(&camera->target_mtx, camera->roll);
-    NuMtxRotateX(&camera->target_mtx, camera->pitch);
-    NuMtxRotateY(&camera->target_mtx, camera->yaw);
-    NuMtxTranslate(&camera->target_mtx, const_cast<NUVEC *>(&position));
-
-    camera->shaken_right = *NUMTX_GET_ROW_VEC(&camera->render_mtx, 0);
-    camera->shaken_up = *NUMTX_GET_ROW_VEC(&camera->render_mtx, 1);
-    camera->dir = *NUMTX_GET_ROW_VEC(&camera->render_mtx, 2);
-    if (pNuCam != NULL) {
-        pNuCam->mtx = camera->render_mtx;
-        NuCameraSet(pNuCam);
-    }
-    MakePlayPlanes(camera);
-}
-
-void MoveGameCamera(GAMECAMERA_s *camera) {
-    // Recovered title, socket and shop modes. Other gameplay modes remain
-    // incomplete; keep their reconstruction tied to the original dispatcher.
-    if (camera == NULL || WORLD == NULL || WORLD->current_level == NULL) {
-        return;
-    }
-
-    extern NUMTX cutscenecammtx;
-    extern u8 set_cutscenecammtx;
-    extern i32 CUTCAMONLY;
-    if (CutSceneCameraCTRL != 0) {
-        if (CUTSTOPGAME == 0 && CUTCAMONLY == 0) {
-            GameCam_ResetLookRot(camera);
-            return;
-        }
-        camera->render_mtx = cutscenecammtx;
-        camera->mtx = cutscenecammtx;
-        set_cutscenecammtx = 0;
-        if (pNuCam != NULL) {
-            pNuCam->mtx = cutscenecammtx;
-            NuCameraSet(pNuCam);
-        }
-        camera->pos = *NUMTX_GET_ROW_VEC(&cutscenecammtx, 3);
-        return;
-    }
-
-    if (WORLD->current_level == TITLES_LDATA) {
-        if (WORLD->portal_places == NULL || WORLD->portal_places[2] == NULL ||
-            WORLD->portal_places[2]->positions == NULL) {
-            return;
-        }
-        f32 *points = WORLD->portal_places[2]->positions;
-        NUVEC position = {points[0], points[1], points[2]};
-        NUVEC target = {points[3], points[4], points[5]};
-        camera->mode = 3;
-        camera->desired_position = position;
-        SetGameCameraView(camera, position, target, true, 0.0f);
-        camera->previous_mode = camera->mode;
-        return;
-    }
-
-    // New-game input remains locked while the initial portal-camera pair is
-    // available, but never for more than ten seconds.  This is the target's
-    // ordinary-camera prologue: without it `newgamecam` remains set forever
-    // and MovePlayer correctly rejects every stick/D-pad sample.
-    if (newgamecam != 0) {
-        constexpr f32 kNewGameCameraTimeout = 10.0f;
-        newgamecamtime += FRAMETIME;
-        const bool initial_camera_missing =
-            WORLD->portal_places == NULL || WORLD->portal_places[6] == NULL || WORLD->portal_places[7] == NULL;
-        if (newgamecamtime >= kNewGameCameraTimeout || initial_camera_missing) {
-            newgamecam = 0;
-        }
-    }
-
-    // The original selects its ordinary free-camera mode when no socket
-    // system is present and its rail-camera mode otherwise.  Both modes use
-    // the same player-focus path below.
-    camera->mode = WORLD->sock_sys == NULL ? 0 : 1;
-    if (SHOPACTIVE != 0 && shopcampos != NULL && shopcamlookat != NULL) {
-        camera->mode = 8;
-    }
-    const bool mode_changed = camera->mode != camera->previous_mode;
-    if (mode_changed && camera->previous_mode != -1 && (camera->mode == 8 || camera->previous_mode == 8)) {
-        GameCam_Blend(camera, 1.0f, 0.0f, 1);
-    }
-    NUVEC position = camera->pos;
-    NUVEC target = {0.0f, 0.0f, 0.0f};
-    f32 camera_shake = 0.0f;
-    if (camera->mode == 8) {
-        // Original case 8 (0x110de5): shelf focus and three slow sine offsets.
-        position = *shopcampos;
-        GetShopCamLookPos(&target);
-        position.x += 0.1f * NU_SIN_LUT(static_cast<i32>(NuFmod(GameTimer.time_elapsed, 9.321f) / 9.321f * 65536.0f));
-        position.y += 0.05f * NU_SIN_LUT(static_cast<i32>(NuFmod(GameTimer.time_elapsed, 5.792f) / 5.792f * 65536.0f));
-        position.z += 0.05f * NU_SIN_LUT(static_cast<i32>(NuFmod(GameTimer.time_elapsed, 7.183f) / 7.183f * 65536.0f));
-        camera->position_seek = static_cast<u8>(WORLD->current_level->cam_pos_seek);
-        camera->angle_seek = static_cast<u8>(WORLD->current_level->cam_angle_seek);
-    } else {
-        NUVEC player_camera_positions[2];
-        NUVEC player_positions[2];
-        i32 player_count = 0;
-        for (i32 i = 0; i < 2; ++i) {
-            // Original rail-camera eligibility (0x11138b..0x1113dc): an AI
-            // companion contributes to the focus only when LookAtBoth is set.
-            if (Player[i] == NULL || (static_cast<i8>(Player[i]->apiobj.flags_low) >= 0 && LookAtBoth == 0) ||
-                (netcamera != 0 && (Player[i]->apiobj.field_0x1f4 & 0x40000) != 0) ||
-                (BonusWinner != -1 && i != BonusWinner)) {
-                continue;
-            }
-            PlayerCamPos(Player[i], &player_camera_positions[player_count], &camera->pos);
-            player_positions[player_count] = Player[i]->apiobj.position;
-            ++player_count;
-        }
-        if (player_count == 0) {
-            return;
-        }
-
-        for (i32 i = 0; i < player_count; ++i) {
-            NuVecAdd(&target, &target, &player_camera_positions[i]);
-        }
-        NuVecScale(&target, &target, 1.0f / static_cast<f32>(player_count));
-
-        f32 overlap_blend = 0.0f;
-        f32 position_seek = camera->position_seek;
-        f32 angle_seek = camera->angle_seek;
-        f32 separation_scale = 0.0f;
-        SockSysCamera(WORLD->sock_sys, &camera->pos, camera->mode != camera->previous_mode, player_camera_positions,
-                      player_positions, player_count, &camera->sock_position, &position, &target, &overlap_blend,
-                      &position_seek, &angle_seek, &camera_shake, &separation_scale);
-        overlap_blend *= 1.5f;
-        camera->position_seek = position_seek;
-        camera->angle_seek = angle_seek;
-    }
-
-    if (camera->reset_blend != 0) {
-        camera->reset_blend = 0;
-        camera->blend_destination_position = position;
-        camera->blend_destination_target = target;
-    }
-    if (camera->blend_duration > camera->blend_time) {
-        if (camera->blend_curve > 0.0f) {
-            camera->blend_curve -= FRAMETIME;
-        } else {
-            camera->blend_time = MIN(camera->blend_time + FRAMETIME, camera->blend_duration);
-        }
-        if (camera->blend_duration > camera->blend_time) {
-            const f32 blend = camera->blend_time / camera->blend_duration;
-            NuVecLerp(&camera->blend_start_position, &camera->blend_destination_position, &camera->blend_end_position,
-                      blend);
-            NuVecLerp(&camera->blend_start_target, &camera->blend_destination_target, &camera->blend_end_target, blend);
-            NuVecLerp(&position, &position, &camera->blend_start_position, blend);
-        }
-    }
-    camera->desired_position = position;
-
-    const bool snap = mode_changed && camera->blend_time >= camera->blend_duration;
-    if (!snap) {
-        // Target common path: clamp the socket seek contribution first, then
-        // apply the independently writable stop blend to all three axes.
-        const f32 seek_blend = MIN(camera->position_seek * FRAMETIME, 1.0f) * CamStopBlend;
-        position.x = camera->pos.x + (position.x - camera->pos.x) * seek_blend;
-        position.y = camera->pos.y + (position.y - camera->pos.y) * seek_blend;
-        position.z = camera->pos.z + (position.z - camera->pos.z) * seek_blend;
-    }
-
-    // On the no-rail path SockSysCamera deliberately retains the previous
-    // camera position while still producing the current player focus.  Its
-    // return value is not a validity gate; both paths continue into the
-    // common matrix update.
-    SetGameCameraView(camera, position, target, snap, camera_shake);
-    camera->previous_mode = camera->mode;
 }
 
 i32 PodLevel(AREADATA_s *area);
@@ -1294,7 +1071,36 @@ update_along:
     position->along = (position->segment_distance / position->segment_length + position->segment) / segments;
 }
 
-void MoveBlocksOverBlock(WORLDINFO_s *, pushblock_s *, i32, nuvec_s *) {
+void MoveBlocksOverBlock(WORLDINFO_s *world, pushblock_s *block, i32 excluded, nuvec_s *velocity) {
+    if (block->runtime_flags_0c9 & 4)
+        return;
+    NUVEC *base = block->position;
+    f32 xmin = block->bounds_min.x + base->x, xmax = base->x + block->bounds_max.x;
+    f32 zmin = block->bounds_min.z + base->z, zmax = base->z + block->bounds_max.z;
+    for (i32 i = 0; i < world->push_block_count; ++i) {
+        if (i == excluded)
+            continue;
+        pushblock_s *other = &world->push_blocks[i];
+        if ((other->flags_0cb & 4) || !(other->flags_0ca & 4))
+            continue;
+        NUVEC *position = other->position;
+        if (base->y >= position->y)
+            continue;
+        if (!(position->x >= (xmin - other->bounds_max.x) + 0.01f &&
+              position->x <= (xmax - other->bounds_min.x) - 0.01f &&
+              position->z >= (zmin - other->bounds_max.z) + 0.01f &&
+              position->z <= (zmax - other->bounds_min.z) - 0.01f))
+            continue;
+        other->snap_origin = *position;
+        position->x += velocity->x;
+        position->y -= velocity->y;
+        other->ground_offset -= velocity->y;
+        position->z += velocity->z;
+        other->runtime_flags_0c8 |= 4;
+        if (BlockInBlock(world, other, i, &other->supporting_block))
+            other->runtime_flags_0c9 |= 4;
+        NuSpecialUpdate(&other->special);
+    }
 }
 
 void MoveInactiveVehicle(GameObject_s *object, i32, GameObject_s **followed_object) {
@@ -2470,7 +2276,462 @@ void MovePlayer_DIRECTIONAL(GameObject_s *object) {
     GizmoBlowupCheckProximity(WORLD, object);
 }
 
-void MovePlayer_VEHICLEDIRECTIONAL(GameObject_s *) {
+#include <stdlib.h>
+extern "C" i16 id_LANDSPEEDER, id_WOOKIEFLYER, id_STAP2;
+extern AREADATA_s *SPEEDERCHASE_ADATA;
+extern GameObject_s *GetOtherActivePlayer(GameObject_s *);
+extern i32 NeedsPretendAnim(GameObject_s *);
+extern GameObject_s *CarWashHack;
+extern i32 IDLESPEEDINNARROWSOCKSONLY;
+extern f32 GetVehicleSpeedMul(GameObject_s *, f32);
+extern i32 GoingForwardsAlongNarrowSock(GameObject_s *);
+extern f32 PodSprint_InStartCountdown(WORLDINFO_s *);
+extern f32 DeathStar2BattleFire_GetSlowDownMul(GameObject_s *);
+extern i32 OutSideSplineArea(NUVEC *, nugspline_s *, NUVEC *, NUVEC *, i32);
+extern void VehicleCollisionCode(GameObject_s *);
+
+void MovePlayer_VEHICLEDIRECTIONAL(GameObject_s *object) {
+    APIOBJECT_s &api = object->apiobj;
+    GAMEPAD_s *pad = object->pad_gamepad;
+    GameObject_s *operator_object = object;
+    GameObject_s *other;
+    NUVEC carwash_delta, a, b, direction, separation;
+    if (CarWashHack == NULL && object->id == id_LANDSPEEDER && WORLD->current_level == MOSEISLEYB_LDATA &&
+        NuSpecialExistsFn(&LevHSpecial[0]) &&
+        NuVecXZDistSqr(NuSpecialGetDrawPos(&LevHSpecial[0]), &api.collision_position, &carwash_delta) < 0.36f) {
+        CarWashHack = object;
+        if (pad->input_magnitude > (((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->walk_speed +
+                                    ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed) *
+                                       0.5f &&
+            (LevGizObst[0] == NULL || LevGizObst[0]->anim_set == NULL || (LevGizObst[0]->anim_set->flags & 1) == 0))
+            CarWashHack = NULL;
+    }
+    if (object->id == id_WOOKIEFLYER && object->character_context == 0x17)
+        ApplyGravity(object, NULL, 0.0f, 10.0f, NULL);
+    object->field_0xe23 &= ~0x10;
+    object->in_narrow_socket = ObjInNarrowSock(object, WORLD->sock_sys, WORLD->level_idx);
+    u16 narrow_yaw = object->in_narrow_socket ? object->yrot : 0;
+    if (object->character_context != 0x2a) {
+        object->field_0xe24 &= ~2;
+        object->previous_block_animation = -1;
+        if (object->delayed_turn_timer > 0.0f && object->character_context != 0x36 && object->character_context != 0x3a)
+            object->delayed_turn_timer -= FRAMETIME;
+    } else
+        object->previous_block_animation = -1;
+    i32 in_tube = 0;
+    if (PODSPRINT_ADATA != NULL && (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA) &&
+        (api.flags_low & 0x80) != 0 && Tube_InAnyCylinder(WORLD, object, 1)) {
+        NewRumble(object->pad_gamepad->pad, qrand() * (1.0f / 65535.0f), 0);
+        in_tube = 1;
+    }
+    Techno_FindOperator(object, &pad, &operator_object);
+    f32 requested_speed;
+    if (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)
+        requested_speed = pad->input_magnitude /
+                          ((GAMECHARACTERDATA_s *)operator_object->apiobj.character_data->field11_0x24)->run_speed *
+                          35.0f;
+    else
+        requested_speed = pad->input_magnitude /
+                          ((GAMECHARACTERDATA_s *)operator_object->apiobj.character_data->field11_0x24)->run_speed *
+                          ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed;
+    if ((object->field_0xe20 & 0x20) != 0 && object->character_context != 0x23 && object->character_context != 0x24) {
+        MoveInactiveVehicle(object, 0, &other);
+        if (other != NULL) {
+            api.field_0x276 = api.facing_angle = api.movement_facing_angle = other->apiobj.field_0x276;
+            api.velocity = other->apiobj.velocity;
+            object->field_0xdc8 = other->field_0xdc8;
+            object->movement_lean_angle = object->secondary_lean_angle = object->tertiary_lean_angle = 0;
+        }
+        if (WORLD->current_level == PLATFORM_LDATA)
+            return;
+        goto vehicle_collision;
+    }
+    {
+        u16 input_yaw = GamePad_InputAngle(object, pad);
+        object->field_0xe22 |= 0x20;
+        object->current_input_angle = input_yaw;
+        object->target_velocity.y = 0.0f;
+        if (object->field_0xddc > 0.0f)
+            object->field_0xddc -= FRAMETIME;
+        f32 turn_multiplier = 0.0f;
+        if ((object->field_0xefd & 4) != 0) {
+            api.facing_angle = api.movement_facing_angle = api.field_0x276 = input_yaw;
+        } else {
+            f32 heading_seek_rate = 10.0f;
+            if (CarWashHack == object) {
+                api.movement_facing_angle = 0x4000;
+                heading_seek_rate = 3.0f;
+            } else if (requested_speed > 0.0f && object->character_context != 0x2a &&
+                       object->character_context != 0x36 && object->character_context != 0x3a &&
+                       object->character_context != 0x23 && object->character_context != 0x24 &&
+                       (object->character_context != 0x17 || (object->jump_input_flags & 1) != 0) &&
+                       !AnimPlaying(&api.anim_packet, 12, 1, 1) && !AnimPlaying(&api.anim_packet, 6, 1, 1)) {
+                if (object->in_narrow_socket &&
+                    (((api.flags_low & 0x80) != 0 && WORLD->current_level == DEATHSTARBATTLED_LDATA &&
+                      ObjInNarrowSock(object, WORLD->sock_sys, WORLD->level_idx)) ||
+                     WORLD->current_level == DEATHSTAR2BATTLEE_LDATA ||
+                     WORLD->current_level == DEATHSTAR2BATTLEF_LDATA ||
+                     WORLD->current_level == DEATHSTAR2BATTLEG_LDATA))
+                    turn_multiplier = 0.5f;
+                else if (WORLD->current_level == SPEEDERCHASEA_LDATA && !disable_narrow_socks)
+                    turn_multiplier = 0.75f;
+                else if ((api.flags_low & 0x80) != 0 && (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA))
+                    turn_multiplier = 0.25f;
+                f32 ratio = (NuFsqrt(api.velocity.x * api.velocity.x + api.velocity.z * api.velocity.z) -
+                             ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->tiptoe_speed) /
+                            (((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed -
+                             ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->tiptoe_speed);
+                if (ratio < 0.0f)
+                    ratio = 0.0f;
+                if (ratio > 1.0f)
+                    ratio = 1.0f;
+                f32 rate = (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)
+                               ? 0.0f * ratio + 1.0f
+                               : ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->turn_rate +
+                                     (((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->field_0x78 -
+                                      ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->turn_rate) *
+                                         ratio;
+                if (object->in_narrow_socket) {
+                    rate *= 1.0f - 0.25f * object->field_0xdc8;
+                    if (turn_multiplier != 0.0f &&
+                        !((api.flags_low & 0x80) != 0 && (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)))
+                        rate *= turn_multiplier;
+                }
+                api.movement_facing_angle = TurnRot(api.movement_facing_angle, input_yaw, (i32)(rate * 65536.0f), NULL);
+                if (object->in_narrow_socket) {
+                    i32 delta = RotDiff(narrow_yaw, api.movement_facing_angle);
+                    i32 degrees = (i32)(60.0f - 30.0f * object->field_0xdc8);
+                    if (degrees < 0)
+                        degrees = 0;
+                    if ((api.flags_low & 0x80) != 0 && (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA))
+                        degrees = 0;
+                    else if (turn_multiplier != 0.0f)
+                        degrees = (i32)(degrees * turn_multiplier);
+                    i32 limit = (degrees << 16) / 360;
+                    if (abs(delta) <= 0x4000) {
+                        if (delta > limit)
+                            api.movement_facing_angle = narrow_yaw + limit;
+                        else if (delta < -limit)
+                            api.movement_facing_angle = narrow_yaw - limit;
+                    } else {
+                        limit = ((180 - degrees) << 16) / 360;
+                        if (delta > 0 && delta < limit)
+                            api.movement_facing_angle = narrow_yaw + limit;
+                        else if (delta < 0 && delta > -limit)
+                            api.movement_facing_angle = narrow_yaw - limit;
+                    }
+                }
+            } else if (object->in_narrow_socket &&
+                       (requested_speed == 0.0f || object->character_context == 0x2a ||
+                        object->character_context == 0x36 || object->character_context == 0x3a)) {
+                u16 desired = narrow_yaw;
+                if (abs(RotDiff(narrow_yaw, api.movement_facing_angle)) > 0x4000)
+                    desired += 0x8000;
+                f32 rate = (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)
+                               ? 1.0f
+                               : ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->turn_rate;
+                if (object->character_context != 0x2a && object->character_context != 0x36 &&
+                    object->character_context != 0x3a)
+                    rate *= 0.25f;
+                api.movement_facing_angle = TurnRot(api.movement_facing_angle, desired, (i32)(rate * 65536.0f), NULL);
+            }
+            if (object->character_context == -1 && object->field_0x1084 &&
+                fabsf(object->contact_normal.y) < NuTrigTable[0x3aaa]) {
+                if ((api.flags_low & 0x80) != 0 && (PODSPRINT_ADATA == NULL || WORLD->area != PODSPRINT_ADATA) &&
+                    (((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->flags_090 & 0x10000) == 0 &&
+                    WORLD->current_level != SPEEDERCHASEA_LDATA) {
+                    u16 normal_yaw = NuAtan2D(object->contact_normal.x, object->contact_normal.z);
+                    if (requested_speed == 0.0f || abs(RotDiff(normal_yaw, object->current_input_angle)) > 0x4000) {
+                        i32 delta = RotDiff(normal_yaw, api.field_0x276);
+                        if (abs(delta) > 0x4000) {
+                            u16 tangent = normal_yaw + (delta < 0 ? -0x4000 : 0x4000);
+                            if (object->field_0xddc > 0.0f &&
+                                RotDiff(object->previous_boundary_angle, normal_yaw) > 0x2aaa &&
+                                abs(RotDiff(api.field_0x276, normal_yaw)) > 0x3fff) {
+                                api.movement_facing_angle =
+                                    (u16)(object->previous_boundary_angle +
+                                          0.5f * RotDiff(object->previous_boundary_angle, normal_yaw) + 32768.0f);
+                                object->field_0xe24 |= 2;
+                                object->field_0xddc = 0.1f;
+                            } else {
+                                api.movement_facing_angle = tangent;
+                                object->previous_boundary_angle = normal_yaw;
+                                object->field_0xddc = 0.1f;
+                            }
+                        }
+                    }
+                }
+            } else if ((api.flags_low & 0x80) != 0 &&
+                       (((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->flags_090 & 0x10000) == 0 &&
+                       (i8)object->field_0xf03 >= 0) {
+                i32 outside = OutSideSplineArea(&api.collision_position, WORLD->camera_splines[16], &a, &b, 0);
+                i32 inside = 0;
+                if (!outside)
+                    inside = OutSideSplineArea(&api.collision_position, WORLD->camera_splines[17], &a, &b, 1);
+                if ((api.field_0x1f4 & 0x400) == 0 && (object->field_0xe24 & 2) == 0 && (outside || inside)) {
+                    api.movement_facing_angle = NuAtan2D(-(b.z - a.z), b.x - a.x);
+                    object->field_0xe24 |= 2;
+                    object->field_0xddc = 0.1f;
+                }
+            }
+            if ((CInfo[object->character_context].flags & 1) != 0 && (object->id == id_STAP || object->id == id_STAP2))
+                api.field_0x276 = api.movement_facing_angle = api.facing_angle;
+            else
+                api.facing_angle = api.field_0x276 =
+                    SeekRot(api.facing_angle, api.movement_facing_angle, heading_seek_rate);
+        }
+        f32 seek_rate = (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)
+                            ? 8.0f
+                            : ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->velocity_seek_rate;
+        if ((((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->flags_090 & 0x40) != 0 &&
+            object->field_0xcc0 == NULL)
+            seek_rate = 5.0f;
+        i32 special_lean = 0;
+        if (api.movement_direction.x != 0.0f || api.movement_direction.z != 0.0f) {
+            object->field_0xe23 |= 0x10;
+            object->target_velocity.x = api.movement_direction.x;
+            object->target_velocity.z = api.movement_direction.z;
+            api.movement_direction.x = api.movement_direction.z = 0.0f;
+        } else if (CarWashHack == object) {
+            object->target_velocity.x = carwash_delta.x * 3.0f;
+            object->target_velocity.z = carwash_delta.z * 3.0f;
+            seek_rate = 5.0f;
+        } else {
+            f32 water_mul = 1.0f;
+            if (object->character_context == 0x3a)
+                object->field_0xdc8 = 1.0f;
+            else if (object->character_context == 0x36)
+                object->field_0xdc8 =
+                    NuTrigTable[((i32)((1.0f - object->context_animation_timer / object->airborne_action_duration) *
+                                           65536.0f +
+                                       16384.0f) >>
+                                 1) &
+                                0x7fff];
+            else if (object->character_context == 0x2a) {
+                f32 half = 0.5f * object->airborne_action_duration;
+                object->field_0xdc8 =
+                    object->context_animation_timer < half
+                        ? -(1.0f - object->context_animation_timer / half)
+                        : 1.0f - (object->airborne_action_duration - object->context_animation_timer) / half;
+            } else if (api.field_0x27c != -1 && FadeSys.fade > 0.0f && (MiniCutCam == 0 || (api.flags_high & 1) == 0))
+                object->field_0xdc8 = VehicleAreaRememberSpeed;
+            else {
+                f32 decel = (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)
+                                ? 0.25f
+                                : ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->field_0x80;
+                f32 desired;
+                if (WORLD->area == PODRACE_ADATA && object->field_0xee0 != 1.0e9f)
+                    desired = GetVehicleSpeedMul(object, object->field_0xee0);
+                else if ((api.flags_low & 0x80) != 0 && (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA) &&
+                         object->in_narrow_socket) {
+                    i32 mode = 0;
+                    if ((pad->buttons_held & GAMEPAD_JUMP) != 0 && (pad->buttons_held & GAMEPAD_SPECIAL) == 0)
+                        mode = 1;
+                    else if ((pad->buttons_held & GAMEPAD_SPECIAL) != 0 && (pad->buttons_held & GAMEPAD_JUMP) == 0)
+                        mode = -1;
+                    if (PodSprint_InStartCountdown(WORLD) > 0.0f) {
+                        object->previous_block_animation = 1;
+                        desired = 0.0f;
+                    } else if (pad->input_magnitude == 0.0f && mode == 0) {
+                        object->previous_block_animation = 0;
+                        desired = 25.0f;
+                    } else if (mode != 1 && pad->input_angle > 0x3554 && pad->input_angle <= 0xcaaa) {
+                        if (mode == -1 || (u16)(pad->input_angle - 0x4aab) <= 0x6aa9) {
+                            object->previous_block_animation = 4;
+                            desired = 15.0f;
+                        } else {
+                            object->previous_block_animation = 0;
+                            desired = 25.0f;
+                        }
+                    } else {
+                        object->previous_block_animation = 3;
+                        desired = 35.0f;
+                    }
+                    desired /= 35.0f;
+                } else if (requested_speed > 0.0f && object->character_context != 0x23 &&
+                           object->character_context != 0x24) {
+                    if (api.intersects_water) {
+                        f32 fraction = (api.water_height - api.collision_min.y) / api.field_0x1e0;
+                        if (fraction < 0.0f)
+                            water_mul = 0.0f;
+                        else if (fraction > 0.5f)
+                            water_mul = 0.7f;
+                        else
+                            water_mul = 1.0f - (fraction + fraction) * 0.3f;
+                    }
+                    if (object->field_0xee0 != 1.0e9f)
+                        desired = GetVehicleSpeedMul(object, object->field_0xee0);
+                    else {
+                        if (WORLD->current_level == SPEEDERCHASEA_LDATA && (api.flags_low & 0x80) != 0 &&
+                            !disable_narrow_socks)
+                            desired = GetVehicleSpeedMul(
+                                object, ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed * 0.75f +
+                                            ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed *
+                                                0.25f *
+                                                (pad->input_magnitude /
+                                                 ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed));
+                        else
+                            desired = GetVehicleSpeedMul(object, requested_speed);
+                        if (desired > object->field_0xdc8)
+                            decel = (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)
+                                        ? 0.5f
+                                        : ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->field_0x7c;
+                    }
+                } else if (WORLD->current_level == SPEEDERCHASEA_LDATA && (api.flags_low & 0x80) != 0 &&
+                           !disable_narrow_socks)
+                    desired = GetVehicleSpeedMul(
+                        object, ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed * 0.75f);
+                else if ((api.flags_low & 0x80) != 0 && (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA))
+                    desired = 25.0f;
+                else if ((!IDLESPEEDINNARROWSOCKSONLY || object->in_narrow_socket) && (api.flags_low & 0x80) != 0 &&
+                         (object->field_0xf03 & 2) == 0)
+                    desired = ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->field_0x10 /
+                              ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed;
+                else
+                    desired = 0.0f;
+                f32 step = (1.0f / decel) * FRAMETIME;
+                if ((PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA))
+                    desired *= object->current_speed_mul;
+                object->field_0xdc8 = SeekLinearF(object->field_0xdc8, desired, step);
+            }
+            f32 speed =
+                object->field_0xdc8 * ((PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)
+                                           ? 35.0f
+                                           : ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed);
+            if ((api.flags_low & 0x80) != 0 && WORLD->current_level == DEATHSTARBATTLED_LDATA &&
+                ObjInNarrowSock(object, WORLD->sock_sys, WORLD->level_idx))
+                speed *= 2.0f;
+            else if ((api.flags_low & 0x80) != 0 && (WORLD->current_level == DEATHSTAR2BATTLEE_LDATA ||
+                                                     WORLD->current_level == DEATHSTAR2BATTLEF_LDATA ||
+                                                     WORLD->current_level == DEATHSTAR2BATTLEG_LDATA))
+                speed *= DeathStar2BattleFire_GetSlowDownMul(object) * 1.5f;
+            else if (object->id == id_SPEEDERBIKE) {
+                if (WORLD->current_level == SPEEDERCHASEA_LDATA && disable_narrow_socks)
+                    speed *= 0.333f;
+            } else if (in_tube)
+                speed *= 0.25f;
+            if (object->in_narrow_socket) {
+                other = GetOtherActivePlayer(object);
+                i32 forwards;
+                if (other != NULL && other->in_narrow_socket &&
+                    (forwards = GoingForwardsAlongNarrowSock(object)) == GoingForwardsAlongNarrowSock(other)) {
+                    NuVecRotateY(&direction, &v001, object->yrot);
+                    NuVecSub(&separation, &other->apiobj.position, &api.position);
+                    f32 longitudinal = separation.x * direction.x + separation.z * direction.z;
+                    f32 radius = api.field_0x1dc + other->apiobj.field_0x1dc;
+                    if (fabsf(longitudinal) > radius * 2.0f) {
+                        f32 amount =
+                            fabsf(longitudinal) > radius * 5.0f + 0.1f
+                                ? 1.0f
+                                : (fabsf(longitudinal) - radius * 2.0f) / (radius * 5.0f + 0.1f - radius * 2.0f);
+                        i32 ahead = forwards ? longitudinal > 0.0f : longitudinal < 0.0f;
+                        f32 factor = other->apiobj.field_0x287 ? 1.0f : 0.75f;
+                        if (!ahead)
+                            speed *= 1.0f - factor * amount;
+                    }
+                }
+            }
+            speed *= water_mul;
+            object->target_velocity.z = speed;
+            if (object->character_context == 0x3a) {
+                object->target_velocity.x =
+                    ((PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)
+                         ? (object->field_0x7a3 == 0 ? 10.5f : -10.5f)
+                         : (object->field_0x7a3 == 0 ? 0.4f : -0.4f) *
+                               ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed);
+                NuVecRotateY(&object->target_velocity, &object->target_velocity, api.facing_angle);
+            } else if ((api.flags_low & 0x80) != 0 && (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA) &&
+                       object->in_narrow_socket) {
+                special_lean = (i32)(8192.0f * pad->input_direction_z);
+                object->target_velocity.x =
+                    PodSprint_InStartCountdown(WORLD) > 0.0f ? 0.0f : 35.0f * pad->input_direction_z * 0.25f;
+                NuVecRotateY(&object->target_velocity, &object->target_velocity, object->yrot);
+            } else {
+                object->target_velocity.x = 0.0f;
+                NuVecRotateY(&object->target_velocity, &object->target_velocity, api.facing_angle);
+            }
+        }
+        if ((api.flags_low & 0x80) != 0)
+            CharPivot_Check(object, &object->target_velocity);
+        if (WORLD->current_level == SPEEDERCHASEA_LDATA && object->id == id_SPEEDERBIKE &&
+            (MiniCutCam != 0 || (!disable_narrow_socks && (api.flags_low & 0x80) != 0 &&
+                                 (other = GetOtherActivePlayer(object)) != NULL && other->apiobj.field_0x287 != 0)))
+            object->target_velocity.x = object->target_velocity.z = 0.0f;
+        api.velocity.x = SeekValF(api.velocity.x, object->target_velocity.x, seek_rate);
+        api.velocity.z = SeekValF(api.velocity.z, object->target_velocity.z, seek_rate);
+        if (in_tube) {
+            object->target_velocity.y = 5.0f;
+            api.velocity.y = SeekValF(api.velocity.y, object->target_velocity.y, 10.0f);
+        } else if ((((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->field_0x94 & 0x20) != 0 &&
+                   ((pad->buttons_held & GAMEPAD_JUMP) != 0 || object->character_context != 0x4b)) {
+            object->target_velocity.y =
+                (pad->buttons_held & GAMEPAD_JUMP) != 0
+                    ? ((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed * 0.7f
+                    : -((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->run_speed * 0.7f;
+            api.velocity.y = SeekValF(api.velocity.y, object->target_velocity.y, 3.0f);
+        } else if (object->character_context == 0x4b) {
+            object->target_velocity.y =
+                (api.water_height - (api.collision_min.y + (api.collision_max.y - api.collision_min.y) * 0.2f)) * 3.0f;
+            api.velocity.y = SeekValF(api.velocity.y, object->target_velocity.y, 10.0f);
+        }
+        if (WORLD->current_level == PLATFORM_LDATA) {
+            api.position.x = 11.805f;
+            api.position.y = 3.0f;
+            api.position.z = -26.105f;
+            object->target_velocity = api.velocity = v000;
+        }
+        if (special_lean != 0)
+            object->movement_lean_angle = SeekRot(object->movement_lean_angle, special_lean, 3.0f);
+        else if ((((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->flags_090 & 1) != 0) {
+            i32 angular_speed = 0;
+            if (object->character_context != 0x2a && object->character_context != 0x36 &&
+                object->character_context != 0x3a) {
+                angular_speed = (i32)(RotDiff(object->previous_movement_angle, api.field_0x276) / FRAMETIME);
+                if (WORLD->current_level == PLATFORM_LDATA && NeedsPretendAnim(object)) {
+                    u16 phase = (i32)(NuFmod(GameTimer.time_elapsed, 2.1f) / 2.1f * 65536.0f);
+                    angular_speed = (i32)(angular_speed + 4551.0f * NuTrigTable[((phase - 0x2000) >> 1) & 0x7fff]);
+                }
+            }
+            f32 rate = 8.0f;
+            if ((((GAMECHARACTERDATA_s *)api.character_data->field11_0x24)->flags_090 & 0x10000) != 0) {
+                angular_speed /= 4;
+                rate = 4.0f;
+            } else if (turn_multiplier != 0.0f)
+                angular_speed = (i32)(angular_speed * (1.0f / turn_multiplier));
+            if (angular_speed > 65536)
+                angular_speed = 8192;
+            else if (angular_speed < -65536)
+                angular_speed = -8192;
+            else {
+                angular_speed /= 4;
+                if (angular_speed > 8192)
+                    angular_speed = 8192;
+                else if (angular_speed < -8192)
+                    angular_speed = -8192;
+            }
+            object->movement_lean_angle = SeekRot(object->movement_lean_angle, angular_speed, rate);
+        } else
+            object->movement_lean_angle = SeekRot(object->movement_lean_angle, 0, 10.0f);
+        if (object->id == id_WOOKIEFLYER) {
+            u16 target = object->character_context == 0x17 ? 0 : (i32)(-2730.0f * object->field_0xdc8);
+            object->secondary_lean_angle = SeekRot(object->secondary_lean_angle, target, 5.0f);
+        }
+        if (WORLD->current_level == PLATFORM_LDATA) {
+            if (object->character_context != 0x2a && object->character_context != 0x36 &&
+                object->character_context != 0x3a) {
+                u16 target = 0;
+                if (object->pad_gamepad->input_magnitude > 0.0f)
+                    target = -(i32)((1.0f - abs(RotDiff(api.field_0x276, input_yaw)) * (1.0f / 32768.0f)) * 4551.0f);
+                object->secondary_lean_angle = SeekRot(object->secondary_lean_angle, target, 3.0f);
+            }
+            return;
+        }
+    }
+vehicle_collision:
+    GizmoBlowupCheckProximity(WORLD, object);
+    if ((VehicleArea || (WORLD->area == SPEEDERCHASE_ADATA && object->id == id_SPEEDERBIKE)) &&
+        !(WORLD->area != NULL && (PODSPRINT_ADATA != NULL && WORLD->area == PODSPRINT_ADATA)))
+        VehicleCollisionCode(object);
 }
 
 void Move_POD(GameObject_s *) {
@@ -6007,7 +6268,27 @@ i32 SetObjOnSurface(GameObject_s *object, i32 mode) {
     return 0;
 }
 
-void TurnCodeCamSafe(GameObject_s *, numtx_s *) {
+void TurnCodeCamSafe(GameObject_s *object, numtx_s *matrix) {
+    static i32 TURNPITCH __attribute__((used)) = 200;
+    static i16 myang __attribute__((used));
+    TURNPITCH = 200;
+    myang = 20;
+    const f32 time = object->context_animation_timer;
+    const f32 duration = object->airborne_action_duration;
+    const f32 turn_duration = duration * 0.95f;
+    if (time < turn_duration) {
+        const f32 pitch_duration = duration * 0.5f * 0.5f;
+        if (time < pitch_duration) {
+            const f32 phase = 1.0f - (1.0f / pitch_duration) * time;
+            const i32 index = static_cast<i32>(phase * 16384.0f + 32768.0f + 16384.0f);
+            const f32 wave = NuTrigTable[(index >> 1) & 0x7fff];
+            NuMtxPreRotateX(matrix, static_cast<i16>(static_cast<i32>((wave + 1.0f) * -3640.0f)));
+        }
+        const f32 phase = 1.0f - (1.0f / turn_duration) * time;
+        const i32 index = static_cast<i32>(phase * 32768.0f + 16384.0f);
+        const f32 wave = NuTrigTable[(index >> 1) & 0x7fff];
+        NuMtxPreRotateZ(matrix, static_cast<i16>(static_cast<i32>((1.0f - (wave + 1.0f) * 0.5f) * 32768.0f)));
+    }
 }
 
 void RotateGameMatrix(numtx_s *matrix, i32 order, u16 x, u16 y, u16 z) {
@@ -6226,7 +6507,60 @@ void ApplyGravity_Network(GameObject_s *object) {
     }
 }
 
-void VehicleCollisionCode(GameObject_s *) {
+extern "C" i16 id_TIEFIGHTER, id_XWING;
+void VehicleCollisionCode(GameObject_s *object) {
+    static f32 magdif;
+    if (object->character_context != -1 && object->character_context != 0x3a)
+        return;
+    if (GamePlayTimer.time_elapsed < 1.0f)
+        return;
+    LEVELDATA_s *level = WORLD->current_level;
+    LEVELDATA_s *speeder_level = SPEEDERCHASEA_LDATA;
+    if (object->apiobj.field_0x27c == -1 || (object->apiobj.flags_low & 0x80) == 0 || !object->field_0x1084)
+        return;
+    NUVEC normal, reverse_velocity, debris_position;
+    debris_position = object->contact_position;
+    i32 random = qrand();
+    debris_position.y = object->contact_position.y - 0.5f * object->apiobj.field_0x1e0 +
+                        random * (object->apiobj.field_0x1e0 / 65535.0f);
+    i32 debris_type = -1;
+    if (object->id == id_SPEEDERBIKE) {
+        qrand();
+        qrand();
+        debris_type = 108;
+    } else if (object->id == id_TIEFIGHTER || object->id == id_XWING)
+        debris_type = 100;
+    if (debris_type != -1) {
+        AddVariableShotDebrisEffectTimed1(WORLD->debris_sys->entries[debris_type].effect, &debris_position, 52,
+                                          FRAMETIME, 0, 0, NULL);
+        debris_type = 101;
+    }
+    if (object->contact_normal.y <= 0.574f && object->contact_normal.y >= -0.574f) {
+        if (object->apiobj.horizontal_velocity_magnitude >
+            ((GAMECHARACTERDATA_s *)object->apiobj.character_data->field11_0x24)->field_0x10) {
+            NuVecNorm(&normal, &object->contact_normal);
+            reverse_velocity = object->reset_velocity;
+            NuVecNorm(&reverse_velocity, &reverse_velocity);
+            reverse_velocity.x = -reverse_velocity.x;
+            reverse_velocity.z = -reverse_velocity.z;
+            i16 angle = 0x4000 - NuASin(reverse_velocity.x * normal.x + reverse_velocity.z * normal.z);
+            if (level == speeder_level && angle <= 0x71b) {
+                if (object->apiobj.horizontal_velocity_magnitude >
+                    (((GAMECHARACTERDATA_s *)object->apiobj.character_data->field11_0x24)->tiptoe_speed +
+                     ((GAMECHARACTERDATA_s *)object->apiobj.character_data->field11_0x24)->walk_speed) *
+                        0.5f)
+                    goto emit_debris;
+            } else if (angle > 0x1fff)
+                return;
+            magdif = (1.0f / ((GAMECHARACTERDATA_s *)object->apiobj.character_data->field11_0x24)->run_speed) *
+                     (object->pre_terrain_speed - object->post_terrain_speed);
+            if (!(magdif > 0.6f))
+                return;
+        emit_debris:
+            if (debris_type != -1)
+                AddGameDebris(WORLD->debris_sys, debris_type, &object->contact_position);
+        }
+    }
 }
 
 float VehicleTurnOrLoopOffset(GameObject_s *object) {

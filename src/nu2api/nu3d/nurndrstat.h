@@ -91,16 +91,16 @@ extern "C" {
 
 // Game-facing light selection state.  The first 0x54 bytes are the ambient
 // colour followed by the three directional-light vectors and colours.  The
-// remaining fields are retained until their individual lighting controls are
-// named. SetCameraMatrices proves the values at 0x60 and 0x74 are integers.
+// specular direction/intensity and control integers follow at 0x54..0x74.
+// SetSpecularLight uses 0x60 for a missing direction and 0x74 for an active intensity.
 typedef struct nulightingstate_s {
-    NUCOLOUR3 ambient;      // 0x00
-    NUVEC direction[3];     // 0x0c
-    NUCOLOUR3 intensity[3]; // 0x30
-    u8 unknown_54[0x0c];    // 0x54
-    i32 field_0x60;         // 0x60
-    u8 unknown_64[0x10];    // 0x64
-    i32 field_0x74;         // 0x74
+    NUCOLOUR3 ambient;            // 0x00
+    NUVEC direction[3];           // 0x0c
+    NUCOLOUR3 intensity[3];       // 0x30
+    NUVEC specular_direction;     // 0x54
+    i32 field_0x60;               // 0x60
+    NUCOLOUR4 specular_intensity; // 0x64
+    i32 field_0x74;               // 0x74
 } NULIGHTINGSTATE;
 
 extern "C" NULIGHTINGSTATE NuRndrLightingStateCurrent;

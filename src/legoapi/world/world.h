@@ -168,6 +168,45 @@ typedef struct portalpos_s {
     f32 *positions;
 } PORTALPOS;
 
+struct HUBMINIKITPIECE_s {
+    nuhspecial_s special;
+    NUMTX matrix;
+    u8 reserved_0x4c[0x66 - 0x4c];
+    u8 enabled;
+    u8 reserved_0x67;
+};
+DECOMP_ASSERT(sizeof(HUBMINIKITPIECE_s) == 0x68, "Hub minikit piece size");
+DECOMP_ASSERT(offsetof(HUBMINIKITPIECE_s, matrix) == 0xc, "Hub minikit piece matrix offset");
+DECOMP_ASSERT(offsetof(HUBMINIKITPIECE_s, enabled) == 0x66, "Hub minikit piece enabled offset");
+struct HUBMINIKITPIECES_s {
+    u32 unknown_00;
+    HUBMINIKITPIECE_s *pieces;
+    u8 piece_count;
+    u8 reserved_09[3];
+    HUBMINIKITPIECE_s base;
+};
+DECOMP_ASSERT(sizeof(HUBMINIKITPIECES_s) == 0x74, "Hub minikit pieces size");
+DECOMP_ASSERT(offsetof(HUBMINIKITPIECES_s, base) == 0xc, "Hub minikit base offset");
+struct HUBMINIKIT_s {
+    NUVEC position;
+    f32 scale;
+    f32 field_0x10;
+    i32 phase_x, rate_x;
+    i32 phase_y, rate_y;
+    i32 phase_z, rate_z;
+    i32 phase_rotation, rate_rotation;
+    u16 rotation, rotation_velocity, tilt, target_rotation;
+    u8 displayed_piece_count, target_piece_count;
+    u8 reserved_0x3e[2];
+    NUVEC collision_center, bounds_min, bounds_max;
+    f32 radius, height_ratio;
+    f32 offset_x, offset_z, velocity_x, velocity_z;
+};
+DECOMP_ASSERT(sizeof(HUBMINIKIT_s) == 0x7c, "Hub minikit runtime size");
+DECOMP_ASSERT(offsetof(HUBMINIKIT_s, displayed_piece_count) == 0x3c, "Hub displayed piece count offset");
+DECOMP_ASSERT(offsetof(HUBMINIKIT_s, collision_center) == 0x40, "Hub minikit collision center offset");
+DECOMP_ASSERT(offsetof(HUBMINIKIT_s, radius) == 0x64, "Hub minikit radius offset");
+
 typedef struct MINIKIT {
     void *gscn;
     char filler[0x14];
@@ -225,12 +264,12 @@ typedef struct WORLDINFO_s {
 
     void *terrain; // 0x295c  LoadTerrainFile result
 
-    GAMEANIMSYS_s *game_anim_sys;   // 0x2960
-    NUGSCN *icons_gscn;             // 0x2964
-    MINIKIT minikit;                // 0x2968
-    void *minikit_pieces_buf;       // 0x2984
-    struct SOCKSYS *sock_sys;       // 0x2988
-    APIOBJECTSYS_s *api_object_sys; // 0x298c
+    GAMEANIMSYS_s *game_anim_sys;            // 0x2960
+    NUGSCN *icons_gscn;                      // 0x2964
+    MINIKIT minikit;                         // 0x2968
+    HUBMINIKITPIECES_s **minikit_pieces_buf; // 0x2984
+    struct SOCKSYS *sock_sys;                // 0x2988
+    APIOBJECTSYS_s *api_object_sys;          // 0x298c
 
     u8 room_visibility_flag; // 0x2990
     u8 rooms_visible[0x100]; // 0x2991 .. 0x2a91
@@ -259,9 +298,9 @@ typedef struct WORLDINFO_s {
 
     CHARPLATFORMSYS_s *char_platform_sys; // 0x2adc
 
-    char filler5a[0x2ae4 - 0x2ae0]; // 0x2ae0 .. 0x2ae4
-    i32 ai_loaded;                  // 0x2ae4
-    AISYS_s *ai_sys;                // 0x2ae8
+    HUBMINIKIT_s *hub_minikits; // 0x2ae0
+    i32 ai_loaded;              // 0x2ae4
+    AISYS_s *ai_sys;            // 0x2ae8
     i32 processor_count;
     LEVELSCRIPTPROCESS processors[32];
 
@@ -405,7 +444,13 @@ typedef struct WORLDINFO_s {
         spacelevel_s *space_level;
     }; // 0x5120
 
-    char filler14b[0x516c - 0x5124];
+    union {
+        char filler14b[0x516c - 0x5124];
+        struct {
+            struct CUSTOMPIECERESOURCE *customiser_resources[9];
+            u8 customiser_resource_tail[0x24];
+        };
+    };
 
     TRAFFICANIMSYS_s *trafficanim_sys; // 0x516c
     PLUGSYS_s *plug_sys;               // 0x5170

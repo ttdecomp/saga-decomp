@@ -36,8 +36,8 @@ i32 PartDraw_ThermalDetonator(PART_s *part) {
     NUMTX reflection;
     i32 reflected = 0;
     if ((part->reflection_flags & 2) != 0 && part->reflection_height != 0.0f) {
-        reflected = MatrixReflection(&matrix, 2, part->reflection_height, WORLD->current_level->unknown_0cc,
-                                     &reflection);
+        reflected =
+            MatrixReflection(&matrix, 2, part->reflection_height, WORLD->current_level->unknown_0cc, &reflection);
     }
 
     LEVEL_OBJECT_RUNTIME *level_special = NULL;

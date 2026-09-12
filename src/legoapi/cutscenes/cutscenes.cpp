@@ -773,8 +773,15 @@ void CutScenes_InitSystem(CUTSCENESYS *system) {
     NuSetCutSceneRigidPostRenderFn(CutScene_RigidPostRender);
 }
 
-static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTSCENE_s *, instNUGCUTCHAR_s *instance,
-                                   NUGCUTCHAR_s *character, f32 frame, i32 paused) {
+extern i32 dco_id;
+extern i32 dco_reflectaxis;
+extern i32 dco_wearinghat;
+extern f32 dco_reflectcoord;
+extern GAMECHARACTERDATA_s *dco_gcdata;
+extern CHARACTERMODEL_s *dco_cmodel;
+
+static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTSCENE_s *cutscene,
+                                   instNUGCUTCHAR_s *instance, NUGCUTCHAR_s *character, f32 frame, i32 paused) {
     WORLDINFO_s *world = WorldInfo_CurrentlyActive();
     CUTSYS *cutscene_system = world->cutscene_sys;
     if (cutscene_system == NULL) {
@@ -820,11 +827,11 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
     }
 
     NUMTX world_matrix;
-    i32 visible = 0;
-    u32 animation_index = 0;
-    f32 animation_rate = 1.0f;
-    f32 blend_time = 0.0f;
-    f32 animation_start_frame = 0.0f;
+    i32 visible;
+    u32 animation_index;
+    f32 animation_rate;
+    f32 blend_time;
+    f32 animation_start_frame;
     i32 layer_mask = -1;
     NuGCutCharAnimProcess(character, frame, &world_matrix, &visible, &animation_index, &animation_rate, &blend_time,
                           &animation_start_frame, &layer_mask);
@@ -879,11 +886,11 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
         return;
     }
 
-    if (instance->field_15 != static_cast<u8>(animation_index)) {
+    if (instance->field_15 != animation_index) {
         const u8 requested_animation = static_cast<u8>(animation_index);
-        if (blend_time <= 0.0f || instance->field_15 == 0xff) {
+        if (!(blend_time > 0.0f) || instance->field_15 == 0xff) {
             instance->field_16 = requested_animation;
-            instance->animation_frame_a = animation_start_frame <= 1.0f ? 1.0f : animation_start_frame;
+            instance->animation_frame_a = !(animation_start_frame > 1.0f) ? 1.0f : animation_start_frame;
         } else {
             if ((instance->field_14 & 1) == 0) {
                 if (instance->field_15 == 0) {
@@ -898,13 +905,13 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
                 instance->animation_frame_a = instance->animation_frame_b;
                 animation_index = instance->field_17;
             }
-            if (animation_start_frame <= 1.0f) {
+            if (!(animation_start_frame > 1.0f)) {
                 animation_start_frame = 1.0f;
             }
             instance->field_17 = requested_animation;
             instance->animation_frame_b = animation_start_frame;
             if (requested_animation != static_cast<u8>(animation_index)) {
-                instance->field_04 = 0;
+                instance->blend_progress = 0;
                 instance->field_14 |= 1;
             }
         }
@@ -915,16 +922,16 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
     u32 animation_a_index = instance->field_16;
     if (blending) {
         if (blend_time <= 0.0f) {
-            instance->field_04 = 0;
+            instance->blend_progress = 0;
             animation_a_index = instance->field_17;
             instance->field_14 ^= 1;
             instance->field_16 = instance->field_17;
             instance->animation_frame_a = instance->animation_frame_b;
             blending = false;
         } else {
-            instance->field_04 += (1.0f / blend_time) * FRAMETIME * 60.0f;
-            if (instance->field_04 >= 1.0f) {
-                instance->field_04 = 0;
+            instance->blend_progress += (1.0f / blend_time) * (FRAMETIME * 60.0f);
+            if (instance->blend_progress >= 1.0f) {
+                instance->blend_progress = 0;
                 animation_a_index = instance->field_17;
                 instance->field_14 ^= 1;
                 instance->field_16 = instance->field_17;
@@ -969,7 +976,7 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
         }
         if (animation_a != NULL && animation_b != NULL) {
             NuHGobjEvalAnimBlend2(model->hierarchy, animation_a, instance->animation_frame_a, animation_b,
-                                  instance->animation_frame_b, instance->field_04, 0, NULL, joint_matrices);
+                                  instance->animation_frame_b, instance->blend_progress, 0, NULL, joint_matrices);
         } else if (animation_b != NULL) {
             NuHGobjEvalAnim2(model->hierarchy, animation_b, instance->animation_frame_b, 0, NULL, joint_matrices);
         } else if (animation_a != NULL) {
@@ -980,7 +987,7 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
 
         if (dwa_animation_a != NULL && dwa_animation_b != NULL) {
             dwa = NuHGobjEvalDwaBlend2(render_count, render_indices, dwa_animation_a, instance->animation_frame_a,
-                                       dwa_animation_b, instance->animation_frame_b, instance->field_04);
+                                       dwa_animation_b, instance->animation_frame_b, instance->blend_progress);
         }
 
         if (animation_b != NULL && instance->field_17 != 0xff && instance->field_17 != 0 &&
@@ -1026,10 +1033,10 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
     }
 
     u8 render_character = 1;
-    if ((character->flags & 0x20) == 0 && (character_data->model_flags & 0x20000) != 0) {
+    if ((character->flags & 0x20) == 0 && (character_data->model_flags & 0x10000) != 0) {
         render_character = static_cast<u8>(((character->flags >> 4) ^ 1) & 1);
     }
-    reinterpret_cast<u8 *>(model->hierarchy)[0x1c4] = render_character;
+    model->hierarchy->suppress_shadow_surface_points = render_character;
 
     if ((game_data->flags_090 & 0x8000) != 0) {
         APITransparentCharDraw(model->hierarchy, &world_matrix, render_count, render_indices, joint_matrices, dwa,
@@ -1053,7 +1060,7 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
     i32 platform = -1;
     i32 surface = -1;
     bool shadow_sampled = false;
-    if ((character->flags & 0x10) != 0 && CutBlobShadowAlpha != 0 && (character_data->model_flags & 0x20000) == 0 &&
+    if ((character->flags & 0x10) != 0 && CutBlobShadowAlpha != 0 && (character_data->model_flags & 0x10000) == 0 &&
         g_isLowEndDevice == 0) {
         u8 shadow_alpha = CutBlobShadowAlpha;
         if (game_data->field_0xf6 != 0xff) {
@@ -1062,7 +1069,7 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
         if (shadow_alpha != 0) {
             f32 shadow_radius = game_data->field_0x8c;
             if (game_data->shadow_locators == 0) {
-                if (shadow_radius >= 99.0f) {
+                if (!(shadow_radius < 99.0f)) {
                     shadow_radius = character_data->collision_radius * character_data->model_scale * 2.0f;
                 }
                 if (shadow_radius > 0.0f) {
@@ -1088,7 +1095,7 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
                     shadow_sampled = true;
                 }
             } else {
-                if (shadow_radius >= 99.0f) {
+                if (!(shadow_radius < 99.0f)) {
                     shadow_radius = character_data->collision_radius * character_data->model_scale;
                 }
                 if (shadow_radius > 0.0f) {
@@ -1121,9 +1128,10 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
     }
 
     f32 reflection_height = 2000000.0f;
-    if ((character->flags & 0x20) != 0 && (game_data->flags_090 & 0x8000) == 0 && Reflections_On != 0 &&
+    if ((character->flags & 0x20) != 0 && (game_data->flags_090 & 0x8000) == 0 &&
         NuVecDistSqr(reinterpret_cast<NUVEC *>(&world_matrix.m30), reinterpret_cast<NUVEC *>(&GameCam->render_mtx.m30),
-                     NULL) < CutReflectRange2) {
+                     NULL) < CutReflectRange2 &&
+        Reflections_On != 0) {
         if (!shadow_sampled) {
             ground_height = GameShadow(NULL, reinterpret_cast<NUVEC *>(&world_matrix.m30), 5.0f, -1);
             if (ground_height != 2000000.0f) {
@@ -1138,14 +1146,14 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
         }
         if (reflection_height != 2000000.0f) {
             NUMTX reflection_matrix;
-            if (MatrixReflection(&world_matrix, 2, reflection_height, world->current_level->unknown_0cc,
+            if (MatrixReflection(&world_matrix, 2, reflection_height, WORLD->current_level->unknown_0cc,
                                  &reflection_matrix) != 0) {
                 NuRndrStartReflectionRender(0);
                 NuHGobjRndrMtxDwa(model->hierarchy, &reflection_matrix, render_count, render_indices, joint_matrices,
                                   dwa, character->flags & 8);
                 if (attachment_matrix != NULL) {
                     NUMTX attachment_reflection;
-                    if (MatrixReflection(attachment_matrix, 2, reflection_height, world->current_level->unknown_0cc,
+                    if (MatrixReflection(attachment_matrix, 2, reflection_height, WORLD->current_level->unknown_0cc,
                                          &attachment_reflection) != 0) {
                         CharScene_Draw(world, character_id, NULL, &attachment_reflection);
                     }
@@ -1155,8 +1163,20 @@ static void CutScene_DrawCharacter(instNUGCUTSCENE_s *cutscene_instance, NUGCUTS
         }
     }
 
+    if (CutSceneSys->field_04 != -1 && reinterpret_cast<i8 *>(CutSceneSys)[6] != -1 &&
+        Cheat_IsOn(reinterpret_cast<i8 *>(CutSceneSys)[6]) != 0) {
+        dco_id = character_id;
+        dco_gcdata = game_data;
+        dco_cmodel = model;
+        dco_wearinghat = 0;
+        dco_reflectaxis = reflection_height != 2000000.0f ? 2 : 0;
+        dco_reflectcoord = reflection_height;
+        DrawObjectOnCharacter(NULL, NULL, CutSceneSys->field_04, NULL, game_data->head_locator, -1, locator_matrices,
+                              reflection_height != 2000000.0f, static_cast<u32>(layer_mask), NULL, NULL, 1.0f, 1.0f);
+    }
+
     if (character->locator_index != 0xff) {
-        NUGCUTLOCATORSYS_s *locator_system = cutscene_instance->cutscene->locator_system;
+        NUGCUTLOCATORSYS_s *locator_system = cutscene->locator_system;
         for (i32 i = 0; i < character->locator_count; ++i) {
             i32 locator_index = character->locator_index + i;
             NUGCUTLOCATOR_s *locator = &locator_system->locators[locator_index];

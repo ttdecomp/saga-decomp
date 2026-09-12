@@ -129,6 +129,15 @@ extern "C" {
 
     extern NUCLIPPLANES ClipPlanes;
 
+    // Separate legacy plane storage used by NuCameraIntersectsAABB.
+    extern i32 TreeInitialised;
+    extern NUMTX CamSpaceFrustrumPlanes, CamSpaceScissorPlanes;
+    extern NUMTX FrustrumPlanes, ScissorPlanes;
+    extern NUVEC4 NearPlane, AbsNearPlane;
+    extern NUMTX AbsFrustrumPlanes, AbsScissorPlanes;
+    void BuildCamSpaceClipPlanes(void);
+    void BuildWorldSpaceClipPlanes(void);
+
     extern f32 zx;
     extern f32 zy;
 

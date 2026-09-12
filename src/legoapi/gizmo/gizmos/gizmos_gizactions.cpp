@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "legoapi/characters/core/character.h"
 #include "legoapi/core/input/gamepads.h"
+#include "legoapi/core/input/qrand.h"
 #include "legoapi/characters/core/players.h"
 #include "legoapi/characters/core/charconfig.h"
 #include "legoapi/gizmo/base/gizactions.h"
@@ -21,6 +22,9 @@
 #include "legoapi/gizmos/object/gizpanel.h"
 #include "legoapi/gizmos/object/gizbuildits.h"
 #include "nu2api/numath/nuvec.h"
+#include "nu2api/nu3d/nucamera.h"
+#include "nu2api/nu3d/nuspline.h"
+#include "legoapi/render/fx/spline_position.h"
 
 void Action_Sebulba(AISYS_s *, AISCRIPTPROCESS_s *, AIPACKET_s *, char **, i32, i32, float) {
 }
@@ -143,8 +147,8 @@ i32 Action_FollowPlayer(AISYS_s *sys, AISCRIPTPROCESS_s *processor, AIPACKET_s *
 void Action_PlayCutScene(AISYS_s *, AISCRIPTPROCESS_s *, AIPACKET_s *, char **, i32, i32, float) {
 }
 
-i32 Action_SetVisibility(AISYS_s *, AISCRIPTPROCESS_s *, AIPACKET_s *, char **params, i32 param_count,
-                         i32 first_time, float) {
+i32 Action_SetVisibility(AISYS_s *, AISCRIPTPROCESS_s *, AIPACKET_s *, char **params, i32 param_count, i32 first_time,
+                         float) {
     if (first_time == 0) {
         return 1;
     }
@@ -206,7 +210,7 @@ i32 Action_ReleaseLocator(AISYS_s *sys, AISCRIPTPROCESS_s *, AIPACKET_s *packet,
     for (i32 index = 0; index < param_count; ++index) {
         char *value = NuStrIStr(params[index], "character=");
         if (value != NULL) {
-            object = GetNamedGameObject(sys, value + NuStrLen("character="));
+            object = GetNamedGameObject(sys, value + sizeof("character=") - 1);
         }
     }
     if (object != NULL) {
@@ -215,7 +219,193 @@ i32 Action_ReleaseLocator(AISYS_s *sys, AISCRIPTPROCESS_s *, AIPACKET_s *packet,
     return 1;
 }
 
-void Action_DynamicCameraCut(AISYS_s *, AISCRIPTPROCESS_s *, AIPACKET_s *, char **, i32, i32, float) {
+void GameCameraMakeMiniCut3(u32, float, i32, i32, i32, void *, i32, NUVEC *, float, float, float, float, float, float,
+                            float, i32, nugspline_s *, char, char);
+
+i32 Action_DynamicCameraCut(AISYS_s *system, AISCRIPTPROCESS_s *processor, AIPACKET_s *packet, char **params,
+                            i32 param_count, i32 first_time, float) {
+    NUVEC target_position = {1000000000.0f, 1000000000.0f, 1000000000.0f};
+    NUVEC camera_position = {1000000000.0f, 1000000000.0f, 1000000000.0f};
+    NUVEC camera_offset = {0.0f, 0.0f, 0.0f};
+    if (first_time != 0) {
+        u32 flags = 0;
+        f32 range = 1.0f;
+        i32 rotation_x = 0, rotation_y = 0, rotation_z = 0;
+        f32 start_time = 0.0f, blend_in_time = 0.0f, end_time = 1000000000.0f;
+        f32 blend_out_time = 0.0f, blend_time = 0.0f, hold_time = 0.0f, max_time = 0.0f;
+        i32 borders = 1, use_current_position = 0;
+        char mode = -1, interpolation = -1;
+        NUGSPLINE *spline = NULL;
+        char *target_locator = NULL, *target_character = NULL, *target_object = NULL, *camera_locator = NULL;
+        for (i32 index = 0; index < param_count; ++index) {
+            char *value;
+            if (NuStrICmp("use_current_campos", params[index]) == 0) {
+                flags |= 0x100;
+                use_current_position = 1;
+            } else if ((value = NuStrIStr(params[index], "attach_to_spline=")) != NULL) {
+                flags |= 0x2000;
+                spline = NuSplineFind(WORLD->current_gscn, value + 17);
+            } else if ((value = NuStrIStr(params[index], "spline_dist_offset=")) != NULL) {
+                flags |= 0x4000;
+                range = AIParamToFloat(processor, value + 17);
+            } else if ((value = NuStrIStr(params[index], "start_time=")) != NULL) {
+                flags |= 0x200;
+                start_time = AIParamToFloat(processor, value + 11);
+            } else if ((value = NuStrIStr(params[index], "blend_time=")) != NULL) {
+                flags |= 0x800;
+                blend_time = AIParamToFloat(processor, value + 11);
+            } else if ((value = NuStrIStr(params[index], "blend_in_time=")) != NULL) {
+                blend_in_time = AIParamToFloat(processor, value + 14);
+            } else if ((value = NuStrIStr(params[index], "blend_out_time=")) != NULL) {
+                blend_out_time = AIParamToFloat(processor, value + 15);
+            } else if ((value = NuStrIStr(params[index], "end_time=")) != NULL) {
+                flags |= 0x400;
+                end_time = AIParamToFloat(processor, value + 9);
+            } else if ((value = NuStrIStr(params[index], "max_time=")) != NULL) {
+                max_time = AIParamToFloat(processor, value + 9);
+            } else if ((value = NuStrIStr(params[index], "hold_time=")) != NULL) {
+                flags |= 0x1000;
+                hold_time = AIParamToFloat(processor, value + 10);
+            } else if ((value = NuStrIStr(params[index], "tgt_locator=")) != NULL) {
+                target_locator = value + 12;
+            } else if ((value = NuStrIStr(params[index], "tgt_character=")) != NULL) {
+                target_character = value + 14;
+            } else if ((value = NuStrIStr(params[index], "tgt_obj=")) != NULL) {
+                target_object = value + 8;
+            } else if ((value = NuStrIStr(params[index], "cam_locator=")) != NULL) {
+                camera_locator = value + 12;
+            } else if ((value = NuStrIStr(params[index], "range=")) != NULL) {
+                flags |= 1;
+                range = AIParamToFloat(processor, value + 6);
+            } else if ((value = NuStrIStr(params[index], "cont_roty=")) != NULL) {
+                flags |= 0x20;
+                rotation_y =
+                    static_cast<i32>(static_cast<i32>(AIParamToFloat(processor, value + 10)) * 182.0444488525390625f);
+            } else if ((value = NuStrIStr(params[index], "roty=")) != NULL) {
+                flags |= 0x4;
+                rotation_y =
+                    static_cast<i32>(static_cast<i32>(AIParamToFloat(processor, value + 5)) * 182.0444488525390625f);
+            } else if ((value = NuStrIStr(params[index], "cont_rotx=")) != NULL) {
+                flags |= 0x10;
+                rotation_x =
+                    static_cast<i32>(static_cast<i32>(AIParamToFloat(processor, value + 10)) * 182.0444488525390625f);
+            } else if ((value = NuStrIStr(params[index], "rotx=")) != NULL) {
+                flags |= 0x2;
+                rotation_x =
+                    static_cast<i32>(-static_cast<i32>(AIParamToFloat(processor, value + 5)) * 182.0444488525390625f);
+            } else if ((value = NuStrIStr(params[index], "cont_rotz=")) != NULL) {
+                flags |= 0x40;
+                rotation_z =
+                    static_cast<i32>(static_cast<i32>(AIParamToFloat(processor, value + 10)) * 182.0444488525390625f);
+            } else if ((value = NuStrIStr(params[index], "rotz=")) != NULL) {
+                flags |= 0x8;
+                rotation_z =
+                    static_cast<i32>(-static_cast<i32>(AIParamToFloat(processor, value + 5)) * 182.0444488525390625f);
+            } else if ((value = NuStrIStr(params[index], "campos_x=")) != NULL) {
+                camera_position.x = AIParamToFloat(processor, value + 9);
+            } else if ((value = NuStrIStr(params[index], "campos_y=")) != NULL) {
+                camera_position.y = AIParamToFloat(processor, value + 9);
+            } else if ((value = NuStrIStr(params[index], "campos_z=")) != NULL) {
+                camera_position.z = AIParamToFloat(processor, value + 9);
+            } else if ((value = NuStrIStr(params[index], "tgtpos_x=")) != NULL) {
+                target_position.x = AIParamToFloat(processor, value + 9);
+            } else if ((value = NuStrIStr(params[index], "tgtpos_y=")) != NULL) {
+                target_position.y = AIParamToFloat(processor, value + 9);
+            } else if ((value = NuStrIStr(params[index], "tgtpos_z=")) != NULL) {
+                target_position.z = AIParamToFloat(processor, value + 9);
+            } else if ((value = NuStrIStr(params[index], "dcampos_x=")) != NULL) {
+                camera_offset.x = AIParamToFloat(processor, value + 10);
+            } else if ((value = NuStrIStr(params[index], "dcampos_y=")) != NULL) {
+                camera_offset.y = AIParamToFloat(processor, value + 10);
+            } else if ((value = NuStrIStr(params[index], "dcampos_z=")) != NULL) {
+                camera_offset.z = AIParamToFloat(processor, value + 10);
+            } else if (NuStrICmp("no_borders", params[index]) == 0) {
+                borders = 0;
+            } else if (NuStrICmp("mode=follow", params[index]) == 0) {
+                mode = 0;
+            } else if (NuStrICmp("mode=static", params[index]) == 0) {
+                mode = 1;
+            } else if (NuStrICmp("linear", params[index]) == 0) {
+                interpolation = 0;
+            } else if (NuStrICmp("slowfastslow", params[index]) == 0) {
+                interpolation = 2;
+            } else if (NuStrICmp("slowfast", params[index]) == 0) {
+                interpolation = 1;
+            } else if (NuStrICmp("fastslowfast", params[index]) == 0) {
+                interpolation = 4;
+            } else if (NuStrICmp("fastslow", params[index]) == 0) {
+                interpolation = 3;
+            }
+        }
+        NUVEC *target = NULL;
+        if (target_locator != NULL) {
+            AILOCATOR *locator = AIPathFindLocator(system, target_locator);
+            if (locator != NULL)
+                target = &locator->position;
+        } else if (target_character != NULL) {
+            GameObject_s *object;
+            if (packet != NULL && packet->owner != NULL && NuStrICmp(target_character, "myself") == 0)
+                object = packet->owner->apiobj.objptr;
+            else
+                object = GetNamedGameObject(system, target_character);
+            if (object != NULL)
+                target = &object->apiobj.collision_position;
+        } else if (target_object != NULL) {
+            nuhspecial_s special;
+            if (NuSpecialFind(WORLD->current_gscn, &special, target_object, 1) != 0)
+                target = NuSpecialGetDrawPos(&special);
+        } else if (target_position.x != 1000000000.0f && target_position.y != 1000000000.0f &&
+                   target_position.z != 1000000000.0f) {
+            target = &target_position;
+        }
+        if (target != NULL)
+            flags |= 0x80;
+
+        i32 have_camera_position = 0;
+        if (use_current_position != 0) {
+            NUMTX *matrix = NuCameraGetMtx();
+            if (matrix != NULL) {
+                camera_position.x = matrix->m30;
+                camera_position.y = matrix->m31;
+                camera_position.z = matrix->m32;
+                have_camera_position = 1;
+            }
+        } else if (camera_position.x != 1000000000.0f && camera_position.y != 1000000000.0f &&
+                   camera_position.z != 1000000000.0f) {
+            have_camera_position = 1;
+        } else if (camera_locator != NULL) {
+            AILOCATOR *locator = AIPathFindLocator(system, camera_locator);
+            if (locator != NULL) {
+                camera_position = locator->position;
+                have_camera_position = 1;
+            }
+        }
+        if (spline != NULL) {
+            PointAlongSpline(spline, 0.0f, &camera_position, NULL, NULL, 0);
+            if (mode == -1)
+                mode = 2;
+        } else if (have_camera_position != 0) {
+            flags |= 0x100;
+            NuVecAdd(&camera_position, &camera_position, &camera_offset);
+            if (mode == -1)
+                mode = 1;
+        } else {
+            if (target != NULL) {
+                camera_position.x = 0.0f;
+                camera_position.y = 0.0f;
+                camera_position.z = range;
+                NuVecRotateX(&camera_position, &camera_position, rotation_x);
+                NuVecRotateY(&camera_position, &camera_position, rotation_y);
+                NuVecAdd(&camera_position, &camera_position, target);
+            }
+            if (mode == -1)
+                mode = 0;
+        }
+        GameCameraMakeMiniCut3(flags, range, rotation_x, rotation_y, rotation_z, target, 0, &camera_position,
+                               start_time, blend_in_time, end_time, blend_out_time, blend_time, hold_time, max_time,
+                               borders, spline, mode, interpolation);
+    }
+    return 1;
 }
 
 f32 party_follow_offsets[8];
@@ -416,174 +606,189 @@ i32 Action_GetLocatorFromSet(AISYS_s *sys, AISCRIPTPROCESS_s *processor, AIPACKE
 
     GameObject_s *object = packet != NULL && packet->owner != NULL ? packet->owner->apiobj.objptr : NULL;
     AILOCATORSET *locator_set = processor->unknown_a8;
+    i32 ignore_assigned = -1;
+    i32 next = 0;
+    char *set_name = NULL;
+    i32 use_player = 0;
+    i32 use_opponent = 0;
+    i32 use_second_player = 0;
+    i32 first = 0;
+    i32 looping = 0;
+    i32 finish_at_end = 0;
+    i32 random = 0;
+    i32 furthest = 0;
     f32 max_range = 0.0f;
     f32 off_screen_radius = 0.0f;
-    bool random = false;
-    bool next = false;
-    bool first = false;
-    bool looping = false;
-    bool finish_at_end = false;
-    bool use_player = false;
-    bool use_opponent = false;
-    bool use_second_player = false;
-    bool furthest = false;
-    i32 ignore_assigned = -1;
 
     for (i32 index = 0; index < param_count; ++index) {
-        char *param = params[index];
-        char *value = NuStrIStr(param, "character=");
+        char *value = NuStrIStr(params[index], "character=");
         if (value != NULL) {
-            object = GetNamedGameObject(sys, value + NuStrLen("character="));
+            object = GetNamedGameObject(sys, value + sizeof("character=") - 1);
             continue;
         }
-        value = NuStrIStr(param, "max_range=");
+        value = NuStrIStr(params[index], "max_range=");
         if (value != NULL) {
-            max_range = AIParamToFloat(processor, value + NuStrLen("max_range="));
+            max_range = AIParamToFloat(processor, value + sizeof("max_range=") - 1);
             continue;
         }
-        value = NuStrIStr(param, "max_player_range=");
+        value = NuStrIStr(params[index], "max_player_range=");
         if (value != NULL) {
-            max_range = AIParamToFloat(processor, value + NuStrLen("max_player_range="));
+            max_range = AIParamToFloat(processor, value + sizeof("max_player_range=") - 1);
             use_player = true;
             continue;
         }
-        value = NuStrIStr(param, "max_opponent_range=");
+        value = NuStrIStr(params[index], "max_opponent_range=");
         if (value != NULL) {
-            max_range = AIParamToFloat(processor, value + NuStrLen("max_opponent_range="));
+            max_range = AIParamToFloat(processor, value + sizeof("max_opponent_range=") - 1);
             use_opponent = true;
             continue;
         }
-        value = NuStrIStr(param, "off_screen_radius=");
+        value = NuStrIStr(params[index], "off_screen_radius=");
         if (value != NULL) {
-            off_screen_radius = AIParamToFloat(processor, value + NuStrLen("off_screen_radius="));
+            off_screen_radius = AIParamToFloat(processor, value + sizeof("off_screen_radius=") - 1);
             continue;
         }
-        value = NuStrIStr(param, "name=");
+        value = NuStrIStr(params[index], "name=");
         if (value != NULL) {
-            locator_set = AIPathFindLocatorSet(sys, value + NuStrLen("name="));
+            set_name = value + sizeof("name=") - 1;
             continue;
         }
 
-        if (NuStrICmp(param, "random") == 0) {
+        if (NuStrICmp(params[index], "random") == 0) {
             random = true;
-        } else if (NuStrICmp(param, "next") == 0) {
+        } else if (NuStrICmp(params[index], "next") == 0) {
             next = true;
-        } else if (NuStrICmp(param, "first") == 0) {
+        } else if (NuStrICmp(params[index], "first") == 0) {
             first = true;
-        } else if (NuStrICmp(param, "looping") == 0) {
+        } else if (NuStrICmp(params[index], "looping") == 0) {
             looping = true;
-        } else if (NuStrICmp(param, "finish_at_end") == 0) {
+        } else if (NuStrICmp(params[index], "finish_at_end") == 0) {
             finish_at_end = true;
-        } else if (NuStrICmp(param, "ignore_assigned=TRUE") == 0) {
+        } else if (NuStrICmp(params[index], "ignore_assigned=TRUE") == 0) {
             ignore_assigned = 1;
-        } else if (NuStrICmp(param, "ignore_assigned=FALSE") == 0) {
+        } else if (NuStrICmp(params[index], "ignore_assigned=FALSE") == 0) {
             ignore_assigned = 0;
-        } else if (NuStrICmp(param, "furthest_from_opponent") == 0) {
+        } else if (NuStrICmp(params[index], "furthest_from_opponent") == 0) {
             furthest = true;
             use_opponent = true;
-        } else if (NuStrICmp(param, "furthest_from_either_player") == 0) {
+        } else if (NuStrICmp(params[index], "furthest_from_either_player") == 0) {
             furthest = true;
             use_player = true;
             use_second_player = true;
-        } else if (NuStrICmp(param, "nearest_either_player") == 0) {
+        } else if (NuStrICmp(params[index], "nearest_either_player") == 0) {
             use_player = true;
             use_second_player = true;
         }
     }
 
     if (ignore_assigned == -1) {
-        ignore_assigned = next ? 0 : 1;
+        ignore_assigned = next ^ 1;
     }
-    if (object == NULL || locator_set == NULL) {
+    if (object == NULL) {
+        return 1;
+    }
+    if (set_name != NULL) {
+        locator_set = AIPathFindLocatorSet(WORLD->ai_sys, set_name);
+    }
+    if (locator_set == NULL) {
         return 1;
     }
 
     APIOBJECT *target = &object->apiobj;
-    NUVEC *reference_position = &target->position;
-    if (use_player && player != NULL) {
+    NUVEC *reference_position;
+    if (use_player) {
         reference_position = &player->apiobj.position;
     } else if (use_opponent && object->ai.opponent != NULL) {
         reference_position = &static_cast<APIOBJECT *>(object->ai.opponent)->position;
+    } else {
+        reference_position = &target->position;
     }
     NUVEC *second_position =
         use_second_player && player2 != NULL ? &player2->apiobj.position : static_cast<NUVEC *>(NULL);
 
     if (first) {
-        if (locator_set->locator_count > 0) {
-            object->ai.locator = &sys->locators[locator_set->locator_entries[0]];
+        if (locator_set->locator_count != 0) {
+            object->apiobj.ai->locator = &sys->locators[locator_set->locator_entries[0]];
             locator_set->assigned[0] = target->field_0x289;
         }
         return 1;
     }
 
-    if (!next) {
-        if (random) {
-            AILocatorSet_AssignRandomLocator(sys, locator_set, target, max_range, reference_position, off_screen_radius,
-                                             ignore_assigned);
-        } else if (furthest) {
-            AILocatorSet_AssignFurthestLocator(sys, locator_set, target, max_range, reference_position, second_position,
-                                               off_screen_radius, ignore_assigned);
-        } else {
-            AILocatorSet_AssignNearestLocator(sys, locator_set, target, max_range, reference_position, second_position,
-                                              off_screen_radius, ignore_assigned);
+    if (next) {
+        if (locator_set->locator_count < 2) {
+            return 1;
         }
-        return 1;
-    }
-
-    const i32 locator_count = locator_set->locator_count;
-    if (locator_count < 2) {
-        return 1;
-    }
-    if (ignore_assigned != 0) {
-        AILocatorSet_CheckLocatorsStillAssigned(sys, locator_set);
-    }
-
-    i32 current_index = -1;
-    for (i32 index = 0; index < locator_count; ++index) {
-        if (object->ai.locator == &sys->locators[locator_set->locator_entries[index]]) {
-            current_index = index;
-            locator_set->assigned[index] = 0xff;
-            break;
+        if (ignore_assigned != 0) {
+            AILocatorSet_CheckLocatorsStillAssigned(sys, locator_set);
         }
-    }
-    if (current_index == -1) {
-        current_index = NuRandInt() % locator_count;
-    }
 
-    i32 direction = (target->field_0x1fa & 0x10) == 0 ? 1 : -1;
-    for (i32 checked = 0; checked < locator_count; ++checked) {
-        i32 candidate = current_index + direction;
-        if (candidate < 0 || candidate >= locator_count) {
-            if (looping) {
-                if (finish_at_end) {
-                    object->ai.locator = NULL;
-                    return 1;
-                }
-                candidate = candidate < 0 ? locator_count - 1 : 0;
-            } else {
-                direction = -direction;
-                if (direction < 0) {
-                    target->field_0x1fa |= 0x10;
-                    candidate = locator_count - 2;
-                } else {
-                    target->field_0x1fa &= static_cast<u8>(~0x10);
-                    candidate = 1;
-                }
-                if (finish_at_end && checked != 0) {
-                    object->ai.locator = NULL;
-                    return 1;
+        i32 direction = (target->field_0x1fa & 0x10) == 0 ? 1 : -1;
+        i32 current_index = 0;
+        AILOCATOR *current_locator = object->apiobj.ai->locator;
+        if (current_locator != NULL) {
+            for (current_index = 0; current_index < locator_set->locator_count; ++current_index) {
+                if (current_locator == &sys->locators[locator_set->locator_entries[current_index]]) {
+                    locator_set->assigned[current_index] = 0xff;
+                    break;
                 }
             }
         }
-        current_index = candidate;
-        if (ignore_assigned == 0 || locator_set->assigned[current_index] == 0xff) {
-            object->ai.locator = &sys->locators[locator_set->locator_entries[current_index]];
-            locator_set->assigned[current_index] = target->field_0x289;
-            return 1;
+        if (current_locator == NULL || current_index == locator_set->locator_count) {
+            current_index = qrand() / (0xffff / locator_set->locator_count + 1);
         }
-    }
 
-    object->ai.locator = NULL;
+        i32 candidate = current_index;
+        i32 passed_start = 0;
+        // A bouncing traversal can cross its starting slot before visiting
+        // the other end. Keep that slot as the fallback after both legs.
+        while (true) {
+            candidate += direction;
+            if (looping) {
+                if (candidate >= locator_set->locator_count) {
+                    if (finish_at_end) {
+                        object->apiobj.ai->locator = NULL;
+                        return 1;
+                    }
+                    candidate = 0;
+                } else if (candidate < 0) {
+                    candidate = locator_set->locator_count - 1;
+                }
+            } else {
+                if (candidate >= locator_set->locator_count) {
+                    if (finish_at_end) {
+                        object->apiobj.ai->locator = NULL;
+                        return 1;
+                    }
+                    target->field_0x1fa |= 0x10;
+                    direction = -1;
+                    candidate = locator_set->locator_count - 2;
+                } else if (candidate < 0) {
+                    target->field_0x1fa &= static_cast<u8>(~0x10);
+                    direction = 1;
+                    candidate = 1;
+                }
+            }
+            if (candidate == current_index) {
+                if (looping || passed_start) {
+                    break;
+                }
+                passed_start = 1;
+            } else if (ignore_assigned == 0 || locator_set->assigned[candidate] == 0xff) {
+                break;
+            }
+        }
+        object->apiobj.ai->locator = &sys->locators[locator_set->locator_entries[candidate]];
+        locator_set->assigned[candidate] = target->field_0x289;
+    } else if (random) {
+        AILocatorSet_AssignRandomLocator(sys, locator_set, target, max_range, reference_position, off_screen_radius,
+                                         ignore_assigned);
+    } else if (furthest) {
+        AILocatorSet_AssignFurthestLocator(sys, locator_set, target, max_range, reference_position, second_position,
+                                           off_screen_radius, ignore_assigned);
+    } else {
+        AILocatorSet_AssignNearestLocator(sys, locator_set, target, max_range, reference_position, second_position,
+                                          off_screen_radius, ignore_assigned);
+    }
     return 1;
 }
 

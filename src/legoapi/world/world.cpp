@@ -23,6 +23,7 @@
 #include "nu2api/nuandroid/ios_graphics.h"
 #include "nu2api/nucore/nustring.h"
 #include "nu2api/nucore/nutime.h"
+#include "nu2api/nucore/NuDeviceSpecs.h"
 #include "nu2api/nufile/nufile.h"
 #include "nu2api/nufile/nufpar.h"
 #include "MechInputTouch/MechInputTouch_types.h"
@@ -242,6 +243,8 @@ void WorldInfo_InitOnce(void) {
     memset(WorldInfo, 0, sizeof(WorldInfo));
 }
 
+extern TERRAIN_SURFACE_s TerSurface[32];
+
 void WorldInfo_Init(WORLDINFO *world) {
     i32 local_menu_id = -1;
     i32 local_menu_y = -1;
@@ -249,54 +252,42 @@ void WorldInfo_Init(WORLDINFO *world) {
     disable_narrow_socks = 0;
     script_spline_selected = 0;
 
-    // Reflections_On is set based on device specs in original
-    // For now, keep existing logic
+    world->reset_flags = 0;
+    // This original flag occupies one byte despite the shared legacy i32 declaration.
+    reinterpret_cast<u8 *>(&Reflections_On)[0] = NuDeviceSpecs::ms_instance->specs > 1;
     g_lowEndLevelBehaviour = g_isLowEndDevice;
-
     if (g_isLowEndDevice) {
         if (world->current_level != NULL) {
             DebrisSetThinningLevel(world->current_level->data_display.particle_thin);
-            DebrisSetForcedThinning(world->current_level->data_display.particle_thin > 0.0f);
+            DebrisSetForcedThinning(world->current_level->data_display.particle_thin > 1.0f);
             character_farclip = world->current_level->unknown_11c;
             SetCameraZoom(world->current_level->unknown_120);
         }
-    } else if (world->current_level == NULL) {
-        DebrisSetDetailLevel(4);
-        DebrisSetThinningLevel(1.0f);
-        DebrisSetForcedThinning(0);
     } else {
-        char *nameCheck = NuStrIStr(world->current_level->name, "JabbasPalace_Intro1");
-        if (nameCheck == NULL) {
-            if (g_isLowestEndDevice && world->current_level != NULL) {
-                nameCheck = NuStrIStr(world->current_level->name, "Dogfight_A");
-                if (nameCheck != NULL || NuStrIStr(world->current_level->name, "DeathStarRescue") != NULL ||
-                    NuStrIStr(world->current_level->name, "GunGan_A") != NULL ||
-                    NuStrIStr(world->current_level->name, "SpeederChase") != NULL) {
-                    DebrisSetDetailLevel(1);
-                    g_lowEndLevelBehaviour = 1;
-                    DebrisSetThinningLevel(6.0f);
-                    DebrisSetForcedThinning(1);
-                    character_farclip = world->current_level->unknown_11c;
-                    SetCameraZoom(world->current_level->unknown_120);
-                } else {
-                    DebrisSetDetailLevel(4);
-                    DebrisSetThinningLevel(1.0f);
-                    DebrisSetForcedThinning(0);
-                }
-            } else {
-                DebrisSetDetailLevel(4);
-                DebrisSetThinningLevel(1.0f);
-                DebrisSetForcedThinning(0);
-            }
-        } else {
+        if (world->current_level != NULL && NuStrIStr(world->current_level->name, "JabbasPalace_Intro1") != NULL) {
             DebrisSetThinningLevel(6.0f);
             DebrisSetForcedThinning(1);
+        } else if (NuDeviceSpecs::ms_instance->specs <= 2 &&
+                   ((world->current_level != NULL && NuStrIStr(world->current_level->name, "Dogfight_A") != NULL) ||
+                    (world->current_level != NULL &&
+                     NuStrIStr(world->current_level->name, "DeathStarRescue") != NULL) ||
+                    (world->current_level != NULL && NuStrIStr(world->current_level->name, "GunGan_A") != NULL) ||
+                    (world->current_level != NULL && NuStrIStr(world->current_level->name, "SpeederChase") != NULL))) {
+            DebrisSetDetailLevel(1);
+            g_lowEndLevelBehaviour = 1;
+            DebrisSetThinningLevel(6.0f);
+            DebrisSetForcedThinning(1);
+            character_farclip = world->current_level->unknown_11c;
+            SetCameraZoom(world->current_level->unknown_120);
+        } else {
+            DebrisSetDetailLevel(4);
+            DebrisSetThinningLevel(1.0f);
+            DebrisSetForcedThinning(0);
         }
-    }
-
-    if (g_isLowestEndDevice && world->current_level != NULL &&
-        NuStrIStr(world->current_level->name, "Negotiations_") != NULL) {
-        Reflections_On = 0;
+        if (NuDeviceSpecs::ms_instance->specs <= 2 && world->current_level != NULL &&
+            NuStrIStr(world->current_level->name, "Negotiations_") != NULL) {
+            reinterpret_cast<u8 *>(&Reflections_On)[0] = 0;
+        }
     }
 
     // Sound and SFX setup
@@ -316,15 +307,14 @@ void WorldInfo_Init(WORLDINFO *world) {
     }
 
     // Start page loading for various subsystems
-    i32 *page_handles = (i32 *)&world->page_pp;
-    if (page_handles[0] != -1) {
-        edppStartPage(page_handles[0]);
+    if (world->page_pp != -1) {
+        edppStartPage(static_cast<i8>(world->page_pp));
     }
-    if (page_handles[1] != -1) {
-        edpartStartPage(page_handles[1]);
+    if (world->page_part != -1) {
+        edpartStartPage(static_cast<i8>(world->page_part));
     }
-    if (page_handles[5] != -1) {
-        edbriStartPage(page_handles[5]);
+    if (world->page_bridge != -1) {
+        edbriStartPage(static_cast<i8>(world->page_bridge));
     }
 
     // Terrain initialization
@@ -333,8 +323,8 @@ void WorldInfo_Init(WORLDINFO *world) {
     TerrainSetCur(terrain_cur);
     TerrSetPlatScanDist((f32)(u8)world->current_level->unknown_0db);
 
-    if (page_handles[4] != -1) {
-        edgraStartPage(page_handles[4]);
+    if (world->page_grass != -1) {
+        edgraStartPage(static_cast<i8>(world->page_grass));
     }
 
     TerrainPlatformOldUpdate();
@@ -355,15 +345,7 @@ void WorldInfo_Init(WORLDINFO *world) {
     // Level progress copy
     LEVEL_PROGRESS_s *progress = (LEVEL_PROGRESS_s *)world->level_progress;
     if (NOSOUND == 0 && progress != NULL && (progress->flags & 1) == 0) {
-        // Progress payload lives at the tail of the name/config buffer region;
-        // there is no named field for it, so the source is addressed raw.
-        i32 *src = (i32 *)&world->name[0x5c];
-        i32 *dst = (i32 *)&progress->data;
-        for (i32 i = 0xa00; i != 0; i--) {
-            *dst = *src;
-            src++;
-            dst++;
-        }
+        progress->data = world->progress_data;
         progress->flags |= 1;
     }
 
@@ -424,12 +406,25 @@ void WorldInfo_Init(WORLDINFO *world) {
 
     InitGameObjectLights();
 
-    // Unreferenced padding slot (0x5174); no named field.
-    *(i32 *)((char *)world + 0x5174) = 1;
+    world->field_5174 = 1;
+    TerSurface[14].flags = 0x2000;
+    TerSurface[14].movement_scale = 1.0f;
+    TerSurface[15].flags = 0x2000;
+    TerSurface[24].flags = 0x2000;
+    TerSurface[15].movement_scale = 1.0f;
+    TerSurface[24].movement_scale = 1.0f;
+    TerSurface[20].flags = 0x2000;
+    TerSurface[9].flags = 0x2000;
+    TerSurface[20].movement_scale = 1.0f;
+    TerSurface[9].movement_scale = 1.0f;
 
     // Init last function
     if (WorldInfo_InitLastFn != NULL) {
         WorldInfo_InitLastFn(world);
+    }
+
+    if (NOSOUND == 0) {
+        MechSystems::Get()->EnterLevel(world);
     }
 
     if (world->mech_auto_jump_manager != NULL) {
@@ -441,20 +436,14 @@ void WorldInfo_Load(WORLDINFO *world) {
     LOG_INFO("world load world=%p", (void *)world);
     char buf[268];
     char titles[64];
-    LEVELDATA *level;
     NUGSCN *cutscene_scene;
     i32 *page_handles;
     i32 aligned_buf;
-    char ai_name[4];
+    char ai_name[32];
+    char title_light_path[] = "levels\\titles\\titles";
     i32 ai_buf_size;
     i32 rtl_id;
     char *light_path;
-
-    level = world->current_level;
-    ai_name[0] = 'a';
-    ai_name[1] = 'i';
-    ai_name[2] = 0;
-    ai_name[3] = 0;
 
     Level_LoadConfigFile(world);
 
@@ -464,11 +453,11 @@ void WorldInfo_Load(WORLDINFO *world) {
         goto abort;
     }
 
-    if ((level->flags & LEVEL_UNKNOWN_FLAG_4) != 0) {
+    if ((world->current_level->flags & LEVEL_UNKNOWN_FLAG_4) != 0) {
         // Align giz_buffer
         world->giz_buffer.addr = ALIGN(world->giz_buffer.addr, 4);
 
-        if (level == TITLES_LDATA) {
+        if (world->current_level == TITLES_LDATA) {
             NuStrCpy(buf, "levels\\titles\\");
             switch (Text_Language) {
                 case 2:
@@ -495,14 +484,14 @@ void WorldInfo_Load(WORLDINFO *world) {
                     break;
             }
             NuStrCat(buf, titles);
-        } else if (level == (LEVELDATA *)PLATFORM_LDATA) {
+        } else if (world->current_level == (LEVELDATA *)PLATFORM_LDATA) {
             NuStrCpy(buf, "levels\\episode_v\\cloudcityescape\\cloudcityescape_b\\cloudcityescape_b");
         } else {
             NuStrCpy(buf, world->config_file);
         }
         NuStrCat(buf, ".gsc");
 
-        numtl_force_mipmode = (i32)(u8)level->mipmap_mode + 1;
+        numtl_force_mipmode = (i32)(u8)world->current_level->mipmap_mode + 1;
         world->current_gscn = NuGScnRead(&world->giz_buffer, world->unknown_0108, buf);
         numtl_force_mipmode = 0;
 
@@ -517,8 +506,8 @@ void WorldInfo_Load(WORLDINFO *world) {
     }
 
     // Load pictures for titles/credits
-    if (level == TITLES_LDATA || level == CREDITS_LDATA) {
-        numtl_force_mipmode = (i32)(u8)level->mipmap_mode + 1;
+    if (world->current_level == TITLES_LDATA || world->current_level == CREDITS_LDATA) {
+        numtl_force_mipmode = (i32)(u8)world->current_level->mipmap_mode + 1;
         world->scene = NuGScnRead(&world->giz_buffer, world->unknown_0108, "levels\\titles\\pictures.gsc");
         if (abort_load != 0)
             goto abort;
@@ -566,7 +555,7 @@ void WorldInfo_Load(WORLDINFO *world) {
             goto abort;
         goto after_area;
     }
-    if ((level->flags & LEVEL_STATUS) != 0 && world->area->minikit_id != -1) {
+    if ((world->current_level->flags & LEVEL_STATUS) != 0 && world->area->minikit_id != -1) {
         MiniKit_Load(&world->minikit, (i32)(i16)world->area->minikit_id, &world->giz_buffer, &world->unknown_0108,
                      NULL);
         if (world->minikit.gscn != NULL) {
@@ -578,7 +567,8 @@ void WorldInfo_Load(WORLDINFO *world) {
 
 after_area:
     // Load big icon scene for hub/status levels
-    if ((level == HUB_LDATA || (level->flags & LEVEL_STATUS) != 0) && big_icon_scene == NULL) {
+    if ((world->current_level == HUB_LDATA || (world->current_level->flags & LEVEL_STATUS) != 0) &&
+        big_icon_scene == NULL) {
         world->icons_gscn = NuGScnRead(&world->giz_buffer, world->unknown_0108, "stuff\\icons\\starwars_icons_all.gsc");
     }
 
@@ -590,10 +580,10 @@ after_area:
 
     // Load cutscenes
     page_handles = (i32 *)&world->page_pp;
-    world->cutscene_sys = (CUTSYS *)CutScenes_Load(
-        ConfigBuffer, world->current_gscn, cutscene_scene, page_handles[0], &world->giz_buffer,
-        // 0x25c/0x260 are i32 reads into the progress_data region.
-        &world->unknown_0108, *(i32 *)((char *)world + 0x25c), *(i32 *)((char *)world + 0x260), world);
+    world->cutscene_sys =
+        (CUTSYS *)CutScenes_Load(ConfigBuffer, world->current_gscn, cutscene_scene, world->page_pp, &world->giz_buffer,
+                                 // Sublevel and level indices follow the two buffer arguments.
+                                 &world->unknown_0108, world->level_sub_id, world->level_idx, world);
     if (abort_load != 0)
         goto abort;
 
@@ -604,7 +594,7 @@ after_area:
     CharScenes_LevelLoad(world);
 
     // SockSys for certain level types
-    if ((level->flags & (LEVEL_GAMEPLAY | LEVEL_INTRO | LEVEL_MIDTRO | LEVEL_OUTRO)) == LEVEL_GAMEPLAY) {
+    if ((world->current_level->flags & (LEVEL_GAMEPLAY | LEVEL_INTRO | LEVEL_MIDTRO | LEVEL_OUTRO)) == LEVEL_GAMEPLAY) {
         world->sock_sys = SockSysInit(&world->giz_buffer, world->unknown_0108, world->current_gscn);
     }
 
@@ -633,7 +623,7 @@ after_area:
             SockSys_Configure(world->sock_sys, ConfigBuffer, 0, &world->giz_buffer, &world->unknown_0108,
                               world->current_gscn);
         }
-        SockSys_GenerateData(world->sock_sys, &world->giz_buffer, &world->unknown_0108);
+        SockSys_GenerateData(world->sock_sys, &world->giz_buffer, world->unknown_0108);
         if (abort_load != 0)
             goto abort;
     }
@@ -642,7 +632,7 @@ after_area:
     if (world->area != NULL &&
         (world->area->flags & (AREAFLAG_VEHICLE_AREA | AREAFLAG_BONUS_AREA)) ==
             (AREAFLAG_VEHICLE_AREA | AREAFLAG_BONUS_AREA) &&
-        (level->flags & (LEVEL_STATUS | LEVEL_OUTRO | LEVEL_MIDTRO | LEVEL_INTRO)) == 0) {
+        (world->current_level->flags & (LEVEL_STATUS | LEVEL_OUTRO | LEVEL_MIDTRO | LEVEL_INTRO)) == 0) {
         CharacterMiniKits_Load(&MiniKitCollection, world, &world->giz_buffer, &world->unknown_0108);
         if (abort_load != 0)
             goto abort;
@@ -659,15 +649,19 @@ after_area:
     }
 
     // AI system loading
-    if ((level->flags & (LEVEL_GAMEPLAY | LEVEL_INTRO | LEVEL_MIDTRO | LEVEL_OUTRO)) == LEVEL_GAMEPLAY &&
-        level != (LEVELDATA *)PLATFORM_LDATA) {
+    if ((world->current_level->flags & (LEVEL_GAMEPLAY | LEVEL_INTRO | LEVEL_MIDTRO | LEVEL_OUTRO)) == LEVEL_GAMEPLAY &&
+        world->current_level != (LEVELDATA *)PLATFORM_LDATA) {
         world->ai_loaded = 0;
+        world->giz_buffer.addr = ALIGN(world->giz_buffer.addr, 4);
+        ai_name[0] = 'a';
+        ai_name[1] = 'i';
+        ai_name[2] = 0;
         ai_buf_size = 0x1cc00;
-        if (RETAKED_LDATA != NULL && level == (LEVELDATA *)RETAKED_LDATA) {
+        if (RETAKED_LDATA != NULL && world->current_level == (LEVELDATA *)RETAKED_LDATA) {
             ai_buf_size = 0x1e800;
         }
         world->ai_sys = (AISYS *)AISysLoad(&world->giz_buffer, &world->unknown_0108, ai_buf_size, world->current_gscn,
-                                           level->dir, level->name, ai_name);
+                                           world->current_level->dir, world->current_level->name, ai_name);
         world->ai_path_cnx_control_sys =
             (AIPATHCNXCONTROLSYS_s *)AIPathCnxControlSysCreate(&world->giz_buffer, &world->unknown_0108, 0x40);
         world->ai_path_cnx_helper_sys =
@@ -682,8 +676,8 @@ after_area:
         GameAIScriptAddLevelSfx(world, &global_aiscripts);
         GameAIScriptAddLevelSfx(world, &world->ai_sys->scripts);
 
-        world->climb_object_sys = (CLIMBOBJECTSYS_s *)CreateClimbObjectSys(&world->giz_buffer, &world->unknown_0108,
-                                                                           (i32)(u8)level->max_climb_objs);
+        world->climb_object_sys = (CLIMBOBJECTSYS_s *)CreateClimbObjectSys(
+            &world->giz_buffer, &world->unknown_0108, (i32)(u8)world->current_level->max_climb_objs);
     } else {
         world->ai_loaded = 1;
     }
@@ -698,11 +692,11 @@ after_area:
         goto abort;
 
     // Lights
-    if ((level->flags & LEVEL_UNKNOWN_FLAG_4) == 0) {
+    if ((world->current_level->flags & LEVEL_UNKNOWN_FLAG_4) == 0) {
         world->rtl_id = -1;
         world->light_dir = 0;
     } else {
-        light_path = level == TITLES_LDATA ? const_cast<char *>("levels\\titles\\titles") : world->config_file;
+        light_path = world->current_level == TITLES_LDATA ? title_light_path : world->config_file;
         LoadLights(world, light_path);
         rtl_id = rtlFindByUserId(reinterpret_cast<usize>(world->rtl_set), 1);
         world->rtl_id = rtl_id;
@@ -742,12 +736,11 @@ after_area:
         goto abort;
 
     // Level load function
-    if (level->load_fn != NULL) {
-        level->load_fn(world, &world->giz_buffer, &world->unknown_0108);
+    if (world->current_level->load_fn != NULL) {
+        world->current_level->load_fn(world, &world->giz_buffer, &world->unknown_0108);
     }
 
-    // i32 reads into the progress_data region (0x260/0x25c).
-    SetAreaPickupGravity(*(i32 *)((char *)world + 0x260), *(i32 *)((char *)world + 0x25c));
+    SetAreaPickupGravity(world->level_sub_id, world->level_idx);
     world->loaded = 1;
     return;
 

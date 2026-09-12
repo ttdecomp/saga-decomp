@@ -18,8 +18,8 @@ struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
 
-extern "C" void AddVariableShotDebrisEffectTimed1(i32 effect, NUVEC *position, i32 count, f32 time,
-                                                    i16 z_rotation, i16 y_rotation, NUMTX *orientation);
+extern "C" void AddVariableShotDebrisEffectTimed1(i32 effect, NUVEC *position, i32 count, f32 time, i16 z_rotation,
+                                                  i16 y_rotation, NUMTX *orientation);
 i32 ObjHitObj(GameObject_s *attacker, GameObject_s *target, i32 damage, u16 flags, i32 parameter, i32 context);
 void NewRumble(nupad_s *pad, f32 strength, i32 mode);
 void NewBuzz(nupad_s *pad, f32 duration, i32 mode);

@@ -421,7 +421,9 @@ extern "C" {
     i32 NuDatFileFindTree(NUDATHDR *header, char *name);
     i32 NuDatFileLoadBuffer(NUDATHDR *dat, char *name, void *dest, i32 maxSize);
 
+    i32 NuPPGetSize(NUFILE file);
     i32 NuPPLoadBuffer(NUFILE file, void *buf, i32 buf_size);
+    void NuPPUnpack(void *source, void *destination);
 
     void NuPSFileInitDevices(i32 device_id, i32 reboot_iop, i32 eject);
     i32 NuFileInitEx(i32 device_id, i32 reboot_iop, i32 eject);

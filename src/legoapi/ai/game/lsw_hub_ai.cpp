@@ -246,15 +246,13 @@ void LSW_Hub_UpdateAI(WORLDINFO_s *world) {
 
     GIZOBSTACLE_s *barman_obstacle = LevGizObst[0];
     if (barman_obstacle != NULL) {
-        u8 flags = barman_obstacle->runtime_flags;
         if (aicreature_sets_alive[HUB_BARMAN_CREATURE_SET] != 0) {
-            flags |= GIZOBSTACLE_RUNTIME_FLAG_AI_ACTIVE;
-            flags &= static_cast<u8>(~GIZOBSTACLE_RUNTIME_FLAG_BLOCKED);
+            barman_obstacle->runtime_flags |= GIZOBSTACLE_RUNTIME_FLAG_AI_ACTIVE;
+            barman_obstacle->runtime_flags &= static_cast<u8>(~GIZOBSTACLE_RUNTIME_FLAG_BLOCKED);
         } else {
-            flags &= static_cast<u8>(~GIZOBSTACLE_RUNTIME_FLAG_AI_ACTIVE);
-            flags |= GIZOBSTACLE_RUNTIME_FLAG_BLOCKED;
+            barman_obstacle->runtime_flags &= static_cast<u8>(~GIZOBSTACLE_RUNTIME_FLAG_AI_ACTIVE);
+            barman_obstacle->runtime_flags |= GIZOBSTACLE_RUNTIME_FLAG_BLOCKED;
         }
-        barman_obstacle->runtime_flags = flags;
     }
 }
 

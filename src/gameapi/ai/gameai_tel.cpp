@@ -44,8 +44,7 @@ static __used__ void Tel_Hacky_Cam(nufpar_s *) {
 }
 static __used__ void Tel_name(nufpar_s *parser) {
     if (NuFParGetWord(parser) != 0) {
-        GizmoGetUniqueName(WORLD->gizmo_sys, "TLT_", parser->word_buf, Tel_teleport->name,
-                           sizeof(Tel_teleport->name));
+        GizmoGetUniqueName(WORLD->gizmo_sys, "TLT_", parser->word_buf, Tel_teleport->name, sizeof(Tel_teleport->name));
     }
 }
 static __used__ void Tel_obj(nufpar_s *parser) {
@@ -82,18 +81,10 @@ static __used__ void Tel_spline(nufpar_s *parser) {
                        sizeof(Tel_teleport->name));
 }
 
-static NUFPCOMJMP Teleport_ConfigKeywords[] = {{"spline", Tel_spline},
-                                               {"duration", Tel_duration},
-                                               {"range", Tel_range},
-                                               {"1_way", Tel_1_way},
-                                               {"crawl", Tel_crawl},
-                                               {"flip_flap", Tel_flip_flap},
-                                               {"hackycam", Tel_Hacky_Cam},
-                                               {"obj", Tel_obj},
-                                               {"flap1", Tel_flap},
-                                               {"flap2", Tel_flap},
-                                               {"name", Tel_name},
-                                               {NULL, NULL}};
+static NUFPCOMJMP Teleport_ConfigKeywords[] = {
+    {"spline", Tel_spline}, {"duration", Tel_duration},   {"range", Tel_range},        {"1_way", Tel_1_way},
+    {"crawl", Tel_crawl},   {"flip_flap", Tel_flip_flap}, {"hackycam", Tel_Hacky_Cam}, {"obj", Tel_obj},
+    {"flap1", Tel_flap},    {"flap2", Tel_flap},          {"name", Tel_name},          {NULL, NULL}};
 
 void Teleports_Configure(WORLDINFO_s *world, char *config) {
     world->teleports = NULL;

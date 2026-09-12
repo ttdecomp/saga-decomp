@@ -793,8 +793,6 @@ void MenuUpdateSaving(MENU_s *) {
 void MenuDrawBonusMode(MENU_s *) {
 }
 
-void MenuInitBonusMode(MENU_s *) {
-}
 
 void MenuUpdateLoading(MENU_s *) {
     if (memcard_loadneeded != 0) {

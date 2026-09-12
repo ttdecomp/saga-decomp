@@ -146,8 +146,7 @@ void *Technos_FindTgt(TECHNO_s *techno) {
                 techno->target_mode = 3;
                 break;
             }
-            if (NuSpecialFind(WORLD->current_gscn,
-                              reinterpret_cast<nuhspecial_s *>(techno->target_special_storage),
+            if (NuSpecialFind(WORLD->current_gscn, reinterpret_cast<nuhspecial_s *>(techno->target_special_storage),
                               techno->target_name, 0) != 0) {
                 techno->target_mode = 2;
                 techno->controlled_object = techno->target_special_storage;
@@ -165,8 +164,7 @@ void *Technos_FindTgt(TECHNO_s *techno) {
             break;
         case 2:
             techno->controlled_object = techno->target_special_storage;
-            if (NuSpecialFind(WORLD->current_gscn,
-                              reinterpret_cast<nuhspecial_s *>(techno->target_special_storage),
+            if (NuSpecialFind(WORLD->current_gscn, reinterpret_cast<nuhspecial_s *>(techno->target_special_storage),
                               techno->target_name, 0) == 0) {
                 techno->target_mode = 0;
                 techno->controlled_object = NULL;

@@ -91,8 +91,7 @@ static void SecurityDoors_Draw(void *world_data, void *, float) {
         return;
     }
 
-    const u16 rotation =
-        static_cast<u16>(static_cast<i32>(NuFmod(GameTimer.time_elapsed, 5.0f) / 5.0f * 65536.0f));
+    const u16 rotation = static_cast<u16>(static_cast<i32>(NuFmod(GameTimer.time_elapsed, 5.0f) / 5.0f * 65536.0f));
     const f32 pulse_phase = NuFmod(GameTimer.time_elapsed_mod_seconds, 0.5f) * 2.0f * 65536.0f;
     const f32 pulse = 0.8f + NU_SIN_LUT(static_cast<i32>(pulse_phase)) * 0.2f;
 

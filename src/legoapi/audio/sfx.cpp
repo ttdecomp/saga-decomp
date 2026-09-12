@@ -242,9 +242,6 @@ void SetLevelSfxBits(WORLDINFO *world) {
     if (world->cutscene_sys != NULL) {
         for (i32 i = 0; i < world->cutscene_sys->count; ++i) {
             CUTINFO *cut = world->cutscene_sys->cuts[i];
-            if (cut == NULL) {
-                continue;
-            }
             for (CUTSCENESFX &sfx : cut->sfx) {
                 if (sfx.id != -1) {
                     sfx_ids[sfx_count++] = sfx.id;
@@ -298,11 +295,11 @@ void SetLevelSfxBits(WORLDINFO *world) {
             ADD_SFX("Explode1");
             ADD_SFX("Jp_Ana_Jump");
             ADD_SFX("PickupCoin");
-        } else if (level == CREDITS_LDATA) {
-            ADD_SFX("StatusAward");
         } else if (world->area != NULL && (world->area->flags & 4) != 0) {
             ADD_SFX("Victory");
             ADD_SFX("exp_debris");
+        } else if (level == CREDITS_LDATA) {
+            ADD_SFX("StatusAward");
         }
     } else if (world->area != NULL && (world->area->flags & 4) != 0) {
         ADD_SFX("Victory");
@@ -351,182 +348,219 @@ void SetLevelSfxBits(WORLDINFO *world) {
         }
     }
 
-    if (level == NEGOTIATIONSA_LDATA || level == CRUISERG_LDATA) {
-        ADD_SFX("NegA_CoinMDoorUp");
-        ADD_SFX("NegA_CoinMDoorDn");
-    } else if (level == NEGOTIATIONSB_LDATA) {
-        ADD_SFX("FField");
-        ADD_SFX("NegC_Crate");
-    } else if (level == NEGOTIATIONSC_LDATA) {
-        ADD_SFX("NegC_MagnetCoil");
-        ADD_SFX("NegC_MagnetCoilH");
-        ADD_SFX("NegC_MagnetCoilS");
-        ADD_SFX("FField");
-        ADD_SFX("NegC_Crate");
-    } else if (level == GUNGAN_A_LDATA) {
-        ADD_SFX("GunA_TreeFall");
-        ADD_SFX("FS_CreaRun");
-        ADD_SFX("IkopiGrowl");
-        ADD_SFX("KaaduBark");
-        ADD_SFX("KaaduGrowl");
-    } else if (level == RESCUEC_LDATA) {
-        ADD_SFX("ResX_MarbColLp");
-        ADD_SFX("ResX_PoleLift_Rise");
-        ADD_SFX("ResX_PoleLift_Lower");
-    } else if (level == RETAKEB_LDATA) {
-        ADD_SFX("ResX_MarbColLp");
-    } else if (level == RETAKED_LDATA) {
-        ADD_SFX("ResX_PortCulLp");
-        ADD_SFX("ResX_PortCulEnd");
-        ADD_SFX("Ep1_5_OutdoorPlatform");
-    } else if (level == RETAKEE_LDATA) {
-        ADD_SFX("Ep1_5_OutdoorPlatform");
-        ADD_SFX("ResX_PortCulLp");
-        ADD_SFX("ResX_PortCulEnd");
-    } else if (level == MAULA_LDATA) {
-        ADD_SFX("Ep1_7_BDroidPlatf");
-        ADD_SFX("Ep1_7_SFPowerUp");
-        ADD_SFX("Ep1_7_SFHoverLp");
-        ADD_SFX("Ep1_7_SFTakeOff");
-    } else if (level == MAULD_LDATA) {
-        ADD_SFX("Ep1_7_FloatPlatRise");
-        ADD_SFX("NegC_Crate");
-    } else if (level == KAMINOE_LDATA) {
-        ADD_SFX("Kam_Slave1BlasterFire");
-        ADD_SFX("Slave1_EngineLp");
-    } else if (level == KAMINOC_LDATA) {
-        ADD_SFX("Kam_DiscoFloorPanelOn");
-        ADD_SFX("Kam_DiscoFloorPanelDone");
-        ADD_SFX("Kam_SparkLp");
-        ADD_SFX("Kam_SparkLp");
-        ADD_SFX("Kam_ForceFieldLp");
-        ADD_SFX("Kam_ForceFieldOff");
-    } else if (level == FACTORYB_LDATA) {
-        ADD_SFX("FacB_BeltLp");
-        ADD_SFX("FacB_ConvStop");
-        ADD_SFX("Fac_StampHydros");
-        ADD_SFX("Fac_StampImpacts");
-        ADD_SFX("Fac_BonusCylUp");
-        ADD_SFX("Fac_BonusBeep");
-    } else if (level == FACTORYD_LDATA) {
-        ADD_SFX("Fac_BucketGearUD");
-        ADD_SFX("Fac_BucketAwayFB");
-        ADD_SFX("Fac_BucketLp");
-        ADD_SFX("Fac_BucketArriveLock");
-        ADD_SFX("Fac_BucketOpens");
-    } else if (level == FACTORYF_LDATA) {
-        ADD_SFX("Fac_LaserGateLoop");
-    } else if (level == FACTORYG_LDATA) {
-        ADD_SFX("Fac_ObiRestraintLoop");
-    } else if (level == GUNSHIPB_LDATA || level == VADERA_LDATA) {
-        ADD_SFX("CountdownTimerTick");
-        ADD_SFX("CountdownTimerTock");
-    } else if (level == DOOKUC_LDATA) {
-        ADD_SFX("Dooku_LightningLp");
-    } else if (level == DOGFIGHTA_LDATA) {
-        ADD_SFX("Ep3_1_StarDestEngLp");
-        ADD_SFX("Ep3_1_ProtoXWingMissile");
-        ADD_SFX("Ep3_1_ExplosionM");
-        ADD_SFX("Ep3_1_ExplosionXXL");
-        ADD_SFX("Dog_TurretFire");
-        ADD_SFX("Dog_CloneARC170Gun");
-        ADD_SFX("Dog_JediStFighterGun");
-        ADD_SFX("Dog_JediStFighterGun2");
-        ADD_SFX("Dog_JediStFighterGun3");
-        ADD_SFX("Dog_JediStFighterEngLp");
-        ADD_SFX("Dog_CloneARC170EngLp");
-        ADD_SFX("Dog_DroidFighterBlast");
-        ADD_SFX("Dog_TriFighterGuns");
-        ADD_SFX("Dog_TriFighterGuns2");
-        ADD_SFX("Dog_DroidFighterEngLp");
-        ADD_SFX("Dog_TriFighterEngLp");
-        ADD_SFX("Dog_DroidFighterHit");
-        ADD_SFX("Dog_TriFighterHit");
-        ADD_SFX("Dog_HugeBeamGunFire");
-        ADD_SFX("Dog_HugeBeamGunLp");
-        ADD_SFX("Dog_SepShieldPwrDown");
-        ADD_SFX("Dog_ShipBreakExplo");
-        ADD_SFX("Dog_ShipDoorOpen");
-        ADD_SFX("Dog_StDestTurretSpins");
-        ADD_SFX("Dog_TowerBreakExplo");
-    } else if (level == CRUISERD_LDATA) {
-        ADD_SFX("Cru_HugeWallMoveLp");
-    } else if (level == KASHYYYKD_LDATA) {
-        ADD_SFX("Kas_BoulderLoop");
-        ADD_SFX("Kas_BoulderExplo");
-    } else if (level == TATOOINEA_LDATA) {
-        ADD_SFX("env_shower_lp");
-    } else if (level == TATOOINEB_LDATA) {
-        ADD_SFX("greenlighton");
-        ADD_SFX("env_suckerspit_3PO");
-        ADD_SFX("env_suckerspit_gonk");
-        ADD_SFX("conveyorlp");
-    } else if (level == MOSEISLEYA_LDATA) {
-        ADD_SFX("Landspeeder_EngineLp");
-        ADD_SFX("env_jacuzzi_lp");
-    } else if (level == MOSEISLEYC_LDATA) {
-        ADD_SFX("Droid_BeamLp");
-        ADD_SFX("FField");
-        ADD_SFX("FFieldOff");
-        ADD_SFX("SwPPad");
-    } else if (level == DEATHSTARRESCUEB_LDATA) {
-        ADD_SFX("env_tractorbeam_off");
-        ADD_SFX("env_tractorbeam_lp");
-    } else if (level == DEATHSTARRESCUEC_LDATA) {
-        ADD_SFX("ffield");
-    } else if (level == DEATHSTARRESCUEE_LDATA) {
-        ADD_SFX("Turret_PitchLp");
-        ADD_SFX("Turret_YawLp");
-        ADD_SFX("Turbo_Fire");
-    } else if (level == DEATHSTARESCAPEA_LDATA || level == DEATHSTARESCAPED_LDATA) {
-        ADD_SFX("Dianoga_Groan");
-        ADD_SFX("Dianoga_Roar");
-    } else if (level == DEATHSTARESCAPEB_LDATA) {
-        ADD_SFX("SqueakWash");
-    } else if (level == DEATHSTARESCAPEC_LDATA || level == DEATHSTARBATTLEA_LDATA || level == DEATHSTARBATTLEB_LDATA ||
-               level == DEATHSTARBATTLEC_LDATA || level == DEATHSTARBATTLED_LDATA || level == DEATHSTAR2BATTLEB_LDATA ||
-               level == SPEEDERCHASEA_LDATA || level == ENDORBATTLED_LDATA) {
-        ADD_SFX("FField");
-        ADD_SFX("FFieldOff");
-    } else if (level == HOTHESCAPEA_LDATA) {
-        ADD_SFX("ThermalDet_Beep");
-        ADD_SFX("env_padLight_on");
-    } else if (level == HOTHESCAPEC_LDATA) {
-        ADD_SFX("env_padLight_on");
-    } else if (level == ASTEROIDCHASED_LDATA) {
-        ADD_SFX("exp_asteroid");
-    } else if (level == CLOUDCITYTRAPA_LDATA) {
-        ADD_SFX("Env_Steam_Lp");
-    } else if (level == CLOUDCITYESCAPEA_LDATA) {
-        ADD_SFX("env_steam_lp");
-        ADD_SFX("Env_ctrl_desk_on");
-    } else if (level == CLOUDCITYESCAPEC_LDATA) {
-        ADD_SFX("env_steam_lp");
-    } else if (level == DEATHSTAR2BATTLED_LDATA) {
-        ADD_SFX("ForceLightningLp");
-    } else if (level == JABBASPALACEA_LDATA || level == JABBASPALACEB_LDATA || level == JABBASPALACED_LDATA) {
-        ADD_SFX("SwDisco");
-        ADD_SFX("Leia_Blaster");
-    } else if (level == JABBASPALACEE_LDATA) {
-        ADD_SFX("exp_minecart");
-    } else if (level == SARLACCPITB_LDATA) {
-        ADD_SFX("env_curtain_lp");
-        ADD_SFX("Kam_DiscoFloorPanelOn");
-        ADD_SFX("Kam_DiscoFloorPanelDone");
-    } else if (level == SARLACCPITC_LDATA) {
-        ADD_SFX("FField");
-        ADD_SFX("FFieldOff");
-        ADD_SFX("imp_c3po_magnet_drop");
-        ADD_SFX("env_magnet_on");
-    } else if (level == ENDORBATTLEA_LDATA) {
-        ADD_SFX("env_lantern_lp");
-    } else if (level == ENDORBATTLEB_LDATA) {
-        ADD_SFX("waterfall");
-        ADD_SFX("drd_r2_mvt_water_lp");
-        ADD_SFX("env_lantern_lp");
-    } else if (level == EMPERORFIGHTA_LDATA) {
-        ADD_SFX("env_block_light_on");
-        ADD_SFX("env_padlight_on");
+    level = world->current_level;
+    if (level != NULL) {
+        if (level == NEGOTIATIONSA_LDATA) {
+            ADD_SFX("NegA_CoinMDoorUp");
+            ADD_SFX("NegA_CoinMDoorDn");
+        } else if (level == NEGOTIATIONSB_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("NegC_Crate");
+        } else if (level == NEGOTIATIONSC_LDATA) {
+            ADD_SFX("NegC_MagnetCoil");
+            ADD_SFX("NegC_MagnetCoilH");
+            ADD_SFX("NegC_MagnetCoilS");
+            ADD_SFX("FField");
+            ADD_SFX("NegC_Crate");
+        } else if (level == GUNGAN_A_LDATA) {
+            ADD_SFX("GunA_TreeFall");
+            ADD_SFX("FS_CreaRun");
+            ADD_SFX("IkopiGrowl");
+            ADD_SFX("KaaduBark");
+            ADD_SFX("KaaduGrowl");
+        } else if (level == RESCUEC_LDATA) {
+            ADD_SFX("ResX_MarbColLp");
+            ADD_SFX("ResX_PoleLift_Rise");
+            ADD_SFX("ResX_PoleLift_Lower");
+        } else if (level == RETAKEB_LDATA) {
+            ADD_SFX("ResX_MarbColLp");
+        } else if (level == RETAKED_LDATA) {
+            ADD_SFX("ResX_PortCulLp");
+            ADD_SFX("ResX_PortCulEnd");
+            ADD_SFX("Ep1_5_OutdoorPlatform");
+        } else if (level == RETAKEE_LDATA) {
+            ADD_SFX("Ep1_5_OutdoorPlatform");
+            ADD_SFX("ResX_PortCulLp");
+            ADD_SFX("ResX_PortCulEnd");
+        } else if (level == MAULA_LDATA) {
+            ADD_SFX("Ep1_7_BDroidPlatf");
+            ADD_SFX("Ep1_7_SFPowerUp");
+            ADD_SFX("Ep1_7_SFHoverLp");
+            ADD_SFX("Ep1_7_SFTakeOff");
+        } else if (level == MAULD_LDATA) {
+            ADD_SFX("Ep1_7_FloatPlatRise");
+            ADD_SFX("NegC_Crate");
+        } else if (level == KAMINOE_LDATA) {
+            ADD_SFX("Kam_Slave1BlasterFire");
+            ADD_SFX("Slave1_EngineLp");
+        } else if (level == KAMINOC_LDATA) {
+            ADD_SFX("Kam_DiscoFloorPanelOn");
+            ADD_SFX("Kam_DiscoFloorPanelDone");
+            ADD_SFX("Kam_SparkLp");
+            ADD_SFX("Kam_SparkLp");
+            ADD_SFX("Kam_ForceFieldLp");
+            ADD_SFX("Kam_ForceFieldOff");
+        } else if (level == FACTORYB_LDATA) {
+            ADD_SFX("FacB_BeltLp");
+            ADD_SFX("FacB_ConvStop");
+            ADD_SFX("Fac_StampHydros");
+            ADD_SFX("Fac_StampImpacts");
+            ADD_SFX("Fac_BonusCylUp");
+            ADD_SFX("Fac_BonusBeep");
+        } else if (level == FACTORYD_LDATA) {
+            ADD_SFX("Fac_BucketGearUD");
+            ADD_SFX("Fac_BucketAwayFB");
+            ADD_SFX("Fac_BucketLp");
+            ADD_SFX("Fac_BucketArriveLock");
+            ADD_SFX("Fac_BucketOpens");
+        } else if (level == FACTORYF_LDATA) {
+            ADD_SFX("Fac_LaserGateLoop");
+        } else if (level == FACTORYG_LDATA) {
+            ADD_SFX("Fac_ObiRestraintLoop");
+        } else if (level == GUNSHIPB_LDATA) {
+            ADD_SFX("CountdownTimerTick");
+            ADD_SFX("CountdownTimerTock");
+        } else if (level == DOOKUC_LDATA) {
+            ADD_SFX("Dooku_LightningLp");
+        } else if (level == DOGFIGHTA_LDATA) {
+            ADD_SFX("Ep3_1_StarDestEngLp");
+            ADD_SFX("Ep3_1_ProtoXWingMissile");
+            ADD_SFX("Ep3_1_ExplosionM");
+            ADD_SFX("Ep3_1_ExplosionXXL");
+            ADD_SFX("Dog_TurretFire");
+            ADD_SFX("Dog_CloneARC170Gun");
+            ADD_SFX("Dog_JediStFighterGun");
+            ADD_SFX("Dog_JediStFighterGun2");
+            ADD_SFX("Dog_JediStFighterGun3");
+            ADD_SFX("Dog_JediStFighterEngLp");
+            ADD_SFX("Dog_CloneARC170EngLp");
+            ADD_SFX("Dog_DroidFighterBlast");
+            ADD_SFX("Dog_TriFighterGuns");
+            ADD_SFX("Dog_TriFighterGuns2");
+            ADD_SFX("Dog_DroidFighterEngLp");
+            ADD_SFX("Dog_TriFighterEngLp");
+            ADD_SFX("Dog_DroidFighterHit");
+            ADD_SFX("Dog_TriFighterHit");
+            ADD_SFX("Dog_HugeBeamGunFire");
+            ADD_SFX("Dog_HugeBeamGunLp");
+            ADD_SFX("Dog_SepShieldPwrDown");
+            ADD_SFX("Dog_ShipBreakExplo");
+            ADD_SFX("Dog_ShipDoorOpen");
+            ADD_SFX("Dog_StDestTurretSpins");
+            ADD_SFX("Dog_TowerBreakExplo");
+        } else if (level == CRUISERD_LDATA) {
+            ADD_SFX("Cru_HugeWallMoveLp");
+        } else if (level == CRUISERG_LDATA) {
+            ADD_SFX("NegA_CoinMDoorUp");
+            ADD_SFX("NegA_CoinMDoorDn");
+        } else if (level == KASHYYYKD_LDATA) {
+            ADD_SFX("Kas_BoulderLoop");
+            ADD_SFX("Kas_BoulderExplo");
+        } else if (level == VADERA_LDATA) {
+            ADD_SFX("CountdownTimerTick");
+            ADD_SFX("CountdownTimerTock");
+        } else if (level == TATOOINEA_LDATA) {
+            ADD_SFX("env_shower_lp");
+        } else if (level == TATOOINEB_LDATA) {
+            ADD_SFX("greenlighton");
+            ADD_SFX("env_suckerspit_3PO");
+            ADD_SFX("env_suckerspit_gonk");
+            ADD_SFX("conveyorlp");
+        } else if (level == MOSEISLEYA_LDATA) {
+            ADD_SFX("Landspeeder_EngineLp");
+            ADD_SFX("env_jacuzzi_lp");
+        } else if (level == MOSEISLEYC_LDATA) {
+            ADD_SFX("Droid_BeamLp");
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+            ADD_SFX("SwPPad");
+        } else if (level == DEATHSTARRESCUEB_LDATA) {
+            ADD_SFX("env_tractorbeam_off");
+            ADD_SFX("env_tractorbeam_lp");
+        } else if (level == DEATHSTARRESCUEC_LDATA) {
+            ADD_SFX("ffield");
+        } else if (level == DEATHSTARRESCUEE_LDATA) {
+            ADD_SFX("Turret_PitchLp");
+            ADD_SFX("Turret_YawLp");
+            ADD_SFX("Turbo_Fire");
+        } else if (level == DEATHSTARESCAPEA_LDATA) {
+            ADD_SFX("Dianoga_Groan");
+            ADD_SFX("Dianoga_Roar");
+        } else if (level == DEATHSTARESCAPED_LDATA) {
+            ADD_SFX("Dianoga_Groan");
+            ADD_SFX("Dianoga_Roar");
+        } else if (level == DEATHSTARESCAPEB_LDATA) {
+            ADD_SFX("SqueakWash");
+        } else if (level == DEATHSTARESCAPEC_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+        } else if (level == DEATHSTARBATTLEA_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+        } else if (level == DEATHSTARBATTLEB_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+        } else if (level == DEATHSTARBATTLEC_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+        } else if (level == DEATHSTARBATTLED_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+        } else if (level == HOTHESCAPEA_LDATA) {
+            ADD_SFX("ThermalDet_Beep");
+            ADD_SFX("env_padLight_on");
+        } else if (level == HOTHESCAPEC_LDATA) {
+            ADD_SFX("env_padLight_on");
+        } else if (level == ASTEROIDCHASED_LDATA) {
+            ADD_SFX("exp_asteroid");
+        } else if (level == CLOUDCITYTRAPA_LDATA) {
+            ADD_SFX("Env_Steam_Lp");
+        } else if (level == CLOUDCITYESCAPEA_LDATA) {
+            ADD_SFX("env_steam_lp");
+            ADD_SFX("Env_ctrl_desk_on");
+        } else if (level == CLOUDCITYESCAPEC_LDATA) {
+            ADD_SFX("env_steam_lp");
+        } else if (level == DEATHSTAR2BATTLEB_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+        } else if (level == DEATHSTAR2BATTLED_LDATA) {
+            ADD_SFX("ForceLightningLp");
+        } else if (level == JABBASPALACEA_LDATA) {
+            ADD_SFX("SwDisco");
+            ADD_SFX("Leia_Blaster");
+        } else if (level == JABBASPALACEB_LDATA) {
+            ADD_SFX("SwDisco");
+            ADD_SFX("Leia_Blaster");
+        } else if (level == JABBASPALACED_LDATA) {
+            ADD_SFX("SwDisco");
+            ADD_SFX("Leia_Blaster");
+        } else if (level == JABBASPALACEE_LDATA) {
+            ADD_SFX("exp_minecart");
+        } else if (level == SARLACCPITB_LDATA) {
+            ADD_SFX("env_curtain_lp");
+            ADD_SFX("Kam_DiscoFloorPanelOn");
+            ADD_SFX("Kam_DiscoFloorPanelDone");
+        } else if (level == SARLACCPITC_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+            ADD_SFX("imp_c3po_magnet_drop");
+            ADD_SFX("env_magnet_on");
+        } else if (level == SPEEDERCHASEA_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+        } else if (level == ENDORBATTLEA_LDATA) {
+            ADD_SFX("env_lantern_lp");
+        } else if (level == ENDORBATTLEB_LDATA) {
+            ADD_SFX("waterfall");
+            ADD_SFX("drd_r2_mvt_water_lp");
+            ADD_SFX("env_lantern_lp");
+        } else if (level == ENDORBATTLED_LDATA) {
+            ADD_SFX("FField");
+            ADD_SFX("FFieldOff");
+        } else if (level == EMPERORFIGHTA_LDATA) {
+            ADD_SFX("env_block_light_on");
+            ADD_SFX("env_padlight_on");
+        }
     }
 
     if (VehicleArea != 0) {
@@ -544,6 +578,7 @@ void SetLevelSfxBits(WORLDINFO *world) {
         ADD_SFX("fs_swamp");
     }
 
+    level = world->current_level;
     if (apicharsys->loaded_model_count > 0 && level != NULL && (level->flags & 2) != 0 && VehicleArea == 0) {
         ADD_GAME_SFX(0x14);
         ADD_GAME_SFX(0x15);
@@ -557,32 +592,37 @@ void SetLevelSfxBits(WORLDINFO *world) {
 
         CHARACTERDATA *character = &CDataList[character_id];
         GAMECHARACTERDATA *game_character = static_cast<GAMECHARACTERDATA *>(character->field11_0x24);
-        bool special_character = (character->model_flags & 0x44002010) != 0;
-        i32 alternate = static_cast<i32>(game_character->flags_090 << 14) >> 31;
 
         if (game_character->sfx_die != -1) {
             sfx_ids[sfx_count++] = game_character->sfx_die;
-        } else if (!special_character) {
-            ADD_GAME_SFX(alternate + 0x1c);
+        } else if ((character->model_flags & 0x44002010) == 0) {
+            ADD_GAME_SFX((static_cast<i32>(game_character->flags_090 << 14) >> 31) + 0x1c);
         }
         if (game_character->sfx_hurt != -1) {
             sfx_ids[sfx_count++] = game_character->sfx_hurt;
-        } else if (!special_character) {
-            ADD_GAME_SFX(alternate + 0x17);
+        } else if ((character->model_flags & 0x44002010) == 0) {
+            ADD_GAME_SFX((static_cast<i32>(game_character->flags_090 << 14) >> 31) + 0x17);
         }
         if (game_character->sfx_grunt != -1) {
             sfx_ids[sfx_count++] = game_character->sfx_grunt;
-        } else if (!special_character) {
-            ADD_GAME_SFX(alternate + 0x15);
+        } else if ((character->model_flags & 0x44002010) == 0) {
+            ADD_GAME_SFX((static_cast<i32>(game_character->flags_090 << 14) >> 31) + 0x15);
         }
 
-        const i16 character_sfx[] = {game_character->sfx_engine, game_character->sfx_shoot,
-                                     game_character->sfx_footstep, game_character->sfx_chatter,
-                                     game_character->sfx_sabre};
-        for (u32 i = 0; i < sizeof(character_sfx) / sizeof(character_sfx[0]); ++i) {
-            if (character_sfx[i] != -1) {
-                sfx_ids[sfx_count++] = character_sfx[i];
-            }
+        if (game_character->sfx_engine != -1) {
+            sfx_ids[sfx_count++] = game_character->sfx_engine;
+        }
+        if (game_character->sfx_shoot != -1) {
+            sfx_ids[sfx_count++] = game_character->sfx_shoot;
+        }
+        if (game_character->sfx_footstep != -1) {
+            sfx_ids[sfx_count++] = game_character->sfx_footstep;
+        }
+        if (game_character->sfx_chatter != -1) {
+            sfx_ids[sfx_count++] = game_character->sfx_chatter;
+        }
+        if (game_character->sfx_sabre != -1) {
+            sfx_ids[sfx_count++] = game_character->sfx_sabre;
         }
         for (i32 i = 0; i < 6 && game_character->sfx_misc[i] != -1; ++i) {
             sfx_ids[sfx_count++] = game_character->sfx_misc[i];
@@ -593,7 +633,7 @@ void SetLevelSfxBits(WORLDINFO *world) {
             ADD_SFX("drd_r2_scope_down");
             ADD_SFX("drd_r2_mvt_water_lp");
         }
-        if ((game_character->flags_094[1] & 4) != 0) {
+        if ((game_character->flags_090 & 0x400) != 0) {
             ADD_SFX("TowCable_Fire");
             ADD_SFX("TowCable_Latch");
             ADD_SFX("TowCable_Detach");
@@ -625,8 +665,7 @@ void SetLevelSfxBits(WORLDINFO *world) {
         }
         if ((game_character->flags_090 & 4) != 0) {
             ADD_SFX("ForceLightningLp");
-        }
-        if ((game_character->flags_090 & 2) != 0) {
+        } else if ((game_character->flags_090 & 2) != 0) {
             ADD_SFX("ForceChokeCrunch");
         } else if ((character->model_flags & 8) != 0) {
             ADD_SFX("ForceMindTrick");
@@ -659,6 +698,7 @@ void SetLevelSfxBits(WORLDINFO *world) {
         }
     }
 
+    level = world->current_level;
     bool double_score_sfx = Arcade != 0 || (level != NULL && (level->flags & 0x800) != 0);
     if (!double_score_sfx) {
         for (i32 portal = 0x13; portal <= 0x17; ++portal) {

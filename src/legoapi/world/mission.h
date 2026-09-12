@@ -44,6 +44,8 @@ typedef struct MISSIONSYS_s MISSIONSYS;
 
 MISSIONSYS *Missions_Configure(char *file, VARIPTR *bufferStart, VARIPTR *bufferEnd, MISSIONSAVE *save);
 MISSIONDATA *Mission_Active(MISSIONSYS *mission_system);
+struct GameObject_s;
+GameObject_s *Mission_FindTarget(MISSIONSYS *mission_system, u64 *target);
 void CheckMissionEnd(MISSIONSYS *mission_system);
 i32 Missions_PickupsOff(MISSIONSYS *mission_system);
 

@@ -187,28 +187,15 @@ struct CUSTOMPIECEANIM;
 struct spacelevel_s;
 struct quickboltinfo;
 
-void PartObjectInterface::GetPos(VuVec &, i32) const {
-}
-
-f32 PartObjectInterface::GetRadius() const {
-    return part.radius;
-}
-
-const char *PartObjectInterface::GetTargetName() const {
-    return "Part";
-}
-
-PartObjectInterface::PartObjectInterface(PART_s &value) : field_0x4(NULL), part(value) {
-    value.mech_object_interface = this;
-}
-
-PartObjectInterface::~PartObjectInterface() {
-}
-
 void PART_s::ClearMechObjectInterface() {
+    delete mech_object_interface;
 }
 
-void PART_s::GetMechObjectInterface() {
+MechObjectInterface *PART_s::GetMechObjectInterface() {
+    if (mech_object_interface == NULL) {
+        new PartObjectInterface(*this);
+    }
+    return mech_object_interface;
 }
 
 // Local (static) part (PART_s), pickup (GIZMOPICKUP_s), gizmo flow

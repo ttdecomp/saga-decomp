@@ -167,7 +167,7 @@ extern "C" {
     void cbInteractMenuKeySelect(eduimenu_s *menu);
     eduimenu_s *eduiMenuCreate(i32 x, i32 y, i32 width, i32 height, void *font, EdUiMenuCallback callback, char *title);
     extern eduiitem_s *edui_last_item;
-    void eduiMenuAddItem(eduimenu_s *menu, eduiitem_s *item);
+    eduiitem_s *eduiMenuAddItem(eduimenu_s *menu, eduiitem_s *item);
     void eduiMenuAddItemFirst(eduimenu_s *menu, eduiitem_s *item);
     void eduiMenuAddItemLast(eduimenu_s *menu, eduiitem_s *item);
     void eduiMenuAddItemAfter(eduimenu_s *menu, eduiitem_s *item, eduiitem_s *after);

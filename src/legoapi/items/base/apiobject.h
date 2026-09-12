@@ -184,8 +184,8 @@ typedef struct TORPEDOPACKET_s {
     u8 target_type; // 0x04: blowup, turret, or obstacle
     u8 pad_05[3];
     f32 field_08;
-    f32 ricochet_time; // 0x0c
-    f32 steal_timer; // 0x10
+    f32 ricochet_time;         // 0x0c
+    f32 steal_timer;           // 0x10
     u32 pickup_data[5];        // 0x14
     u32 pickup_flags[5];       // 0x28
     NUVEC pickup_positions[5]; // 0x3c
@@ -999,11 +999,11 @@ typedef struct GameObject_s {
     union {
         u32 field_0xd14;
         GameObject_s *force_push_target;
-    };                                      // 0x0d14
-    f32 ground_contact_grace_timer;          // 0x0d18, keeps airborne animation briefly after contact
-    f32 jump_reentry_timer;                  // 0x0d1c
-    f32 airborne_input_timer;                // 0x0d20
-    f32 field_0xd24;                         // 0x0d24
+    }; // 0x0d14
+    f32 ground_contact_grace_timer; // 0x0d18, keeps airborne animation briefly after contact
+    f32 jump_reentry_timer;         // 0x0d1c
+    f32 airborne_input_timer;       // 0x0d20
+    f32 field_0xd24;                // 0x0d24
     union {
         u8 pad_d28[4];
         f32 timer_d28;
@@ -1048,7 +1048,7 @@ typedef struct GameObject_s {
     union {
         f32 field_0xd80;
         f32 torpedo_target_timer;
-    };                                   // 0x0d80
+    }; // 0x0d80
     f32 force_glow_target;
     f32 force_glow_step;
     f32 field_0xd8c; // 0x0d8c
@@ -1106,7 +1106,10 @@ typedef struct GameObject_s {
     u16 delayed_turn_target_angle; // 0x0e08
     u16 force_heading;
     u16 current_input_angle; // 0x0e0c
-    u8 pad_e0e[2];
+    union {
+        u8 pad_e0e[2];
+        u16 previous_boundary_angle; // 0xe0e, vehicle boundary steering hysteresis
+    };
     i16 previous_block_animation; // 0x0e10
     u8 pad_e12[2];
     i16 held_movement_animation;     // 0x0e14
@@ -1187,6 +1190,10 @@ typedef struct GameObject_s {
     NUVEC movement_spline_offset; // 0x0e90
     union {
         u8 pad_e9c[0xeb0 - 0xe9c];
+        struct {
+            u8 padding_render_offset[4];
+            NUVEC render_offset; // 0x0ea0, world-space displacement added before rendering
+        };
         struct {
             u8 padding_e9c[0x10];
             GameObject_s *script_fire_target;
@@ -1325,6 +1332,7 @@ typedef struct GameObject_s {
     NUVEC facing_direction; // 0x0f3c
     union {
         u8 pad_f48[0xfe4 - 0xf48];
+        NUJOINTANIM_s joint_modifiers[3];
         struct {
             union {
                 u8 field_0xf48[0x68];
@@ -1378,6 +1386,7 @@ typedef struct GameObject_s {
     union {
         u8 pad_1044[0x1048 - 0x1044];
         u32 field_0x1044;
+        f32 camera_shake_strength; // 0x1044, POD camera shake contribution
     };
     f32 fall_acceleration_timer; // 0x1048
     CABLE_s *cable;              // 0x104c

@@ -5,3 +5,4 @@
 # extras that must be added deliberately and stale entries that must be removed.
 # This makes baseline changes reviewable by symbol instead of allowing any
 # symbols up to a numeric count.
+_Z26Panel_GetRedBrickSlideTimev

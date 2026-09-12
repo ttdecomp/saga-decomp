@@ -436,12 +436,9 @@ struct EdType {
 static_assert(sizeof(void *) != 4 || sizeof(EdClass) == 0x18, "EdClass 32-bit size");
 static_assert(sizeof(void *) != 4 || sizeof(EdType) == 0xc, "EdType 32-bit size");
 static_assert(sizeof(void *) != 4 || sizeof(EdMember) == 0x28, "EdMember 32-bit size");
-static_assert(sizeof(void *) != 4 || offsetof(EdRegistry, types) == 0x4,
-              "EdRegistry::types 32-bit offset");
-static_assert(sizeof(void *) != 4 || offsetof(EdRegistry, classes) == 0x8,
-              "EdRegistry::classes 32-bit offset");
-static_assert(sizeof(void *) != 4 || offsetof(EdRegistry, type_count) == 0x1c,
-              "EdRegistry::type_count 32-bit offset");
+static_assert(sizeof(void *) != 4 || offsetof(EdRegistry, types) == 0x4, "EdRegistry::types 32-bit offset");
+static_assert(sizeof(void *) != 4 || offsetof(EdRegistry, classes) == 0x8, "EdRegistry::classes 32-bit offset");
+static_assert(sizeof(void *) != 4 || offsetof(EdRegistry, type_count) == 0x1c, "EdRegistry::type_count 32-bit offset");
 static_assert(sizeof(void *) != 4 || offsetof(EdRegistry, class_count) == 0x24,
               "EdRegistry::class_count 32-bit offset");
 static_assert(sizeof(void *) != 4 || offsetof(EdRegistry, object_count) == 0x2c,

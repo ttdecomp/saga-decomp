@@ -63,6 +63,8 @@ NUANG NuAngSub(NUANG a, NUANG b) {
     return difference;
 }
 
-NUANG NuAng2AltSol(NUANG theta) {
-    return theta + NUANG_180DEG;
+void NuAng2AltSol(NUANG *out_x, NUANG *out_y, NUANG *out_z, NUANG x, NUANG y, NUANG z) {
+    *out_x = x + 0x8000;
+    *out_y = -0x8000 - y;
+    *out_z = z + 0x8000;
 }

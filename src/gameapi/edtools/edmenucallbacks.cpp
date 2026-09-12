@@ -8,61 +8,7 @@
 
 // --- C++ (mangled _ZL...) callbacks, signature (eduimenu_s*, eduiitem_s*, u32) ---
 
-static void cbDOFFStop(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbDeleteNo(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogAlpha(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogStart(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbHideType(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbHighTime(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbPasteFog(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbRLowTime(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbCopyLight(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbDeleteYes(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbExcludeID(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogAdjFar(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogAdjRng(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogColour(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogEndPSP(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbLightType(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbLowColour(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbNoZBuffer(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbRHighTime(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbRedoLight(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbUndoLight(eduimenu_s *, eduiitem_s *, u32) {
-}
 static void cbChangeName(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogAdjNear(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogDensity(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbHazeColour(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbHighColour(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbMultiplier(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbPasteLight(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlChangeX(eduimenu_s *, eduiitem_s *, u32) {
 }
@@ -79,14 +25,6 @@ static void cbPtlRotMenu(eduimenu_s *, eduiitem_s *, u32) {
 static void cbPtlSelType(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlShowAll(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbBlurDensity(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbCopyToGroup(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogStartPSP(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbHazeDensity(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlApplyJib(eduimenu_s *, eduiitem_s *, u32) {
 }
@@ -110,12 +48,6 @@ static void cbPtlSizeMenu(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlTypeMenu(eduimenu_s *, eduiitem_s *, u32) {
 }
-static void cbSetControls(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbModifierType(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbPasteIntoFog(eduimenu_s *, eduiitem_s *, u32) {
-}
 static void cbPtlAddEffect(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlApplyGrad(eduimenu_s *, eduiitem_s *, u32) {
@@ -129,8 +61,6 @@ static void cbPtlSetFacing(eduimenu_s *, eduiitem_s *, u32) {
 static void cbPtlTorusMenu(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbColourPickSel(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogDensityWii(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlChangeGrav(eduimenu_s *, eduiitem_s *, u32) {
 }
@@ -151,8 +81,6 @@ static void cbSelEffectList(eduimenu_s *, eduiitem_s *, u32) {
 static void cbChangeNameMenu(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbEffectListMenu(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbPasteIntoLight(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlChangeCutOn(eduimenu_s *, eduiitem_s *, u32) {
 }
@@ -176,8 +104,6 @@ static void cbChangeTorusRad2(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbFileLoadEffects(eduimenu_s *, eduiitem_s *, u32) {
 }
-static void cbLightProperties(eduimenu_s *, eduiitem_s *, u32) {
-}
 static void cbPtlApplyCollEnv(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlChangeCutOff(eduimenu_s *, eduiitem_s *, u32) {
@@ -196,8 +122,6 @@ static void cbPtlChangeEmitVel(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlRepeatBoxMenu(eduimenu_s *, eduiitem_s *, u32) {
 }
-static void cbToggleCastShadow(eduimenu_s *, eduiitem_s *, u32) {
-}
 static void cbChangeGenRateMenu(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbEdLevelEditorList(eduimenu_s *, eduiitem_s *, u32) {
@@ -215,8 +139,6 @@ static void cbPtlDamageFlagMenu(eduimenu_s *, eduiitem_s *, u32) {
 static void cbPtlDefaultCollEnv(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlSelTextureType(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbToggleHasSpecular(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlQuickDeleteMenu(eduimenu_s *, eduiitem_s *, u32) {
 }
@@ -242,43 +164,19 @@ static void cbPtlTextureSelectMenu(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlChangeCameraCutOff(eduimenu_s *, eduiitem_s *, u32) {
 }
-static void cbScaleAllMultipliersUp(eduimenu_s *, eduiitem_s *, u32) {
-}
 static void cbPtlChangeTextureSelect(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlInstanceSettingsMenu(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbScaleAllMultipliersDown(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbPtlToggleDynamicPriority(eduimenu_s *, eduiitem_s *, u32) {
 }
 static void cbCopy(eduimenu_s *, eduiitem_s *, u32) {
 }
-static void cbLoad(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbSave(eduimenu_s *, eduiitem_s *, u32) {
-}
 static void cbPaste(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbFogEnd(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbUserID(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbAssocID(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbCopyFog(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbGroupID(eduimenu_s *, eduiitem_s *, u32) {
-}
-static void cbLowTime(eduimenu_s *, eduiitem_s *, u32) {
 }
 
 // Two-menu callbacks (parent menu, child menu).
 static void cbPtlCancel(eduimenu_s *, eduimenu_s *) {
-}
-static void cbCancelMenu(eduimenu_s *, eduimenu_s *) {
-}
-static void cbCancelDeleteMenu(eduimenu_s *, eduimenu_s *) {
 }
 static void cbPtlCancelColMenu(eduimenu_s *, eduimenu_s *) {
 }
@@ -323,8 +221,6 @@ static void cbPtlCancelTextureMenu(eduimenu_s *, eduimenu_s *) {
 static void cbPtlCancelVarEmitMenu(eduimenu_s *, eduimenu_s *) {
 }
 static void cbCancelChangeETimeMenu(eduimenu_s *, eduimenu_s *) {
-}
-static void cbCancelLightProperties(eduimenu_s *, eduimenu_s *) {
 }
 static void cbPtlCancelEmitTimeMenu(eduimenu_s *, eduimenu_s *) {
 }

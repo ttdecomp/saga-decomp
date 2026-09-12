@@ -10,6 +10,3 @@ struct AIROW_s;
 struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
-
-void getPodRoll(i32) {
-}

@@ -1,3 +1,4 @@
+#include "nu2api/nu3d/nuspecial.h"
 #include "decomp.h"
 #include "globals.h"
 #include "legoapi/legoapi_types.h"
@@ -75,7 +76,39 @@ i32 DoBuckStart(GameObject_s *object) {
     return jumped;
 }
 
-void BlockInBlock(WORLDINFO_s *, pushblock_s *, i32, pushblock_s **) {
+pushblock_s *BlockInBlock(WORLDINFO_s *world, pushblock_s *block, i32 excluded, pushblock_s **support) {
+    NUVEC *position = block->position;
+    if (support)
+        *support = NULL;
+    for (i32 i = 0; i < world->push_block_count; ++i) {
+        if (i == excluded)
+            continue;
+        pushblock_s *other = &world->push_blocks[i];
+        if (other->flags_0cb & 2)
+            continue;
+        if (!NuSpecialGetVisibilityFn(&other->special))
+            continue;
+        f32 x = position->x - other->position->x, y = position->y - other->position->y,
+            z = position->z - other->position->z;
+        f32 ymax = other->bounds_max.y - block->bounds_min.y;
+        bool overlapx = x > (other->bounds_min.x - block->bounds_max.x) + 0.01f &&
+                        x < (other->bounds_max.x - block->bounds_min.x) - 0.01f;
+        bool overlapy = y > other->bounds_min.y - block->bounds_max.y && y < ymax;
+        bool overlapz = z > (other->bounds_min.z - block->bounds_max.z) + 0.01f &&
+                        z < (other->bounds_max.z - block->bounds_min.z) - 0.01f;
+        if (support && overlapz && overlapx && y - ymax > 0.0f) {
+            if (!*support)
+                *support = other;
+            else if ((position->y - (*support)->position->y) - ((*support)->bounds_max.y - block->bounds_min.y) >
+                     y - ymax) {
+                other->supporting_block = *support;
+                *support = other;
+            }
+        }
+        if (overlapx && overlapy && overlapz)
+            return other;
+    }
+    return NULL;
 }
 
 void Boulder_Kill(PART_s *, i32) {

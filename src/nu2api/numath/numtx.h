@@ -183,7 +183,7 @@ extern "C" {
     void NuMtxVecToEulerXYZ(NUVEC *XVec, NUVEC *ZVec, NUANG *x, NUANG *y, NUANG *z);
     f32 NuMtxSSE(NUMTX *a, NUMTX *b);
 
-    void NuMtx24BitCorrection(NUMTX *m);
+    void NuMtx24BitCorrection(NUMTX *correction, NUMTX *matrix);
     void NuMtxCalcFaceOn(NUMTX *m, NUVEC *v);
     void NuMtxCalcCheapFaceOn(NUMTX *m, NUVEC *v);
     void NuMtxCalcDebrisFaceOn(NUMTX *m);

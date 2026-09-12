@@ -42,8 +42,110 @@ i32 SuperCarry_Carrying(GameObject_s *object) {
     return 0;
 }
 
-float CalcValue1648(char *, i32, i32, float, ani3_scalemin_s *);
-void CalcValue1648Get2Values(char *, i32, i32, ani3_scalemin_s *, float *, float *);
+float CalcValue1648(char *data, i32 quarter, i32 stride, float fraction, ani3_scalemin_s *scale_min) {
+    u16 *next = reinterpret_cast<u16 *>(data + stride);
+    u16 *keys = reinterpret_cast<u16 *>(data);
+
+    switch (quarter) {
+        case 0: {
+            float tangent = static_cast<float>((keys[2] & 0xfff) - (keys[1] & 0xfff)) * fraction +
+                            static_cast<float>(keys[1] & 0xfff);
+            float value =
+                static_cast<float>(static_cast<i32>(*next) - static_cast<i32>(keys[0])) * (tangent / 4095.0f) +
+                static_cast<float>(static_cast<i32>(keys[0]));
+            return value * scale_min->scale + scale_min->minimum;
+        }
+        case 1: {
+            float tangent = static_cast<float>((keys[3] & 0xfff) - (keys[2] & 0xfff)) * fraction +
+                            static_cast<float>(keys[2] & 0xfff);
+            float value =
+                static_cast<float>(static_cast<i32>(*next) - static_cast<i32>(keys[0])) * (tangent / 4095.0f) +
+                static_cast<float>(static_cast<i32>(keys[0]));
+            return value * scale_min->scale + scale_min->minimum;
+        }
+        case 2: {
+            i32 start = keys[3] & 0xfff;
+            i32 end = ((keys[2] & 0xf000) >> 8) | ((keys[3] & 0xf000) >> 4) | (keys[1] >> 12);
+            float tangent = static_cast<float>(end - start) * fraction + static_cast<float>(start);
+            float value =
+                static_cast<float>(static_cast<i32>(*next) - static_cast<i32>(keys[0])) * (tangent / 4095.0f) +
+                static_cast<float>(static_cast<i32>(keys[0]));
+            return value * scale_min->scale + scale_min->minimum;
+        }
+        case 3: {
+            i32 next_value = *next;
+            i32 tangent = ((keys[2] & 0xf000) >> 8) | ((keys[3] & 0xf000) >> 4) | (keys[1] >> 12);
+            float a =
+                static_cast<float>(next_value - static_cast<i32>(keys[0])) * static_cast<float>(tangent) / 4095.0f +
+                static_cast<float>(static_cast<i32>(keys[0]));
+            float b = static_cast<float>(static_cast<i32>(reinterpret_cast<u16 *>(data)[stride]) - next_value) *
+                          static_cast<float>(next[1] & 0xfff) / 4095.0f +
+                      static_cast<float>(next_value);
+            float value = (b - a) * fraction + a;
+            return value * scale_min->scale + scale_min->minimum;
+        }
+    }
+
+    return 0.0f;
+}
+void CalcValue1648Get2Values(char *data, i32 quarter, i32 stride, ani3_scalemin_s *scale_min, float *first,
+                             float *second) {
+    u16 *next = reinterpret_cast<u16 *>(data + stride);
+    u16 *keys = reinterpret_cast<u16 *>(data);
+    i32 start, delta, end, last;
+    switch (quarter) {
+        case 0: {
+            start = keys[0];
+            delta = static_cast<i32>(next[0]) - start;
+            *first = (static_cast<f32>(keys[1] & 0xfff) * static_cast<f32>(delta) / 4095.0f + static_cast<f32>(start)) *
+                         scale_min->scale +
+                     scale_min->minimum;
+            *second =
+                (static_cast<f32>(keys[2] & 0xfff) * static_cast<f32>(delta) / 4095.0f + static_cast<f32>(start)) *
+                    scale_min->scale +
+                scale_min->minimum;
+            break;
+        }
+        case 1: {
+            start = keys[0];
+            delta = static_cast<i32>(next[0]) - start;
+            *first = (static_cast<f32>(keys[2] & 0xfff) * static_cast<f32>(delta) / 4095.0f + static_cast<f32>(start)) *
+                         scale_min->scale +
+                     scale_min->minimum;
+            *second =
+                (static_cast<f32>(keys[3] & 0xfff) * static_cast<f32>(delta) / 4095.0f + static_cast<f32>(start)) *
+                    scale_min->scale +
+                scale_min->minimum;
+            break;
+        }
+        case 2: {
+            start = keys[0];
+            delta = static_cast<i32>(next[0]) - start;
+            *first = (static_cast<f32>(keys[3] & 0xfff) * static_cast<f32>(delta) / 4095.0f + static_cast<f32>(start)) *
+                         scale_min->scale +
+                     scale_min->minimum;
+            last = ((keys[2] & 0xf000) >> 8) | ((keys[3] & 0xf000) >> 4) | (keys[1] >> 12);
+            *second = (static_cast<f32>(last) * static_cast<f32>(delta) / 4095.0f + static_cast<f32>(start)) *
+                          scale_min->scale +
+                      scale_min->minimum;
+            break;
+        }
+        case 3: {
+            last = ((keys[2] & 0xf000) >> 8) | ((keys[3] & 0xf000) >> 4) | (keys[1] >> 12);
+            start = keys[0];
+            end = next[0];
+            *first = (static_cast<f32>(last) * static_cast<f32>(end - start) / 4095.0f + static_cast<f32>(start)) *
+                         scale_min->scale +
+                     scale_min->minimum;
+            *second = (static_cast<f32>(static_cast<i32>(next[static_cast<u32>(stride) / sizeof(u16)]) - end) *
+                           static_cast<f32>(next[1] & 0xfff) / 4095.0f +
+                       static_cast<f32>(end)) *
+                          scale_min->scale +
+                      scale_min->minimum;
+            break;
+        }
+    }
+}
 extern "C" void VuQuatSlerpFast(NUQUAT *out, NUQUAT *from, NUQUAT *to, f32 t);
 void EvalAnim(nuhspecial_s *special, f32 frame, numtx_s *matrix, i32 include_instance_translation);
 i32 UseFallAnim(GameObject_s *object);
@@ -358,7 +460,7 @@ static void StartAnimation(CHARACTERMODEL_s *model, ANIMPACKET_s *packet, i16 an
 }
 
 static const u8 KeyStructSizes[16] = {3, 4, 4, 3, 4, 3, 4, 8, 4, 8, 4, 0, 0, 0, 0, 0};
-extern const u8 CurveGroupMasks[3];
+static const u8 CurveGroupMasks[3] = {2, 1, 8};
 
 static inline f32 DecodeAni4V4Curve(const ani3_animheader_s *anim, u16 type, u32 quarter, f32 fraction, u8 *&keys,
                                     ani3_scalemin_s *&scale_min) {
@@ -909,9 +1011,8 @@ void Animate_CRITTER(GameObject_s *object) {
         if (!use_default_idle) {
             if (object->ground_contact_grace_timer > 0.0f) {
                 const GAMECHARACTERDATA *game_character = GetGameCharacterData(object);
-                use_default_idle =
-                    game_character->field_0x28 <= 0.0f ||
-                    object->apiobj.character_model->model_data_b[CHARACTER_ANIMATION_FALL] == NULL;
+                use_default_idle = game_character->field_0x28 <= 0.0f ||
+                                   object->apiobj.character_model->model_data_b[CHARACTER_ANIMATION_FALL] == NULL;
             } else if (object->apiobj.character_model->model_data_b[CHARACTER_ANIMATION_FALL] == NULL) {
                 use_default_idle = true;
             } else if (object->fall_animation_timer < 0.2f && object->nearby_floor_distance != 2000000.0f &&
@@ -970,9 +1071,8 @@ void Animate_DROIDEKA(GameObject_s *object) {
                     packet.requested_animation = static_cast<i16>(GetDefaultIdle(object));
                 }
             } else if (object->apiobj.character_model->model_data_b[CHARACTER_ANIMATION_FALL] == NULL ||
-                       (object->fall_animation_timer < 0.2f &&
-                        object->nearby_floor_distance != 2000000.0f && object->nearby_floor_distance < 0.25f &&
-                        object->apiobj.velocity.y < 0.0f)) {
+                       (object->fall_animation_timer < 0.2f && object->nearby_floor_distance != 2000000.0f &&
+                        object->nearby_floor_distance < 0.25f && object->apiobj.velocity.y < 0.0f)) {
                 const GAMECHARACTERDATA *game_character =
                     static_cast<GAMECHARACTERDATA *>(object->apiobj.character_data->field11_0x24);
                 if (game_character->field_0x28 <= 0.0f ||
@@ -1181,8 +1281,7 @@ void Animate_ASTROMECH(GameObject_s *object) {
             } else {
                 const i32 target_state =
                     *reinterpret_cast<i32 *>(reinterpret_cast<u8 *>(object->context_target_position) + 0x14);
-                packet.requested_animation =
-                    target_state == 0 ? CHARACTER_ANIMATION_IDLE : CHARACTER_ANIMATION_FALL;
+                packet.requested_animation = target_state == 0 ? CHARACTER_ANIMATION_IDLE : CHARACTER_ANIMATION_FALL;
             }
         } else {
             packet.requested_animation = CHARACTER_ANIMATION_FALL;
@@ -1197,9 +1296,8 @@ void Animate_ASTROMECH(GameObject_s *object) {
                         packet.requested_animation = static_cast<i16>(GetDefaultIdle(object));
                     }
                 } else if (object->apiobj.character_model->model_data_b[CHARACTER_ANIMATION_FALL] == NULL ||
-                           (object->fall_animation_timer < 0.2f &&
-                            object->nearby_floor_distance != 2000000.0f && object->nearby_floor_distance < 0.25f &&
-                            object->apiobj.velocity.y < 0.0f)) {
+                           (object->fall_animation_timer < 0.2f && object->nearby_floor_distance != 2000000.0f &&
+                            object->nearby_floor_distance < 0.25f && object->apiobj.velocity.y < 0.0f)) {
                     const GAMECHARACTERDATA *game_character =
                         static_cast<GAMECHARACTERDATA *>(object->apiobj.character_data->field11_0x24);
                     if (game_character->field_0x28 <= 0.0f ||
@@ -2167,10 +2265,10 @@ static __used__ i32 LoadAnimFromPAK(char *, i32, char *, i32) {
 static __used__ void NormalizeAnimPath(char *) {
 }
 
-void ANI_SimpleAni3PlayerV4Joint_Blend_Quat3(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, f32 blend,
+i32 ANI_SimpleAni3PlayerV4Joint_Blend_Quat3(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, f32 blend,
+                                            i32 joint_count, i32 first_joint, NUVEC *root_translation);
+i32 ANI_SimpleAni3PlayerV4Joint_Blend_Quat3W(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, f32 blend,
                                              i32 joint_count, i32 first_joint, NUVEC *root_translation);
-void ANI_SimpleAni3PlayerV4Joint_Blend_Quat3W(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, f32 blend,
-                                              i32 joint_count, i32 first_joint, NUVEC *root_translation);
 
 extern "C" {
 
@@ -2573,11 +2671,12 @@ extern "C" {
             if ((flags & NUANIMBUFF_JOINT_TRANSLATION) != 0) {
                 f32 sampled[3];
                 f32 *translation = &joint.translation.x;
-                for (i32 component = 0; component < 3; ++component) {
-                    sampled[component] =
-                        DecodeAni4V4Curve(anim, curve_types[component], quarter, fraction, keys, scale_min);
-                    translation[component] += (sampled[component] - translation[component]) * blend;
-                }
+                sampled[0] = DecodeAni4V4Curve(anim, curve_types[0], quarter, fraction, keys, scale_min);
+                translation[0] += (sampled[0] - translation[0]) * blend;
+                sampled[1] = DecodeAni4V4Curve(anim, curve_types[1], quarter, fraction, keys, scale_min);
+                translation[1] += (sampled[1] - translation[1]) * blend;
+                sampled[2] = DecodeAni4V4Curve(anim, curve_types[2], quarter, fraction, keys, scale_min);
+                translation[2] += (sampled[2] - translation[2]) * blend;
                 if (root != NULL) {
                     root->x = sampled[0];
                     root->y = sampled[1];
@@ -2661,10 +2760,9 @@ extern "C" {
 
             if ((flags & NUANIMBUFF_JOINT_TRANSLATION) != 0) {
                 f32 *translation = &joint.translation.x;
-                for (i32 component = 0; component < 3; ++component) {
-                    translation[component] =
-                        DecodeAni4V4Curve(anim, curve_types[component], quarter, fraction, keys, scale_min);
-                }
+                translation[0] = DecodeAni4V4Curve(anim, curve_types[0], quarter, fraction, keys, scale_min);
+                translation[1] = DecodeAni4V4Curve(anim, curve_types[1], quarter, fraction, keys, scale_min);
+                translation[2] = DecodeAni4V4Curve(anim, curve_types[2], quarter, fraction, keys, scale_min);
             } else {
                 joint.translation = {0.0f, 0.0f, 0.0f};
             }
@@ -3592,24 +3690,600 @@ static void BlendAni4Quaternion(ani3_animheader_s *anim, f32 frame, nuanimbuff_s
     }
 }
 
+static inline f32 DecodeAni4Quat3Scalar(const ani3_animheader_s *anim, i32 key_stride, const u16 *constants, u16 type,
+                                        u32 quarter, f32 fraction, u8 *&keys, ani3_scalemin_s *&scale_min) {
+    if (type != 6) {
+        const u32 constant = constants[type];
+        return static_cast<f32>(constant) * anim->scale + anim->minimum;
+    }
+
+    const u32 first_word = *reinterpret_cast<const u32 *>(keys);
+    const u32 next_word = *reinterpret_cast<const u32 *>(keys + key_stride);
+    const f32 first_value = static_cast<f32>(first_word & 0xff);
+    const f32 next_value = static_cast<f32>(next_word & 0xff);
+    const u32 tangents = first_word >> 8;
+    const f32 tangent_scale = 0.01587302f;
+    const f32 tangent0 = static_cast<f32>((tangents >> (quarter * 6)) & 0x3f) * tangent_scale;
+
+    f32 packed_value;
+    if (quarter == 3) {
+        const f32 interpolated = (next_value - first_value) * tangent0 + first_value;
+        const f32 tangent1 = static_cast<f32>((next_word >> 8) & 0x3f) * tangent_scale;
+        const f32 after_value = static_cast<f32>(keys[key_stride * 2]);
+        const f32 next_interpolated = (after_value - next_value) * tangent1 + next_value;
+        packed_value = (next_interpolated - interpolated) * fraction + interpolated;
+    } else {
+        const f32 tangent1 = static_cast<f32>((tangents >> (((quarter * 3 + 3) * 2) & 0x1f)) & 0x3f) * tangent_scale;
+        packed_value = (next_value - first_value) * ((tangent1 - tangent0) * fraction + tangent0) + first_value;
+    }
+
+    const f32 value = packed_value * scale_min->scale + scale_min->minimum;
+    keys += 4;
+    ++scale_min;
+    return value;
+}
+
+static inline void DecodeAni4Quat3Pair(const ani3_animheader_s *anim, i32 key_stride, const u16 *constants, u16 type,
+                                       u32 quarter, u8 *&keys, ani3_scalemin_s *&scale_min, f32 &first, f32 &second) {
+    if (type == 7) {
+        CalcValue1648Get2Values(reinterpret_cast<char *>(keys), quarter, key_stride, scale_min, &first, &second);
+        keys += 8;
+        ++scale_min;
+        return;
+    }
+    if (type == 9) {
+        const u16 *samples = reinterpret_cast<const u16 *>(keys);
+        first = static_cast<f32>(samples[quarter]) * scale_min->scale + scale_min->minimum;
+        const u16 next = quarter == 3 ? *reinterpret_cast<const u16 *>(keys + key_stride) : samples[quarter + 1];
+        second = static_cast<f32>(next) * scale_min->scale + scale_min->minimum;
+        keys += 8;
+        ++scale_min;
+        return;
+    }
+    if (type == 6) {
+        const u32 first_word = *reinterpret_cast<const u32 *>(keys);
+        const u32 next_word = *reinterpret_cast<const u32 *>(keys + key_stride);
+        const f32 start = static_cast<f32>(first_word & 0xff);
+        const f32 next = static_cast<f32>(next_word & 0xff);
+        const u32 tangents = first_word >> 8;
+        const f32 tangent0 = static_cast<f32>((tangents >> (quarter * 6)) & 0x3f) * 0.01587302f;
+        first = ((next - start) * tangent0 + start) * scale_min->scale + scale_min->minimum;
+        if (quarter == 3) {
+            const f32 tangent1 = static_cast<f32>((next_word >> 8) & 0x3f) * 0.01587302f;
+            const f32 after = static_cast<f32>(keys[key_stride * 2]);
+            second = ((after - next) * tangent1 + next) * scale_min->scale + scale_min->minimum;
+        } else {
+            const f32 tangent1 = static_cast<f32>((tangents >> (((quarter * 3 + 3) * 2) & 0x1f)) & 0x3f) * 0.01587302f;
+            second = ((next - start) * tangent1 + start) * scale_min->scale + scale_min->minimum;
+        }
+        keys += 4;
+        ++scale_min;
+        return;
+    }
+
+    first = second = static_cast<f32>(static_cast<u32>(constants[type])) * anim->scale + anim->minimum;
+}
+
 i32 ANI_SimpleAni3PlayerV4Joint_Quat3(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, i32 joint_count,
                                       i32 first_joint) {
-    return PlayAni4Quaternion(anim, frame, buffer, joint_count, first_joint, 3);
+    const u8 *node_flags = anim->node_flags;
+    buffer->use_quaternions = 1;
+    u32 quarter;
+    f32 fraction;
+    i32 key_offset;
+    if (anim->key_count == 1) {
+        quarter = 0;
+        fraction = 0.0f;
+        key_offset = 0;
+    } else {
+        const i32 last = anim->key_count - 1;
+        f32 key = (frame - anim->first_frame) * static_cast<f32>(last) / static_cast<f32>(anim->frame_count - 1);
+        if (key < 0.0f)
+            key = 0.0f;
+        i32 whole;
+        if (static_cast<f32>(last) <= key) {
+            whole = last;
+            fraction = 0.0f;
+        } else {
+            whole = static_cast<i32>(key);
+            fraction = key - static_cast<f32>(whole);
+        }
+        quarter = static_cast<u32>(whole) & 3;
+        key_offset = (whole >> 2) * anim->key_stride;
+    }
+    u8 *keys = anim->keys + key_offset;
+    i32 key_stride = anim->key_stride;
+    const u16 *constants = reinterpret_cast<const u16 *>(anim->constants) - 16;
+    ani3_scalemin_s *scale_min = anim->scale_min;
+    const u16 *curve_types = anim->curve_types;
+    i32 count = joint_count < anim->node_count ? joint_count : anim->node_count;
+    const u8 *first_flags = node_flags + first_joint;
+    for (const u8 *skip_flags = node_flags; skip_flags < first_flags; ++skip_flags) {
+        if (*skip_flags & 2) {
+            SkipAni4V4Curve(curve_types[0], keys, scale_min);
+            SkipAni4V4Curve(curve_types[1], keys, scale_min);
+            SkipAni4V4Curve(curve_types[2], keys, scale_min);
+        }
+        if (*skip_flags & 1) {
+            SkipAni4V4Curve(curve_types[3], keys, scale_min);
+            SkipAni4V4Curve(curve_types[4], keys, scale_min);
+            SkipAni4V4Curve(curve_types[5], keys, scale_min);
+        }
+        if (*skip_flags & 8) {
+            SkipAni4V4Curve(curve_types[6], keys, scale_min);
+            SkipAni4V4Curve(curve_types[7], keys, scale_min);
+            SkipAni4V4Curve(curve_types[8], keys, scale_min);
+        }
+        curve_types += 9;
+    }
+    node_flags += first_joint;
+    const u8 *end_flags = node_flags + count;
+    u8 *joint_flags = buffer->joint_flags + first_joint;
+    nuanimbuffjoint_s *joint = buffer->joints + first_joint;
+    for (; node_flags < end_flags; ++node_flags, ++joint) {
+        const u8 flags = *node_flags;
+        *joint_flags++ = flags;
+        f32 *output = &joint->translation.x;
+        for (i32 group = 0; group < 3; ++group, curve_types += 3, output += 4) {
+            if (!(flags & CurveGroupMasks[group])) {
+                if (group == 0) {
+                    output[0] = output[1] = output[2] = 0.0f;
+                } else if (group == 1) {
+                    output[0] = output[1] = output[2] = 0.0f;
+                    output[3] = 1.0f;
+                } else {
+                    output[0] = output[1] = output[2] = 1.0f;
+                }
+            } else if (group != 1) {
+                output[0] = DecodeAni4Quat3Scalar(anim, key_stride, constants, curve_types[0], quarter, fraction, keys,
+                                                  scale_min);
+                output[1] = DecodeAni4Quat3Scalar(anim, key_stride, constants, curve_types[1], quarter, fraction, keys,
+                                                  scale_min);
+                output[2] = DecodeAni4Quat3Scalar(anim, key_stride, constants, curve_types[2], quarter, fraction, keys,
+                                                  scale_min);
+            } else {
+                NUQUAT first, second;
+                DecodeAni4Quat3Pair(anim, key_stride, constants, curve_types[0], quarter, keys, scale_min, first.x,
+                                    second.x);
+                DecodeAni4Quat3Pair(anim, key_stride, constants, curve_types[1], quarter, keys, scale_min, first.y,
+                                    second.y);
+                DecodeAni4Quat3Pair(anim, key_stride, constants, curve_types[2], quarter, keys, scale_min, first.z,
+                                    second.z);
+                first.w = NuFsqrt(1.0f - (first.x * first.x + first.y * first.y + first.z * first.z));
+                second.w = NuFsqrt(1.0f - (second.x * second.x + second.y * second.y + second.z * second.z));
+                if (first.x * second.x + first.y * second.y + first.z * second.z + first.w * second.w < 0.0f) {
+                    second.x = -second.x;
+                    second.y = -second.y;
+                    second.z = -second.z;
+                    second.w = -second.w;
+                }
+                NUQUAT result;
+                result.x = first.x * (1.0f - fraction) + second.x * fraction;
+                result.y = first.y * (1.0f - fraction) + second.y * fraction;
+                result.z = first.z * (1.0f - fraction) + second.z * fraction;
+                result.w = first.w * (1.0f - fraction) + second.w * fraction;
+                f32 length =
+                    NuFsqrt(result.w * result.w + result.x * result.x + result.y * result.y + result.z * result.z);
+                f32 inverse_length = length == 0.0f ? 0.0f : 1.0f / length;
+                output[0] = result.x * inverse_length;
+                output[1] = result.y * inverse_length;
+                output[2] = result.z * inverse_length;
+                output[3] = result.w * inverse_length;
+            }
+        }
+    }
+    return 0;
 }
 
 i32 ANI_SimpleAni3PlayerV4Joint_Quat3W(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, i32 joint_count,
                                        i32 first_joint) {
-    return PlayAni4Quaternion(anim, frame, buffer, joint_count, first_joint, 4);
+
+    const u8 *node_flags = anim->node_flags;
+    buffer->use_quaternions = 1;
+    u32 quarter;
+    f32 fraction;
+    i32 key_offset;
+    if (anim->key_count == 1) {
+        quarter = 0;
+        fraction = 0.0f;
+        key_offset = 0;
+    } else {
+        const i32 last = anim->key_count - 1;
+        f32 key = (frame - anim->first_frame) * static_cast<f32>(last) / static_cast<f32>(anim->frame_count - 1);
+        if (key < 0.0f)
+            key = 0.0f;
+        i32 whole;
+        if (static_cast<f32>(last) <= key) {
+            whole = last;
+            fraction = 0.0f;
+        } else {
+            whole = static_cast<i32>(key);
+            fraction = key - static_cast<f32>(whole);
+        }
+        quarter = static_cast<u32>(whole) & 3;
+        key_offset = (whole / 4) * anim->key_stride;
+    }
+    u8 *keys = anim->keys + key_offset;
+    i32 key_stride = anim->key_stride;
+    const u16 *constants = reinterpret_cast<const u16 *>(anim->constants) - 16;
+    ani3_scalemin_s *scale_min = anim->scale_min;
+    const u16 *curve_types = anim->curve_types;
+    // The original clamps the count before applying first_joint.
+    i32 count = joint_count < anim->node_count ? joint_count : anim->node_count;
+    const u8 *first_flags = node_flags + first_joint;
+    for (const u8 *skip_flags = node_flags; skip_flags < first_flags; ++skip_flags) {
+        for (i32 group = 0; group < 3; ++group) {
+            i32 components = group == 1 ? 4 : 3;
+            if (*skip_flags & CurveGroupMasks[group]) {
+                for (i32 component = 0; component < components; ++component) {
+                    SkipAni4V4Curve(*curve_types++, keys, scale_min);
+                }
+            } else
+                curve_types += components;
+        }
+    }
+    node_flags += first_joint;
+    const u8 *end_flags = node_flags + count;
+    u8 *joint_flags = buffer->joint_flags + first_joint;
+    nuanimbuffjoint_s *joint = buffer->joints + first_joint;
+    for (; node_flags < end_flags; ++node_flags, ++joint) {
+        const u8 flags = *node_flags;
+        *joint_flags++ = flags;
+        f32 *output = &joint->translation.x;
+        for (i32 group = 0; group < 3; ++group, output += 4) {
+            if (!(flags & CurveGroupMasks[group])) {
+                if (group == 0) {
+                    output[0] = output[1] = output[2] = 0.0f;
+                } else if (group == 1) {
+                    output[0] = output[1] = output[2] = 0.0f;
+                    output[3] = 1.0f;
+                } else {
+                    output[0] = output[1] = output[2] = 1.0f;
+                }
+                curve_types += group == 1 ? 4 : 3;
+            } else if (group != 1) {
+                output[0] = DecodeAni4Quat3Scalar(anim, key_stride, constants, *curve_types++, quarter, fraction, keys,
+                                                  scale_min);
+                output[1] = DecodeAni4Quat3Scalar(anim, key_stride, constants, *curve_types++, quarter, fraction, keys,
+                                                  scale_min);
+                output[2] = DecodeAni4Quat3Scalar(anim, key_stride, constants, *curve_types++, quarter, fraction, keys,
+                                                  scale_min);
+            } else {
+                // This format stores w explicitly and interpolates the stored signs.
+                NUQUAT first, second;
+                DecodeAni4Quat3Pair(anim, key_stride, constants, *curve_types++, quarter, keys, scale_min, first.x,
+                                    second.x);
+                DecodeAni4Quat3Pair(anim, key_stride, constants, *curve_types++, quarter, keys, scale_min, first.y,
+                                    second.y);
+                DecodeAni4Quat3Pair(anim, key_stride, constants, *curve_types++, quarter, keys, scale_min, first.z,
+                                    second.z);
+                DecodeAni4Quat3Pair(anim, key_stride, constants, *curve_types++, quarter, keys, scale_min, first.w,
+                                    second.w);
+                NUQUAT result;
+                result.x = first.x * (1.0f - fraction) + second.x * fraction;
+                result.y = first.y * (1.0f - fraction) + second.y * fraction;
+                result.z = first.z * (1.0f - fraction) + second.z * fraction;
+                result.w = first.w * (1.0f - fraction) + second.w * fraction;
+                f32 length =
+                    NuFsqrt(result.w * result.w + result.x * result.x + result.y * result.y + result.z * result.z);
+                f32 inverse_length = length == 0.0f ? 0.0f : 1.0f / length;
+                NUQUAT normalized = {result.x * inverse_length, result.y * inverse_length, result.z * inverse_length,
+                                     result.w * inverse_length};
+                *reinterpret_cast<NUQUAT *>(output) = normalized;
+            }
+        }
+    }
+    return 0;
 }
 
-void ANI_SimpleAni3PlayerV4Joint_Blend_Quat3(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, f32 blend,
+static inline void DecodeAni4BlendQuat3Pair(const ani3_animheader_s *anim, i32 key_stride, const u16 *constants,
+                                            u16 type, u32 quarter, u8 *&keys, ani3_scalemin_s *&scale_min, f32 &first,
+                                            f32 &second) {
+    if (type == 6) {
+        const u32 first_word = *reinterpret_cast<const u32 *>(keys);
+        const u32 next_word = *reinterpret_cast<const u32 *>(keys + key_stride);
+        const f32 start = static_cast<f32>(first_word & 0xff);
+        const f32 next = static_cast<f32>(next_word & 0xff);
+        const u32 tangents = first_word >> 8;
+        const f32 tangent0 = static_cast<f32>((tangents >> (quarter * 6)) & 0x3f) * 0.01587302f;
+        first = ((next - start) * tangent0 + start) * scale_min->scale + scale_min->minimum;
+        if (quarter == 3) {
+            const f32 tangent1 = static_cast<f32>((next_word >> 8) & 0x3f) * 0.01587302f;
+            const f32 after = static_cast<f32>(keys[key_stride * 2]);
+            second = ((after - next) * tangent1 + next) * scale_min->scale + scale_min->minimum;
+        } else {
+            const f32 tangent1 = static_cast<f32>((tangents >> (((quarter * 3 + 3) * 2) & 0x1f)) & 0x3f) * 0.01587302f;
+            second = ((next - start) * tangent1 + start) * scale_min->scale + scale_min->minimum;
+        }
+        keys += 4;
+        ++scale_min;
+        return;
+    }
+
+    if (type == 7) {
+        CalcValue1648Get2Values(reinterpret_cast<char *>(keys), quarter, key_stride, scale_min, &first, &second);
+        keys += 8;
+        ++scale_min;
+        return;
+    }
+    first = second = static_cast<f32>(static_cast<u32>(constants[type])) * anim->scale + anim->minimum;
+}
+
+i32 ANI_SimpleAni3PlayerV4Joint_Blend_Quat3(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, f32 blend,
+                                            i32 joint_count, i32 first_joint, NUVEC *root_translation) {
+    const u8 *node_flags = anim->node_flags;
+    const f32 inverse_blend = 1.0f - blend;
+    f32 key =
+        (frame - anim->first_frame) * static_cast<f32>(anim->key_count - 1) / static_cast<f32>(anim->frame_count - 1);
+    if (key < 0.0f)
+        key = 0.0f;
+    if (static_cast<f32>(anim->key_count) <= key)
+        key = static_cast<f32>(anim->key_count - 1);
+    const i32 whole = static_cast<i32>(key);
+    const u32 quarter = static_cast<u32>(whole) & 3;
+    const f32 fraction = key - static_cast<f32>(whole);
+    const i32 key_stride = anim->key_stride;
+    u8 *keys = anim->keys + (whole / 4) * key_stride;
+    ani3_scalemin_s *scale_min = anim->scale_min;
+    const u16 *constants = reinterpret_cast<const u16 *>(anim->constants) - 16;
+    const u16 *curve_types = anim->curve_types;
+    const i32 count = joint_count < anim->node_count ? joint_count : anim->node_count;
+    if (first_joint != 0)
+        root_translation = NULL;
+    const u8 *first_flags = node_flags + first_joint;
+    for (const u8 *skip_flags = node_flags; skip_flags < first_flags; ++skip_flags) {
+        if (*skip_flags & 2) {
+            SkipAni4V4Curve(curve_types[0], keys, scale_min);
+            SkipAni4V4Curve(curve_types[1], keys, scale_min);
+            SkipAni4V4Curve(curve_types[2], keys, scale_min);
+        }
+        if (*skip_flags & 1) {
+            SkipAni4V4Curve(curve_types[3], keys, scale_min);
+            SkipAni4V4Curve(curve_types[4], keys, scale_min);
+            SkipAni4V4Curve(curve_types[5], keys, scale_min);
+        }
+        if (*skip_flags & 8) {
+            SkipAni4V4Curve(curve_types[6], keys, scale_min);
+            SkipAni4V4Curve(curve_types[7], keys, scale_min);
+            SkipAni4V4Curve(curve_types[8], keys, scale_min);
+        }
+        curve_types += 9;
+    }
+    node_flags += first_joint;
+    const u8 *end_flags = node_flags + count;
+    u8 *joint_flags = buffer->joint_flags + first_joint;
+    f32 *output = &buffer->joints[first_joint].translation.x;
+    for (; node_flags < end_flags; ++node_flags) {
+        const u8 flags = *node_flags;
+        *joint_flags++ |= flags;
+        for (i32 group = 0; group < 3; ++group, curve_types += 3, output += 4) {
+            if (!(flags & CurveGroupMasks[group])) {
+                if (group == 0) {
+                    output[0] *= inverse_blend;
+                    output[1] *= inverse_blend;
+                    output[2] *= inverse_blend;
+                    if (root_translation) {
+                        root_translation->x = root_translation->y = root_translation->z = 0.0f;
+                        root_translation = NULL;
+                    }
+                } else if (group == 1) {
+                    const f32 blended_w = output[3] * inverse_blend + blend;
+                    output[0] *= inverse_blend;
+                    output[1] *= inverse_blend;
+                    output[3] = blended_w;
+                    output[2] *= inverse_blend;
+                    f32 length = NuFsqrt(output[3] * output[3] + output[0] * output[0] + output[1] * output[1] +
+                                         output[2] * output[2]);
+                    f32 inverse_length = length == 0.0f ? 0.0f : 1.0f / length;
+                    output[3] *= inverse_length;
+                    output[0] *= inverse_length;
+                    output[1] *= inverse_length;
+                    output[2] *= inverse_length;
+                } else {
+                    output[0] = output[0] * inverse_blend + blend;
+                    output[1] = output[1] * inverse_blend + blend;
+                    output[2] = output[2] * inverse_blend + blend;
+                }
+            } else if (group != 1) {
+                f32 sampled = DecodeAni4Quat3Scalar(anim, key_stride, constants, curve_types[0], quarter, fraction,
+                                                    keys, scale_min);
+                f32 delta = sampled - output[0];
+                if (root_translation)
+                    root_translation->x = sampled;
+                output[0] += delta * blend;
+                sampled = DecodeAni4Quat3Scalar(anim, key_stride, constants, curve_types[1], quarter, fraction, keys,
+                                                scale_min);
+                delta = sampled - output[1];
+                if (root_translation)
+                    root_translation->y = sampled;
+                output[1] += delta * blend;
+                sampled = DecodeAni4Quat3Scalar(anim, key_stride, constants, curve_types[2], quarter, fraction, keys,
+                                                scale_min);
+                delta = sampled - output[2];
+                if (root_translation)
+                    root_translation->z = -sampled;
+                output[2] += delta * blend;
+                root_translation = NULL;
+            } else {
+                NUQUAT first, second, result;
+                DecodeAni4BlendQuat3Pair(anim, key_stride, constants, curve_types[0], quarter, keys, scale_min, first.x,
+                                         second.x);
+                DecodeAni4BlendQuat3Pair(anim, key_stride, constants, curve_types[1], quarter, keys, scale_min, first.y,
+                                         second.y);
+                DecodeAni4BlendQuat3Pair(anim, key_stride, constants, curve_types[2], quarter, keys, scale_min, first.z,
+                                         second.z);
+                first.w = NuFsqrt(1.0f - (first.x * first.x + first.y * first.y + first.z * first.z));
+                second.w = NuFsqrt(1.0f - (second.x * second.x + second.y * second.y + second.z * second.z));
+                NuQuatHarmonize(&first, &second);
+                result.x = first.x * (1.0f - fraction) + second.x * fraction;
+                result.y = first.y * (1.0f - fraction) + second.y * fraction;
+                result.z = first.z * (1.0f - fraction) + second.z * fraction;
+                result.w = first.w * (1.0f - fraction) + second.w * fraction;
+                f32 length =
+                    NuFsqrt(result.w * result.w + result.x * result.x + result.y * result.y + result.z * result.z);
+                f32 inverse_length = length == 0.0f ? 0.0f : 1.0f / length;
+                result.w *= inverse_length;
+                result.x *= inverse_length;
+                result.y *= inverse_length;
+                result.z *= inverse_length;
+                VuQuatSlerpFast(reinterpret_cast<NUQUAT *>(output), reinterpret_cast<NUQUAT *>(output), &result, blend);
+            }
+        }
+    }
+    return 0;
+}
+
+static inline void DecodeAni4BlendQuat3WPair(const ani3_animheader_s *anim, i32 key_stride, const u16 *constants,
+                                             u16 type, u32 quarter, u8 *&keys, ani3_scalemin_s *&scale_min, f32 &first,
+                                             f32 &second) {
+    if (type == 6) {
+        const u32 first_word = *reinterpret_cast<const u32 *>(keys);
+        const u32 next_word = *reinterpret_cast<const u32 *>(keys + key_stride);
+        const f32 start = static_cast<f32>(first_word & 0xff);
+        const f32 next = static_cast<f32>(next_word & 0xff);
+        const u32 tangents = first_word >> 8;
+        const f32 tangent0 = static_cast<f32>((tangents >> (quarter * 6)) & 0x3f) * 0.01587302f;
+        first = ((next - start) * tangent0 + start) * scale_min->scale + scale_min->minimum;
+        if (quarter == 3) {
+            const f32 tangent1 = static_cast<f32>((next_word >> 8) & 0x3f) * 0.01587302f;
+            const f32 after = static_cast<f32>(keys[key_stride * 2]);
+            second = ((after - next) * tangent1 + next) * scale_min->scale + scale_min->minimum;
+        } else {
+            const f32 tangent1 = static_cast<f32>((tangents >> (((quarter * 3 + 3) * 2) & 0x1f)) & 0x3f) * 0.01587302f;
+            second = ((next - start) * tangent1 + start) * scale_min->scale + scale_min->minimum;
+        }
+        keys += 4;
+        ++scale_min;
+        return;
+    }
+
+    if (type == 7) {
+        CalcValue1648Get2Values(reinterpret_cast<char *>(keys), quarter, key_stride, scale_min, &first, &second);
+        keys += 8;
+        ++scale_min;
+        return;
+    }
+    first = second = static_cast<f32>(static_cast<u32>(constants[type])) * anim->scale + anim->minimum;
+}
+i32 ANI_SimpleAni3PlayerV4Joint_Blend_Quat3W(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, f32 blend,
                                              i32 joint_count, i32 first_joint, NUVEC *root_translation) {
-    BlendAni4Quaternion(anim, frame, buffer, blend, joint_count, first_joint, root_translation, 3);
-}
-
-void ANI_SimpleAni3PlayerV4Joint_Blend_Quat3W(ani3_animheader_s *anim, f32 frame, nuanimbuff_s *buffer, f32 blend,
-                                              i32 joint_count, i32 first_joint, NUVEC *root_translation) {
-    BlendAni4Quaternion(anim, frame, buffer, blend, joint_count, first_joint, root_translation, 4);
+    const u8 *node_flags = anim->node_flags;
+    const f32 inverse_blend = 1.0f - blend;
+    f32 key =
+        (frame - anim->first_frame) * static_cast<f32>(anim->key_count - 1) / static_cast<f32>(anim->frame_count - 1);
+    if (key < 0.0f)
+        key = 0.0f;
+    // Preserve the fractional interval after the last integer key.
+    if (static_cast<f32>(anim->key_count) <= key)
+        key = static_cast<f32>(anim->key_count - 1);
+    const i32 whole = static_cast<i32>(key);
+    const u32 quarter = static_cast<u32>(whole) & 3;
+    const f32 fraction = key - static_cast<f32>(whole);
+    const i32 key_stride = anim->key_stride;
+    u8 *keys = anim->keys + (whole / 4) * key_stride;
+    ani3_scalemin_s *scale_min = anim->scale_min;
+    const u16 *constants = reinterpret_cast<const u16 *>(anim->constants) - 16;
+    const u16 *curve_types = anim->curve_types;
+    const i32 count = joint_count < anim->node_count ? joint_count : anim->node_count;
+    if (first_joint != 0)
+        root_translation = NULL;
+    const u8 *first_flags = node_flags + first_joint;
+    for (const u8 *skip_flags = node_flags; skip_flags < first_flags; ++skip_flags) {
+        for (i32 group = 0; group < 3; ++group) {
+            i32 components = group == 1 ? 4 : 3;
+            if (*skip_flags & CurveGroupMasks[group]) {
+                for (i32 component = 0; component < components; ++component) {
+                    SkipAni4V4Curve(*curve_types++, keys, scale_min);
+                }
+            } else
+                curve_types += components;
+        }
+    }
+    node_flags += first_joint;
+    const u8 *end_flags = node_flags + count;
+    u8 *joint_flags = buffer->joint_flags + first_joint;
+    nuanimbuffjoint_s *joint = buffer->joints + first_joint;
+    for (; node_flags < end_flags; ++node_flags, ++joint) {
+        const u8 flags = *node_flags;
+        *joint_flags++ |= flags;
+        f32 *output = &joint->translation.x;
+        for (i32 group = 0; group < 3; ++group, output += 4) {
+            if (!(flags & CurveGroupMasks[group])) {
+                if (group == 0) {
+                    output[0] *= inverse_blend;
+                    output[1] *= inverse_blend;
+                    output[2] *= inverse_blend;
+                    if (root_translation) {
+                        root_translation->x = root_translation->y = root_translation->z = 0.0f;
+                        root_translation = NULL;
+                    }
+                } else if (group == 1) {
+                    output[3] = output[3] * inverse_blend + blend;
+                    output[0] *= inverse_blend;
+                    output[1] *= inverse_blend;
+                    output[2] *= inverse_blend;
+                    f32 length = NuFsqrt(output[3] * output[3] + output[0] * output[0] + output[1] * output[1] +
+                                         output[2] * output[2]);
+                    f32 inverse_length = length == 0.0f ? 0.0f : 1.0f / length;
+                    output[3] *= inverse_length;
+                    output[0] *= inverse_length;
+                    output[1] *= inverse_length;
+                    output[2] *= inverse_length;
+                } else {
+                    output[0] = output[0] * inverse_blend + blend;
+                    output[1] = output[1] * inverse_blend + blend;
+                    output[2] = output[2] * inverse_blend + blend;
+                }
+                curve_types += group == 1 ? 4 : 3;
+            } else if (group != 1) {
+                f32 sampled = DecodeAni4Quat3Scalar(anim, key_stride, constants, curve_types[0], quarter, fraction,
+                                                    keys, scale_min);
+                f32 delta_x = sampled - output[0];
+                if (root_translation)
+                    root_translation->x = sampled;
+                output[0] += delta_x * blend;
+                sampled = DecodeAni4Quat3Scalar(anim, key_stride, constants, curve_types[1], quarter, fraction, keys,
+                                                scale_min);
+                f32 delta_y = sampled - output[1];
+                if (root_translation)
+                    root_translation->y = sampled;
+                output[1] += delta_y * blend;
+                sampled = DecodeAni4Quat3Scalar(anim, key_stride, constants, curve_types[2], quarter, fraction, keys,
+                                                scale_min);
+                f32 delta_z = sampled - output[2];
+                if (root_translation)
+                    root_translation->z = -sampled;
+                output[2] += delta_z * blend;
+                root_translation = NULL;
+                curve_types += 3;
+            } else {
+                NUQUAT first, second, result;
+                DecodeAni4BlendQuat3WPair(anim, key_stride, constants, curve_types[0], quarter, keys, scale_min,
+                                          first.x, second.x);
+                DecodeAni4BlendQuat3WPair(anim, key_stride, constants, curve_types[1], quarter, keys, scale_min,
+                                          first.y, second.y);
+                DecodeAni4BlendQuat3WPair(anim, key_stride, constants, curve_types[2], quarter, keys, scale_min,
+                                          first.z, second.z);
+                DecodeAni4BlendQuat3WPair(anim, key_stride, constants, curve_types[3], quarter, keys, scale_min,
+                                          first.w, second.w);
+                curve_types += 4;
+                result.x = first.x * (1.0f - fraction) + second.x * fraction;
+                result.y = first.y * (1.0f - fraction) + second.y * fraction;
+                result.z = first.z * (1.0f - fraction) + second.z * fraction;
+                result.w = first.w * (1.0f - fraction) + second.w * fraction;
+                f32 length =
+                    NuFsqrt(result.w * result.w + result.x * result.x + result.y * result.y + result.z * result.z);
+                f32 inverse_length = length == 0.0f ? 0.0f : 1.0f / length;
+                result.w *= inverse_length;
+                result.x *= inverse_length;
+                result.y *= inverse_length;
+                result.z *= inverse_length;
+                // Original W blending writes this local result and discards it.
+                VuQuatSlerpFast(&result, reinterpret_cast<NUQUAT *>(output), &result, blend);
+            }
+        }
+    }
+    return 0;
 }
 
 void EvalAnim(nuhspecial_s *special, float frame, numtx_s *matrix, i32 include_instance_translation) {

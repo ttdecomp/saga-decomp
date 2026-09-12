@@ -1,22 +1,15 @@
 
 #include "decomp.h"
+#include "editor/edpath.h"
 struct eduiitem_s;
 struct eduimenu_s;
-
-struct aieditor_settings_s {
-    u8 enabled;
-    u8 unknown_001[0x10 - 0x01];
-    u8 show_creatures;
-    u8 unknown_011[0x20 - 0x11];
-    u8 snap_height;
-    u8 unknown_021[0x44 - 0x21];
-    i32 current_path_type;
-    u8 unknown_048[0x200 - 0x48];
-};
 
 DECOMP_ASSERT(sizeof(aieditor_settings_s) == 0x200, "aieditor settings size");
 
 aieditor_settings_s aieditorsettings;
+extern "C" {
+    i32 AIEDITOR_ROUTES = -1;
+}
 static __used__ void aieditor_cbSetEditorMode(eduimenu_s *, eduiitem_s *, unsigned int) {
 }
 

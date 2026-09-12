@@ -1,4 +1,18 @@
 #include "nu2api_nucore_types.h"
+#include "nu2api/nu3d/nulgtlaser.h"
+#include "nu2api/nu3d/nuprim.h"
+#include "nu2api/numath/nuvec4.h"
+#include "nu2api/numath/nutrig.h"
+extern "C" {
+    void *NuScratchAlloc32(i32);
+    void NuScratchRelease();
+    i32 NuRndrBeginSceneEx(i32, i32, i32);
+    void NuRndrEndSceneEx(i32);
+    extern i32 NuPrimCSPos;
+    extern NUPRIMSCALEMODE NuPrimCoordSystemStack[];
+    extern i32 nurndr_pixel_width;
+}
+
 #include "nu2api/nu3d/android/nutex_ios_ex.h"
 #include "nu2api/nu3d/android/nutex_android.h"
 #include "nu2api/nu3d/nudlist.h"
@@ -12,6 +26,7 @@
 #include "nu2api/nucore/nuhgobj.h"
 #include "nu2api/nucore/nuanim3.h"
 #include "nu2api/numath/nufloat.h"
+#include "nu2api/numath/nuquat.h"
 
 #include <GLES2/gl2.h>
 #include <string.h>
@@ -120,16 +135,10 @@ void NuIOSDLLightmap(void *arg) {
     NuShaderManagerSetfv(0x58, shader_offset);
 }
 
-void NuLgtArcLaserEx(i32, nuvec_s *, nuvec_s *, nuvec_s *, float, float, float, float, i32, i32) {
-}
-
 void NuVpSetDestRect(float, float, float, float) {
 }
 
 void NuDDSGetMipLevel(i32, i32, i32, NUTEXFORMAT, i32, bool, i32, i32, i32 &, i32 &, i32 &) {
-}
-
-void NuLgtSetArcMatEx(i32, numtl_s *, float, float, float, float) {
 }
 
 extern "C" u8 CutSceneBoundingBoxTrackRoot;
@@ -158,7 +167,191 @@ void NuFntDumpReadable(nufnt_s *, char *) {
 
 // NuIOS_SetCullMode is transcribed in android/nuiosdl_gl.cpp (original 0x29c110).
 
-void NuLgtArcLaserDraw(i32) {
+static inline u16 NuLgtArcHalf(f32 value) {
+    union {
+        f32 value;
+        u32 bits;
+    } conversion = {value};
+    i32 sign = conversion.bits >> 31;
+    i32 exponent = (conversion.bits >> 23) & 0xff;
+    i32 mantissa = conversion.bits & 0x7fffff;
+    // Preserve the original truncation and exponent clamp, including subnormals.
+    exponent -= 112;
+    if (exponent < 0)
+        exponent = 0;
+    if (exponent > 31)
+        exponent = 31;
+    return (sign << 15) | ((exponent & 31) << 10) | (mantissa >> 13);
+}
+static inline void NuLgtArcVertex(NUVEC4 *position, i32 colour, f32 u, f32 v) {
+    g_NuPrim_StreamBufferPtr->u32_ptr[3] =
+        g_NuPrim_NeedsOverbrightening ? colour : ((colour >> 1) & 0x7f7f7f) | (colour & 0xff000000);
+    if (g_NuPrim_NeedsHalfUVs) {
+        ((u16 *)g_NuPrim_StreamBufferPtr->u8_ptr)[8] = NuLgtArcHalf(u);
+        ((u16 *)g_NuPrim_StreamBufferPtr->u8_ptr)[9] = NuLgtArcHalf(v);
+    } else {
+        g_NuPrim_StreamBufferPtr->f32_ptr[4] = u;
+        g_NuPrim_StreamBufferPtr->f32_ptr[5] = v;
+    }
+    NuPrim2DAddXYZ(position->x, position->y, position->z);
+}
+void NuLgtArcLaserDraw(i32 paused) {
+    f32 v0 = NuLgtArcMtl[0].v0, v1 = NuLgtArcMtl[0].v1;
+    if (paused)
+        NuLgtArcLaserCnt = NuLgtArcLaserOldCnt;
+    if (!NuLgtArcMtl[0].material || NuLgtArcLaserCnt == 0) {
+        NuLgtArcLaserOldCnt = 0;
+        return;
+    }
+    NUVEC4 *vertices = (NUVEC4 *)NuScratchAlloc32(0xc0);
+    NUMTX *clip = NuCameraGetVPCSMtx();
+    if (!NuRndrBeginSceneEx(-1, -2, 0)) {
+        NuScratchRelease();
+        return;
+    }
+    ++NuPrimCSPos;
+    NuPrimSetCoordinateSystem(NUPRIM_SCALEMODE_PS2);
+    NuPrim2DBegin(0, 5, NuLgtArcMtl[0].material);
+    for (i32 i = 0; i < NuLgtArcLaserCnt; ++i) {
+        NULGTARCLASER *laser = &NuLgtArcLaserData[i];
+        vertices[4].x = laser->start.x;
+        vertices[4].y = laser->start.y;
+        vertices[4].z = laser->start.z;
+        vertices[4].w = 1.0f;
+        NuVec4MtxTransformVU0(&vertices[4], &vertices[4], clip);
+        vertices[5].x = laser->end.x;
+        vertices[5].y = laser->end.y;
+        vertices[5].z = laser->end.z;
+        vertices[5].w = 1.0f;
+        NuVec4MtxTransformVU0(&vertices[5], &vertices[5], clip);
+        if (!(vertices[4].w >= 0.5f) && !(vertices[5].w >= 0.5f))
+            continue;
+        if (vertices[4].w < 0.5f) {
+            f32 numerator = vertices[5].w - 0.5f;
+            f32 denominator = vertices[5].w - vertices[4].w;
+            vertices[6].x = (laser->start.x - laser->end.x) * numerator / denominator + laser->end.x;
+            vertices[6].y = (laser->start.y - laser->end.y) * numerator / denominator + laser->end.y;
+            vertices[6].z = (laser->start.z - laser->end.z) * numerator / denominator + laser->end.z;
+        } else {
+            vertices[6].x = laser->start.x;
+            vertices[6].y = laser->start.y;
+            vertices[6].z = laser->start.z;
+        }
+        vertices[6].w = 1.0f;
+        f32 dx = vertices[6].x - laser->end.x;
+        f32 dy = vertices[6].y - laser->end.y;
+        f32 dz = vertices[6].z - laser->end.z;
+        sqrt((double)(dx * dx + dy * dy + dz * dz));
+        if (vertices[5].w < 0.5f) {
+            f32 numerator = vertices[4].w - 0.5f;
+            f32 denominator = vertices[4].w - vertices[5].w;
+            vertices[7].x = (laser->end.x - laser->start.x) * numerator / denominator + laser->start.x;
+            vertices[7].y = (laser->end.y - laser->start.y) * numerator / denominator + laser->start.y;
+            vertices[7].z = (laser->end.z - laser->start.z) * numerator / denominator + laser->start.z;
+        } else {
+            vertices[7].x = laser->end.x;
+            vertices[7].y = laser->end.y;
+            vertices[7].z = laser->end.z;
+        }
+        vertices[7].w = 1.0f;
+        NuVec4MtxTransformVU0(&vertices[4], &vertices[6], clip);
+        NuVec4ScaleXYZVU0(&vertices[4], &vertices[4], 1.0f / vertices[4].w);
+        NuVec4MtxTransformVU0(&vertices[5], &vertices[7], clip);
+        NuVec4ScaleXYZVU0(&vertices[5], &vertices[5], 1.0f / vertices[5].w);
+        NUVEC perpendicular = {(vertices[5].y - vertices[4].y) * ((f32)nurndr_pixel_width / 240.0f),
+                               vertices[4].x - vertices[5].x, 0.0f};
+        NuVecNorm(&perpendicular, &perpendicular);
+        perpendicular.x *= (((f32)nurndr_pixel_width * 150.0f) / 240.0f) * laser->width;
+        perpendicular.y *= laser->width * 150.0f;
+        vertices[7].x -= vertices[6].x;
+        vertices[7].y -= vertices[6].y;
+        vertices[7].z -= vertices[6].z;
+        vertices[7].w -= vertices[6].w;
+        f32 length =
+            NuFsqrt(vertices[7].x * vertices[7].x + vertices[7].y * vertices[7].y + vertices[7].z * vertices[7].z);
+        if (!(length > 0.0f))
+            continue;
+        vertices[10].x = laser->bend.x;
+        vertices[10].y = laser->bend.y;
+        vertices[10].z = laser->bend.z;
+        f32 factor =
+            vertices[10].x * vertices[10].x + vertices[10].y * vertices[10].y + vertices[10].z * vertices[10].z;
+        if (factor > 0.0f)
+            factor = laser->bend_amount / NuFsqrt(factor);
+        vertices[10].x *= factor;
+        vertices[10].y *= factor;
+        vertices[10].z *= factor;
+        NuLgtSeed = laser->seed;
+        f32 step = laser->segment_length / length;
+        step = 1.0f < step ? 1.0f : step;
+        f32 u = NuLgtArcMtl[0].u0, u1 = NuLgtArcMtl[0].u1;
+        vertices[4].w = 1.0f;
+        vertices[4].x = vertices[6].x;
+        vertices[4].y = vertices[6].y;
+        vertices[4].z = vertices[6].z;
+        NuVec4MtxTransformVU0(&vertices[4], &vertices[4], clip);
+        NuVec4ScaleXYZVU0(&vertices[4], &vertices[4], 1.0f / vertices[4].w);
+        vertices[1].x = vertices[3].x = vertices[4].x;
+        vertices[1].y = vertices[3].y = vertices[4].y;
+        vertices[1].z = vertices[3].z = vertices[4].z;
+        f32 progress = 0.0f;
+        do {
+            f32 next = progress + step;
+            if (next >= 1.0f) {
+                vertices[5].x = vertices[6].x + vertices[7].x;
+                vertices[5].y = vertices[6].y + vertices[7].y;
+                vertices[5].z = vertices[6].z + vertices[7].z;
+                u = NuLgtArcMtl[0].u1 + (1.0f - progress) * (NuLgtArcMtl[0].u0 - NuLgtArcMtl[0].u1) / step;
+            } else {
+                i32 angle = ((i32)(32768.0f * next) >> 1) & 0x7fff;
+                vertices[5].x = next * vertices[7].x + vertices[6].x + vertices[10].x * NuTrigTable[angle];
+                vertices[5].y = next * vertices[7].y + vertices[6].y + vertices[10].y * NuTrigTable[angle];
+                vertices[5].z = next * vertices[7].z + vertices[6].z + vertices[10].z * NuTrigTable[angle];
+            }
+            vertices[5].w = 1.0f;
+            NuVec4MtxTransformVU0(&vertices[5], &vertices[5], clip);
+            f32 reciprocal = 1.0f / vertices[5].w;
+            NuVec4ScaleXYZVU0(&vertices[5], &vertices[5], reciprocal);
+            f32 jitter_x = 0.0f, jitter_y = 0.0f;
+            if (1.0f - 1.5f * step > progress && NuLgtSeed != 0) {
+                f32 random = (f32)((NuLgtRand() & 0xff) - 128);
+                jitter_x = perpendicular.x * random * laser->wobble * reciprocal;
+                jitter_y = perpendicular.y * random * laser->wobble * reciprocal;
+            }
+            vertices[0].x = vertices[5].x - perpendicular.x * reciprocal + jitter_x;
+            vertices[0].y = vertices[5].y - perpendicular.y * reciprocal + jitter_y;
+            vertices[0].z = vertices[5].z;
+            vertices[2].x = perpendicular.x * reciprocal + vertices[5].x + jitter_x;
+            vertices[2].y = perpendicular.y * reciprocal + vertices[5].y + jitter_y;
+            vertices[2].z = vertices[5].z;
+            if (!(vertices[0].x < -50.0f && vertices[1].x < 50.0f) &&
+                !(vertices[0].x > 700.0f && vertices[1].x > 700.0f) &&
+                !(vertices[0].y < -50.0f && vertices[1].y < -50.0f) &&
+                !(vertices[0].y > 530.0f && vertices[1].y > 530.0f)) {
+                NuLgtArcVertex(&vertices[0], laser->colour, u, v0);
+                NuLgtArcVertex(&vertices[1], laser->colour, u1, v0);
+                NuLgtArcVertex(&vertices[2], laser->colour, u, v1);
+                NuLgtArcVertex(&vertices[1], laser->colour, u1, v0);
+                NuLgtArcVertex(&vertices[3], laser->colour, u1, v1);
+                NuLgtArcVertex(&vertices[2], laser->colour, u, v1);
+            }
+            vertices[1].x = vertices[0].x;
+            vertices[1].y = vertices[0].y;
+            vertices[1].z = vertices[0].z;
+            vertices[3].x = vertices[2].x;
+            vertices[3].y = vertices[2].y;
+            vertices[3].z = vertices[2].z;
+            progress = next;
+        } while (1.0f > progress);
+    }
+    NuPrim2DEnd();
+    NuPrimSetCoordinateSystem(NuPrimCoordSystemStack[--NuPrimCSPos]);
+    NuRndrEndSceneEx(0);
+    NuLgtArcLaserOldCnt = NuLgtArcLaserCnt;
+    NuLgtArcLaserCnt = 0;
+    if (!paused)
+        ++NuLgtArcLaserFrame;
+    NuScratchRelease();
 }
 
 void NuVpSetSourceRect(float, float, float, float) {
@@ -610,9 +803,8 @@ extern "C" i32 NuGCutLocatorIsVisble(NUGCUTLOCATOR_s *locator, float frame, nuan
     }
     if (visible != 0 && scale != NULL) {
         const i8 scale_type = curve_types[6];
-        *scale = scale_type == 0
-                     ? curves[6].data.constant
-                     : NuAnimCurve2CalcValEx(&curves[6], time, static_cast<u32>(scale_type));
+        *scale = scale_type == 0 ? curves[6].data.constant
+                                 : NuAnimCurve2CalcValEx(&curves[6], time, static_cast<u32>(scale_type));
     }
     return visible;
 }
@@ -669,16 +861,126 @@ void NuIOS_GetShaderProgramKey(ShaderObjectKey const &) {
 void NuSpecialFindByPlatformID(nugscn_s *, nuhspecial_s *, i32) {
 }
 
-// The original main evaluator delegates quaternion buffers here with a NULL
-// first argument. The shared reconstructed evaluator already selects matrix
-// construction from buffer->use_quaternions, so retain the ABI entry point and
-// feed it into that common path.
-void NuAnimBuffEvaluate_3_QuatB(numtx_s *, nuanimbuff_s *buffer, nugscn_s *scene, numtx_s *matrices,
-                                ani3_animheader_s *animation,
-                                void (*root_fn)(numtx_s *, void *, nuvec_s *, nuvec_s *, nuvec_s *, float),
-                                nuvec_s *root_translation, void *root_data) {
-    NuAnimBuffEvaluate_3(buffer, reinterpret_cast<nuhgobj_s *>(scene), matrices, animation, root_fn, root_translation,
-                         root_data);
+extern "C" {
+    extern NUANIMBUFFEVALUATECB AnimBuffEvalCB;
+    extern void **AnimBuffEvalData;
+    extern i32 *AnimBuffEvalJoint;
+}
+void NuAnimBuffEvaluate_3_QuatB(numtx_s *base, nuanimbuff_s *buffer, nugscn_s *scene, numtx_s *matrices,
+                                ani3_animheader_s *animation, NUHGOBJROOTFN root_fn, nuvec_s *root_translation,
+                                void *root_data) {
+    nuhgobj_s *object = reinterpret_cast<nuhgobj_s *>(scene);
+    i32 count = animation->node_count < object->joint_count ? animation->node_count : object->joint_count;
+    NUQUAT *quaternions = static_cast<NUQUAT *>(NuScratchAlloc32((count + 1) * 16));
+    quaternions = reinterpret_cast<NUQUAT *>(ALIGN(reinterpret_cast<usize>(quaternions), 16));
+    NUVEC *scales = static_cast<NUVEC *>(NuScratchAlloc32(count * sizeof(NUVEC)));
+    if (!buffer)
+        buffer = static_cast<nuanimbuff_s *>(globalbuffer);
+    void *callback_data[256];
+    if (AnimBuffEvalData && AnimBuffEvalJoint) {
+        memset(callback_data, 0, object->joint_count * sizeof(void *));
+        for (i32 index = 0; AnimBuffEvalData[index]; ++index) {
+            i32 mapped = AnimBuffEvalJoint[index];
+            if (mapped >= 0 && mapped < object->joint_override_map_count) {
+                u8 joint_index = object->joint_override_map[mapped];
+                if (joint_index != 255)
+                    callback_data[joint_index] = AnimBuffEvalData[index];
+            }
+        }
+    }
+    // Slot255 and the root/nonroot scale selection follow the original evaluator.
+    NUVEC root_scale;
+    if (base) {
+        root_scale = NuMtxGetScale(base);
+        NuMtxToQuat(base, &quaternions[255]);
+    } else {
+        root_scale.x = root_scale.y = root_scale.z = 1.0f;
+        quaternions[255] = NUQUAT{0, 0, 0, 1};
+    }
+    NUVEC root_values = {0, 0, 0};
+    nuanimbuffjoint_s *joint = buffer->joints;
+    NUQUAT *rotation = quaternions;
+    NUMTX *matrix = matrices;
+    NUVEC *scale = scales;
+    const u8 *joint_flags = buffer->joint_flags;
+    for (i32 index = 0; index < count; ++index, ++joint, ++rotation, ++matrix, ++scale) {
+        u8 parent = object->joints[index].parent_index;
+        u8 flags = *joint_flags++;
+        if (flags & 1)
+            *rotation = *reinterpret_cast<NUQUAT *>(&joint->rotation);
+        else
+            *rotation = NUQUAT{0, 0, 0, 1};
+        NUVEC *parent_scale;
+        if (parent != 255) {
+            const NUQUAT q = *rotation, p = quaternions[parent];
+            rotation->z = (p.w * q.z + q.w * p.z + p.x * q.y) - q.x * p.y;
+            rotation->x = (p.w * q.x + q.w * p.x + p.y * q.z) - p.z * q.y;
+            rotation->y = (p.w * q.y + q.w * p.y + p.z * q.x) - p.x * q.z;
+            rotation->w = ((p.w * q.w - q.x * p.x) - q.y * p.y) - q.z * p.z;
+            parent_scale = &root_scale;
+        } else
+            parent_scale = &scales[parent];
+        NuQuatToMtx(rotation, matrix);
+        if (flags & 8) {
+            scale->x = joint->scale.x * parent_scale->x;
+            scale->y = joint->scale.y * parent_scale->y;
+            scale->z = joint->scale.z * parent_scale->z;
+            NuMtxPreScaleVU0(matrix, scale);
+        } else
+            *scale = *parent_scale;
+        if (flags & 16)
+            scale->x = scale->y = scale->z = 1.0f;
+        if (flags & 2) {
+            root_values.x = joint->translation.x;
+            root_values.y = joint->translation.y;
+            root_values.z = -joint->translation.z;
+            if (parent != 255)
+                NuVecMtxTransform(reinterpret_cast<NUVEC *>(&matrix->m30), &joint->translation, &matrices[parent]);
+            else if (base)
+                NuVecMtxTransform(reinterpret_cast<NUVEC *>(&matrix->m30), &joint->translation, base);
+            else {
+                matrix->m30 = joint->translation.x;
+                matrix->m31 = joint->translation.y;
+                matrix->m32 = joint->translation.z;
+            }
+        } else if (parent != 255) {
+            matrix->m30 = matrices[parent].m30;
+            matrix->m31 = matrices[parent].m31;
+            matrix->m32 = matrices[parent].m32;
+            matrix->m33 = matrices[parent].m33;
+        } else if (base) {
+            matrix->m30 = base->m30;
+            matrix->m31 = base->m31;
+            matrix->m32 = base->m32;
+            matrix->m33 = base->m33;
+        }
+        if (parent == 255) {
+            if (root_fn)
+                root_fn(matrix, root_data, &root_values, &root_values, root_translation, 0.0f);
+            root_fn = NULL;
+            if (flags & 64)
+                scale->x = scale->y = scale->z = 1.0f;
+        }
+        if (AnimBuffEvalCB && callback_data[index])
+            AnimBuffEvalCB(matrix, callback_data[index], rotation);
+    }
+    // Callbacks observe the engine coordinates; reflect the completed hierarchy afterward.
+    for (i32 index = 0; index < count; ++index) {
+        NUMTX *matrix = &matrices[index];
+        matrix->m02 = -matrix->m02;
+        matrix->m12 = -matrix->m12;
+        matrix->m20 = -matrix->m20;
+        matrix->m21 = -matrix->m21;
+        matrix->m23 = -matrix->m23;
+        matrix->m32 = -matrix->m32;
+    }
+    for (i32 index = count; index < object->joint_count; ++index)
+        NuMtxSetIdentity(&matrices[index]);
+    AnimBuffEvalCB = NULL;
+    AnimBuffEvalData = NULL;
+    AnimBuffEvalJoint = NULL;
+    NuScratchRelease();
+    NuScratchRelease();
 }
 
 void NuDDSSetTextureDescription(char *, NUTEXFORMAT, i32, i32, i32, i32, nutexturetype_e) {
@@ -974,9 +1276,6 @@ extern "C" {
 i32 NuLgtRand() {
     NuLgtSeed = (NuLgtSeed * 0x24cd + 1) & 0xffff;
     return NuLgtSeed;
-}
-
-NuDynamicLight::RenderSet::RenderSet() {
 }
 
 void NuMemory::MemErrorHandler::CloseDump(NuMemoryManager *, u32) {

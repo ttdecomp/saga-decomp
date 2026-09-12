@@ -16,7 +16,7 @@ extern "C" {
     u32 NuRandIntSeeded(u32 *seed);
     void NuRandSeed(u32 seed);
     void NuRandSetSeed(NURAND *rand, i32 seed);
-    u32 NuRandGetSeed(NURAND *rand);
+    u32 NuRandGetSeed(void);
 
     f32 NuFloatRand(NURAND *rand);
 #ifdef __cplusplus

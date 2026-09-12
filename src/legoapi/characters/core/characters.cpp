@@ -1,3 +1,4 @@
+#include "nu2api/nu3d/nuportal.h"
 #include "decomp.h"
 #include "gameapi/ai/aisys/aisys.h"
 #include "globals.h"
@@ -146,7 +147,337 @@ void LSW_SetIndy(i32) {
 void HairMovement(GameObject_s *) {
 }
 
-void HeadMovement(GameObject_s *) {
+void HeadMovement(GameObject_s *object) {
+    NUVEC direction;
+    if (CInfo[object->character_context].flags & 0x200000) {
+        return;
+    }
+    if (!(object->apiobj.character_data->game_character->field_0x94 & 0x40000000) &&
+        !(object->apiobj.character_data->model_flags & 0x20000)) {
+        CHARACTERDATA *character = object->apiobj.character_data;
+
+        if (object->field_0x1089 < 3 && character->game_character->head_joint != -1) {
+            object->field_0xefe &= ~1;
+            i32 allowed;
+            i16 animation;
+            if (!object->apiobj.anim_packet.blending) {
+                animation = object->apiobj.anim_packet.animation_index;
+                allowed = 1;
+                if (animation < 0)
+                    goto gate_done_ordinary;
+            } else {
+                animation = object->apiobj.anim_packet.blend_animation_b;
+                if (animation >= 0 && animation < apicharsys->model_id_capacity &&
+                    object->apiobj.character_model->model_data_b[animation] != NULL) {
+                    if (static_cast<CHARACTERANIM_s *>(object->apiobj.character_model->model_data_a[animation])->flags &
+                        0x40) {
+                        allowed = 0;
+                        goto gate_done_ordinary;
+                    }
+                }
+                animation = object->apiobj.anim_packet.blend_animation_a;
+                allowed = 1;
+                if (animation < 0)
+                    goto gate_done_ordinary;
+            }
+
+            if (animation < apicharsys->model_id_capacity &&
+                object->apiobj.character_model->model_data_b[animation] != NULL) {
+                allowed =
+                    (static_cast<CHARACTERANIM_s *>(object->apiobj.character_model->model_data_a[animation])->flags &
+                     0x40) == 0;
+            }
+        gate_done_ordinary:;
+
+            f32 first = 0.0f;
+            f32 second = 0.0f;
+            if (object->head_target != NULL && object->head_target_timer >= object->head_target_delay &&
+                character->game_character->head_locator != -1 && allowed) {
+                object->field_0xefe |= 1;
+
+                NuVecInvMtxTransform(&direction, &object->head_target_position,
+                                     &object->joint_matrices[character->game_character->head_locator]);
+                if (direction.z < 0.0f) {
+                    f32 angle = NuAtan2(-direction.y, NuFsqrt(direction.x * direction.x + direction.z * direction.z));
+                    first = object->joint_modifiers[object->field_0x1089].rotation.y - angle;
+                    f32 limit = character->game_character->field_0x54;
+                    if (first >= limit)
+                        first = limit;
+                    else if (first <= -limit)
+                        first = -limit;
+                    angle = NuAtan2(-direction.x, -direction.z);
+                    second = angle + object->joint_modifiers[object->field_0x1089].rotation.z;
+                    limit = character->game_character->field_0x50;
+                    if (second >= limit)
+                        second = limit;
+                    else if (second <= -limit)
+                        second = -limit;
+                    else
+                        object->field_0xefe &= ~1;
+                }
+            }
+            object->joint_modifiers[object->field_0x1089].joint_index = character->game_character->head_joint;
+            object->joint_modifiers[object->field_0x1089].flags = static_cast<NUJOINTANIM_FLAGS>(0);
+            f32 blend = character->game_character->field_0x58 * FRAMETIME;
+            f32 previous;
+            if (blend > 1.0f) {
+                blend = 1.0f;
+                previous = 0.0f;
+            } else {
+                previous = 1.0f - blend;
+            }
+            object->joint_modifiers[object->field_0x1089].rotation.x = 0.0f;
+            object->joint_modifiers[object->field_0x1089].rotation.y =
+                first * blend + object->joint_modifiers[object->field_0x1089].rotation.y * previous;
+            object->joint_modifiers[object->field_0x1089].rotation.z =
+                second * blend + object->joint_modifiers[object->field_0x1089].rotation.z * previous;
+            i32 limit = static_cast<i32>(character->game_character->field_0x54 * 10430.3779296875f);
+            object->joint_modifiers[object->field_0x1089].rotation_limit_start[1] = limit;
+            object->joint_modifiers[object->field_0x1089].rotation_limit_end[1] = -limit;
+            limit = static_cast<i32>(character->game_character->field_0x50 * 10430.3779296875f);
+            object->joint_modifiers[object->field_0x1089].rotation_limit_start[2] = limit;
+            object->joint_modifiers[object->field_0x1089].rotation_limit_end[2] = -limit;
+            if (object->joint_modifiers[object->field_0x1089].rotation.y > 0.0017453293548896909f ||
+                object->joint_modifiers[object->field_0x1089].rotation.y < -0.0017453293548896909f ||
+                object->joint_modifiers[object->field_0x1089].rotation.z > 0.0017453293548896909f ||
+                object->joint_modifiers[object->field_0x1089].rotation.z < -0.0017453293548896909f) {
+                object->joint_modifiers[object->field_0x1089].flags = NUJOINTANIM_ROTATION;
+                if (allowed) {
+                    if (object->joint_modifiers[object->field_0x1089].rotation.y != 0.0f)
+                        object->joint_modifiers[object->field_0x1089].flags =
+                            static_cast<NUJOINTANIM_FLAGS>(NUJOINTANIM_ROTATION | NUJOINTANIM_LIMIT_ROTATION_Y);
+                    if (object->joint_modifiers[object->field_0x1089].rotation.z != 0.0f)
+                        object->joint_modifiers[object->field_0x1089].flags = static_cast<NUJOINTANIM_FLAGS>(
+                            object->joint_modifiers[object->field_0x1089].flags | NUJOINTANIM_LIMIT_ROTATION_Z);
+                }
+            }
+            if (object->head_target != NULL) {
+                object->head_target_timer -= FRAMETIME;
+                if (object->head_target_timer < 0.0f) {
+                    object->head_target_timer = 0.0f;
+                    object->head_target_delay = 0.0f;
+                    object->head_target = NULL;
+                    object->head_target_priority = 0;
+                }
+            }
+            object->field_0x1089 = object->field_0x1089 + 1;
+        }
+    } else if (!(object->apiobj.character_data->game_character->field_0x94 & 0x40000000)) {
+        CHARACTERDATA *character = object->apiobj.character_data;
+
+        if (object->field_0x1089 > 2 || character->game_character->head_joint == -1) {
+            return;
+        }
+
+        i32 allowed;
+        i16 animation;
+        if (!object->apiobj.anim_packet.blending) {
+            animation = object->apiobj.anim_packet.animation_index;
+            allowed = 1;
+            if (animation < 0)
+                goto gate_done_old;
+        } else {
+            animation = object->apiobj.anim_packet.blend_animation_b;
+            if (animation >= 0 && animation < apicharsys->model_id_capacity &&
+                object->apiobj.character_model->model_data_b[animation] != NULL) {
+                if (static_cast<CHARACTERANIM_s *>(object->apiobj.character_model->model_data_a[animation])->flags &
+                    0x40) {
+                    allowed = 0;
+                    goto gate_done_old;
+                }
+            }
+            animation = object->apiobj.anim_packet.blend_animation_a;
+            allowed = 1;
+            if (animation < 0)
+                goto gate_done_old;
+        }
+
+        if (animation < apicharsys->model_id_capacity &&
+            object->apiobj.character_model->model_data_b[animation] != NULL) {
+            allowed = (static_cast<CHARACTERANIM_s *>(object->apiobj.character_model->model_data_a[animation])->flags &
+                       0x40) == 0;
+        }
+    gate_done_old:;
+
+        f32 first = 0.0f;
+        f32 second = 0.0f;
+        if (object->head_target != NULL && object->head_target_timer >= object->head_target_delay &&
+            character->game_character->head_locator != -1 && allowed) {
+
+            NuVecInvMtxTransform(&direction, &object->head_target_position,
+                                 &object->joint_matrices[character->game_character->head_locator]);
+            if (direction.z < 0.0f) {
+                f32 angle = NuAtan2(-direction.x, -direction.z);
+                first = object->joint_modifiers[object->field_0x1089].rotation.x - angle;
+                f32 limit = character->game_character->field_0x50;
+                if (first >= limit)
+                    first = limit;
+                else if (first <= -limit)
+                    first = -limit;
+                angle = NuAtan2(-direction.y, -direction.z);
+                second = object->joint_modifiers[object->field_0x1089].rotation.y - angle;
+                limit = character->game_character->field_0x54;
+                if (second >= limit)
+                    second = limit;
+                else if (second <= -limit)
+                    second = -limit;
+            }
+        }
+        object->joint_modifiers[object->field_0x1089].joint_index = character->game_character->head_joint;
+        object->joint_modifiers[object->field_0x1089].flags = static_cast<NUJOINTANIM_FLAGS>(0);
+        f32 blend = character->game_character->field_0x58 * FRAMETIME;
+        f32 previous;
+        if (blend > 1.0f) {
+            blend = 1.0f;
+            previous = 0.0f;
+        } else {
+            previous = 1.0f - blend;
+        }
+        object->joint_modifiers[object->field_0x1089].rotation.z = 0.0f;
+        object->joint_modifiers[object->field_0x1089].rotation.x =
+            first * blend + object->joint_modifiers[object->field_0x1089].rotation.x * previous;
+        object->joint_modifiers[object->field_0x1089].rotation.y =
+            second * blend + object->joint_modifiers[object->field_0x1089].rotation.y * previous;
+        i32 limit = static_cast<i32>(character->game_character->field_0x50 * 10430.3779296875f);
+        object->joint_modifiers[object->field_0x1089].rotation_limit_start[0] = limit;
+        object->joint_modifiers[object->field_0x1089].rotation_limit_end[0] = -limit;
+        limit = static_cast<i32>(character->game_character->field_0x54 * 10430.3779296875f);
+        object->joint_modifiers[object->field_0x1089].rotation_limit_start[1] = limit;
+        object->joint_modifiers[object->field_0x1089].rotation_limit_end[1] = -limit;
+        if (object->joint_modifiers[object->field_0x1089].rotation.x > 0.0017453293548896909f ||
+            object->joint_modifiers[object->field_0x1089].rotation.x < -0.0017453293548896909f ||
+            object->joint_modifiers[object->field_0x1089].rotation.y > 0.0017453293548896909f ||
+            object->joint_modifiers[object->field_0x1089].rotation.y < -0.0017453293548896909f) {
+            object->joint_modifiers[object->field_0x1089].flags = NUJOINTANIM_ROTATION;
+            if (allowed) {
+                if (object->joint_modifiers[object->field_0x1089].rotation.x != 0.0f)
+                    object->joint_modifiers[object->field_0x1089].flags =
+                        static_cast<NUJOINTANIM_FLAGS>(NUJOINTANIM_ROTATION | NUJOINTANIM_LIMIT_ROTATION_X);
+                if (object->joint_modifiers[object->field_0x1089].rotation.y != 0.0f)
+                    object->joint_modifiers[object->field_0x1089].flags = static_cast<NUJOINTANIM_FLAGS>(
+                        object->joint_modifiers[object->field_0x1089].flags | NUJOINTANIM_LIMIT_ROTATION_Y);
+            }
+        }
+        if (object->head_target != NULL) {
+            object->head_target_timer -= FRAMETIME;
+            if (object->head_target_timer < 0.0f) {
+                object->head_target_timer = 0.0f;
+                object->head_target_delay = 0.0f;
+                object->head_target = NULL;
+                object->head_target_priority = 0;
+            }
+        }
+        object->field_0x1089 = object->field_0x1089 + 1;
+    } else {
+        if (object->field_0x1089 < 3 && object->apiobj.character_data->game_character->head_joint != -1) {
+            object->field_0xefe &= ~1;
+            i32 allowed;
+            i16 animation;
+            if (!object->apiobj.anim_packet.blending) {
+                animation = object->apiobj.anim_packet.animation_index;
+                allowed = 1;
+                if (animation < 0)
+                    goto gate_done_alternate;
+            } else {
+                animation = object->apiobj.anim_packet.blend_animation_b;
+                if (animation >= 0 && animation < apicharsys->model_id_capacity &&
+                    object->apiobj.character_model->model_data_b[animation] != NULL) {
+                    if (static_cast<CHARACTERANIM_s *>(object->apiobj.character_model->model_data_a[animation])->flags &
+                        0x40) {
+                        allowed = 0;
+                        goto gate_done_alternate;
+                    }
+                }
+                animation = object->apiobj.anim_packet.blend_animation_a;
+                allowed = 1;
+                if (animation < 0)
+                    goto gate_done_alternate;
+            }
+
+            if (animation < apicharsys->model_id_capacity &&
+                object->apiobj.character_model->model_data_b[animation] != NULL) {
+                allowed =
+                    (static_cast<CHARACTERANIM_s *>(object->apiobj.character_model->model_data_a[animation])->flags &
+                     0x40) == 0;
+            }
+        gate_done_alternate:;
+
+            f32 first = 0.0f;
+            f32 second = 0.0f;
+            if (object->head_target != NULL && object->head_target_timer >= object->head_target_delay &&
+                object->apiobj.character_data->game_character->head_locator != -1 && allowed) {
+                object->field_0xefe |= 1;
+
+                NuVecInvMtxTransform(
+                    &direction, &object->head_target_position,
+                    &object->joint_matrices[object->apiobj.character_data->game_character->head_locator]);
+                if (direction.z < 0.0f) {
+                    f32 angle = NuAtan2(-direction.y, NuFsqrt(direction.x * direction.x + direction.z * direction.z));
+                    first = angle - object->joint_modifiers[object->field_0x1089].rotation.y;
+                    f32 limit = object->apiobj.character_data->game_character->field_0x54;
+                    if (first >= limit)
+                        first = limit;
+                    else if (first <= -limit)
+                        first = -limit;
+                    angle = NuAtan2(-direction.x, -direction.z);
+                    second = -angle - object->joint_modifiers[object->field_0x1089].rotation.z;
+                    limit = object->apiobj.character_data->game_character->field_0x50;
+                    if (second >= limit)
+                        second = limit;
+                    else if (second <= -limit)
+                        second = -limit;
+                    else
+                        object->field_0xefe &= ~1;
+                }
+            }
+            CHARACTERDATA *character = object->apiobj.character_data;
+            object->joint_modifiers[object->field_0x1089].joint_index = character->game_character->head_joint;
+            object->joint_modifiers[object->field_0x1089].flags = static_cast<NUJOINTANIM_FLAGS>(0);
+            f32 blend = object->apiobj.character_data->game_character->field_0x58 * FRAMETIME;
+            f32 previous;
+            if (blend > 1.0f) {
+                blend = 1.0f;
+                previous = 0.0f;
+            } else {
+                previous = 1.0f - blend;
+            }
+            object->joint_modifiers[object->field_0x1089].rotation.x = 0.0f;
+            object->joint_modifiers[object->field_0x1089].rotation.y =
+                first * blend + object->joint_modifiers[object->field_0x1089].rotation.y * previous;
+            object->joint_modifiers[object->field_0x1089].rotation.z =
+                second * blend + object->joint_modifiers[object->field_0x1089].rotation.z * previous;
+            i32 limit = static_cast<i32>(object->apiobj.character_data->game_character->field_0x54 * 10430.3779296875f);
+            object->joint_modifiers[object->field_0x1089].rotation_limit_start[1] = limit;
+            object->joint_modifiers[object->field_0x1089].rotation_limit_end[1] = -limit;
+            limit = static_cast<i32>(object->apiobj.character_data->game_character->field_0x50 * 10430.3779296875f);
+            object->joint_modifiers[object->field_0x1089].rotation_limit_start[2] = limit;
+            object->joint_modifiers[object->field_0x1089].rotation_limit_end[2] = -limit;
+            if (object->joint_modifiers[object->field_0x1089].rotation.y > 0.0017453293548896909f ||
+                object->joint_modifiers[object->field_0x1089].rotation.y < -0.0017453293548896909f ||
+                object->joint_modifiers[object->field_0x1089].rotation.z > 0.0017453293548896909f ||
+                object->joint_modifiers[object->field_0x1089].rotation.z < -0.0017453293548896909f) {
+                object->joint_modifiers[object->field_0x1089].flags = NUJOINTANIM_ROTATION;
+                if (allowed) {
+                    if (object->joint_modifiers[object->field_0x1089].rotation.y != 0.0f)
+                        object->joint_modifiers[object->field_0x1089].flags =
+                            static_cast<NUJOINTANIM_FLAGS>(NUJOINTANIM_ROTATION | NUJOINTANIM_LIMIT_ROTATION_Y);
+                    if (object->joint_modifiers[object->field_0x1089].rotation.z != 0.0f)
+                        object->joint_modifiers[object->field_0x1089].flags = static_cast<NUJOINTANIM_FLAGS>(
+                            object->joint_modifiers[object->field_0x1089].flags | NUJOINTANIM_LIMIT_ROTATION_Z);
+                }
+            }
+            if (object->head_target != NULL) {
+                object->head_target_timer -= FRAMETIME;
+                if (object->head_target_timer < 0.0f) {
+                    object->head_target_timer = 0.0f;
+                    object->head_target_delay = 0.0f;
+                    object->head_target = NULL;
+                    object->head_target_priority = 0;
+                }
+            }
+            object->field_0x1089 = object->field_0x1089 + 1;
+        }
+    }
 }
 
 void fullcodename(i32) {
@@ -1030,7 +1361,59 @@ void CollectCharcters_Skip(STATUS_STAGE_s *stage, STATUSPACKET_s *packet) {
 void E1CharacterBonus_Init(WORLDINFO_s *) {
 }
 
-void LocalGetRandomLocator(AILOCATOR_s **, i32, float, nuvec_s *, float, i32, float, float) {
+AILOCATOR_s *LocalGetRandomLocator(AILOCATOR_s **locators, i32 count, f32 clip_radius, NUVEC *position,
+                                   f32 max_distance, i32 outside_camera, f32 max_delta_y, f32 min_delta_y) {
+    i32 candidates[64] __attribute__((aligned(16)));
+    if (count > 64) {
+        count = 64;
+    }
+    i32 candidate_count = 0;
+    for (i32 i = 0; i < count; ++i) {
+        if (locators[i] == NULL) {
+            continue;
+        }
+        bool valid = false;
+        if (outside_camera != 0) {
+            if (NuCameraClipTestSphere(&locators[i]->position, 0.0f, &numtx_identity) == 0) {
+                valid = true;
+            }
+        } else {
+            valid = true;
+            if (clip_radius > 0.0f) {
+                if (NuCameraClipTestSphere(&locators[i]->position, clip_radius, &numtx_identity) == 0) {
+                    const i16 room = static_cast<i16>(NuPortalWhichRoom(WORLD->current_gscn, &locators[i]->position));
+                    valid = false;
+                    if (room >= 0 && WORLD->rooms_visible_ptr[room] == 0) {
+                        valid = true;
+                    }
+                }
+            }
+        }
+        if (valid != 0) {
+            if (max_distance == 1000000000.0f) {
+                candidates[candidate_count++] = i;
+            } else {
+                NUVEC delta __attribute__((aligned(16)));
+                const f32 distance = NuVecDistSqr(position, &locators[i]->position, &delta);
+                if (min_delta_y != 1000000000.0f && min_delta_y > delta.y) {
+                    continue;
+                }
+                if (max_delta_y != 1000000000.0f && delta.y > max_delta_y) {
+                    continue;
+                }
+                if (max_distance * max_distance > distance) {
+                    candidates[candidate_count++] = i;
+                }
+            }
+        }
+    }
+    if (candidate_count == 0) {
+        return NULL;
+    }
+    const i32 selected = qrand() / (65535 / candidate_count + 1);
+    AILOCATOR_s *result = locators[candidates[selected]];
+    locators[candidates[selected]] = NULL;
+    return result;
 }
 
 void PostAnimate_ASTROMECH(GameObject_s *) {

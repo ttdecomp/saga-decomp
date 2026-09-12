@@ -629,11 +629,34 @@ void TeleportObjectInterface::TargetedFlash() {
 }
 
 TeleportObjectInterface::TeleportObjectInterface(TELEPORT_s &value, i32 teleport_index)
-    : field_0x4(NULL), teleport(value), index(teleport_index) {
+    : teleport(value), index(teleport_index) {
     value.mech_object_interface = this;
 }
 
 TeleportObjectInterface::~TeleportObjectInterface() {
+    teleport.mech_object_interface = NULL;
+}
+
+// Original 0x447180..0x447fb0: this interface belongs to the shared gizmo
+// interface family; PART_s owns only the lazy allocation/deletion entry points.
+void PartObjectInterface::GetPos(VuVec &position, i32) const {
+    position = VuVec(part.position.x, part.position.y, part.position.z, 1.0f);
+}
+
+f32 PartObjectInterface::GetRadius() const {
+    return part.radius;
+}
+
+const char *PartObjectInterface::GetTargetName() const {
+    return "Part";
+}
+
+PartObjectInterface::PartObjectInterface(PART_s &value) : part(value) {
+    part.mech_object_interface = this;
+}
+
+PartObjectInterface::~PartObjectInterface() {
+    part.mech_object_interface = NULL;
 }
 
 void GizBlowupObjectInterface::GetPos(VuVec &position, i32) const {

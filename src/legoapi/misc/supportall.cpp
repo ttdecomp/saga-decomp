@@ -1,3 +1,6 @@
+#include "nu2api/nu3d/nuprim.h"
+#include "nu2api/nu3d/nuvport.h"
+#include "nu2api/numath/nuvec.h"
 #include "legoapi/core/config/cheat.h"
 #include <string.h>
 #include <stdio.h>
@@ -165,7 +168,65 @@ i32 reset_reimport;
 void CatchUpCode(GameObject_s *, float, float, i32) {
 }
 
-void RndrTexQuad(float, float, float, float, i32, numtl_s *, i32) {
+struct TexQuadVertex {
+    f32 x, y, z;
+    u32 colour;
+    union {
+        f32 uv[2];
+        u16 half_uv[4];
+    };
+};
+static inline void TexQuadSubmit(NUVEC const &point, i32 colour, i32 u, i32 v) {
+    TexQuadVertex *vertex = static_cast<TexQuadVertex *>(g_NuPrim_StreamBufferPtr->void_ptr);
+    if (g_NuPrim_NeedsOverbrightening)
+        vertex->colour = colour;
+    else
+        vertex->colour = ((colour >> 1) & 0x7f7f7f) | (colour & 0xff000000);
+    if (g_NuPrim_NeedsHalfUVs) {
+        vertex->half_uv[0] = u ? 0x3c00 : 0;
+        vertex->half_uv[1] = v ? 0x3c00 : 0;
+    } else {
+        vertex->uv[0] = static_cast<f32>(u);
+        vertex->uv[1] = static_cast<f32>(v);
+    }
+    NuPrim2DAddXYZ(static_cast<f32>(PS2_VREZ_W) * point.x, static_cast<f32>(PS2_VREZ_H) * point.y, 0.0f);
+}
+void RndrTexQuad(f32 x, f32 y, f32 width, f32 height, i32 colour, numtl_s *material, i32 angle) {
+    NUVEC points[4] = {};
+    points[0].x = -0.5f;
+    points[0].y = -0.5f;
+    points[1].x = 0.5f;
+    points[1].y = -0.5f;
+    points[2].x = -0.5f;
+    points[2].y = 0.5f;
+    points[3].x = 0.5f;
+    points[3].y = 0.5f;
+    NuVecRotateZ(&points[0], &points[0], angle);
+    NuVecRotateZ(&points[1], &points[1], angle);
+    NuVecRotateZ(&points[2], &points[2], angle);
+    NuVecRotateZ(&points[3], &points[3], angle);
+    points[0].x *= width;
+    points[0].y *= height;
+    points[1].x *= width;
+    points[1].y *= height;
+    points[2].x *= width;
+    points[2].y *= height;
+    points[3].x *= width;
+    points[3].y *= height;
+    points[0].x += x;
+    points[0].y += y;
+    points[1].x += x;
+    points[1].y += y;
+    points[2].x += x;
+    points[2].y += y;
+    points[3].x += x;
+    points[3].y += y;
+    NuPrim2DBegin(1, 7, material);
+    TexQuadSubmit(points[0], colour, 0, 0);
+    TexQuadSubmit(points[1], colour, 1, 0);
+    TexQuadSubmit(points[2], colour, 0, 1);
+    TexQuadSubmit(points[3], colour, 1, 1);
+    NuPrim2DEnd();
 }
 
 i32 SuperWeirdo(GameObject_s *object) {
@@ -1353,9 +1414,6 @@ void DisplayListCreateDynMtlList(variptr_u *buffer, variptr_u buffer_end) {
     scene->flags |= NUDL_SCENE_FLAG_NEEDS_BUILD;
 }
 
-void CalculateDistanceToNearestEnd(nuvec_s *, SOCKPOSITION_s *, i32, SOCKSYS *) {
-}
-
 extern "C" {
     extern PartHeader **DmaDebTypes;
     extern i32 freeDmaDebType;
@@ -1390,12 +1448,6 @@ void RndrStateBuildReflectionState(nuglobalrndrstate_s *) {
 }
 
 void xxxNuDisplayListUpdateSpecial(nuhspecial_s *) {
-}
-
-void CalculateDistanceToNearestSide(nuvec_s *, SOCKPOSITION_s *, i32, SOCKSYS *) {
-}
-
-void CalculateDistanceToSpecificSideOrEnd(i32, nuvec_s *, SOCKPOSITION_s *, i32, SOCKSYS *) {
 }
 
 void DebrisSingleCollisionCheckScaleYFlag(i32, nuvec_s *, float, float, unsigned char) {

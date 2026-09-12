@@ -2,6 +2,7 @@
 #include "decomp.h"
 #include "legoapi/legoapi_types.h"
 #include "nu2api/nucore/nugcutscene.h"
+#include "nu2api/nu3d/nurndr.h"
 #include "nu2api/numath/nufloat.h"
 #include "nu2api/numusic/numusic.h"
 #include "nu2api/nusound/nusound.h"
@@ -41,7 +42,6 @@ extern "C" {
     void AddScaledFiniteShotDebrisEffect(i32 *, i32, NUVEC *, NUVEC *, NUVEC *, i32, f32);
     void DebrisEmitterOrientationMtx(i32, NUMTX *);
     void DebFreeInstantly(i32 *);
-    void NuRndrAxisArrowsMtx(NUMTX *, f32, i32);
 }
 
 extern "C" {

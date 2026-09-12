@@ -15,14 +15,14 @@ extern "C" void NuRndrShadowOnOff(i32 enabled) {
     (void)enabled;
 }
 
-extern "C" void NuRndrScreenGrabTileInit(void) {
+extern "C" void NuRndrScreenGrabTileInit(void *, i32, f32, f32, f32) {
 }
 
-extern "C" void NuRndrScreenGrabTileDeInit(void) {
+extern "C" void NuRndrScreenGrabTileDeInit(void *) {
 }
 
-extern "C" void NuRndrScreenGrabTileBegin(void) {
+extern "C" void NuRndrScreenGrabTileBegin(void **) {
 }
 
-extern "C" void NuRndrScreenGrabTileEnd(void) {
+extern "C" void NuRndrScreenGrabTileEnd(void **) {
 }

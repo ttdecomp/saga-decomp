@@ -264,8 +264,7 @@ void CharPlatforms_Configure(WORLDINFO_s *world, char *config) {
         if (NuFParGetWord(parser) == 0) {
             break;
         }
-        if (NuStrICmp(parser->word_buf, const_cast<char *>("char_platform")) != 0 ||
-            NuFParGetWord(parser) == 0) {
+        if (NuStrICmp(parser->word_buf, const_cast<char *>("char_platform")) != 0 || NuFParGetWord(parser) == 0) {
             continue;
         }
 

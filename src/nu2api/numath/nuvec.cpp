@@ -181,8 +181,8 @@ void NuVecRotateZ(NUVEC *v, NUVEC *v0, NUANG a) {
     f32 fVar2 = NU_SIN_LUT(a);
     f32 fVar3 = v0->x;
 
-    v->x = fVar3 * fVar1 + v0->y * fVar2;
-    v->y = -fVar3 * fVar2 + v0->y * fVar1;
+    v->x = fVar3 * fVar1 - v0->y * fVar2;
+    v->y = fVar3 * fVar2 + v0->y * fVar1;
     v->z = v0->z;
 }
 

@@ -418,7 +418,8 @@ struct MechInputTouchSystem {
     static f32 DetermineMoveDir2D(GameObject_s &, VuVec const &, bool, VuVec &);
     static void FindTargetForce(WORLDINFO_s *, GameObject_s &, VuVec const &, VuVec const &, float &,
                                 MechObjectInterface *&, bool &, bool);
-    void FindTargetObject(GameObject_s &, VuVec const &, i32, MechObjectInterface *, MechTempPosInterface *);
+    static MechObjectInterface *FindTargetObject(GameObject_s &, VuVec const &, i32, MechObjectInterface *,
+                                                 MechTempPosInterface *);
     void Init();
     MechInputTouchSystem();
     virtual void ProcessEvenWhenPaused(ThingProcessData *);
@@ -640,7 +641,14 @@ struct MechSystems : BaseThing {
     void RenderCurrentPlayerHighlight();
     void UnhookClickToPressStart();
 
-    u32 unknown_0x10[6];
+    union {
+        u32 unknown_0x10[6];
+        struct {
+            u32 reserved_10[3];
+            struct numtl_s *radar_pulse_material;
+            u32 reserved_20[2];
+        };
+    };
     MechInputTouchSystem input_touch_system;
     u8 unknown_0x30[0x84 - 0x30];
     MechInputTouchGestureTrackingSystem gesture_tracking_system;
@@ -1001,7 +1009,10 @@ struct MechTouchUIPlayerButton : MechTouchUIElement {
     void SetupTargetIds();
     void ShowChooser();
     void TriggerTagNext();
-    u8 field_0x3c[0x164 - 0x3c];
+    union {
+        u8 field_0x3c[0x164 - 0x3c];
+        void *panel_state;
+    };
 };
 struct MechTouchUITagButton : MechTouchUIElement {
     void FadeOut();
@@ -1030,6 +1041,7 @@ DECOMP_ASSERT(sizeof(MechInputTouchGestureTracker) == 0x4, "MechInputTouchGestur
 DECOMP_ASSERT(sizeof(MechTouchUIElement) == 0x3c, "MechTouchUIElement size");
 DECOMP_ASSERT(sizeof(MechTouchUI) == 0x84, "MechTouchUI size");
 DECOMP_ASSERT(sizeof(MechTouchUIPlayerButton) == 0x164, "MechTouchUIPlayerButton size");
+DECOMP_ASSERT(offsetof(MechTouchUIPlayerButton, panel_state) == 0x3c, "Player button panel state offset");
 DECOMP_ASSERT(sizeof(MechTouchUICharIcon) == 0x80, "MechTouchUICharIcon size");
 DECOMP_ASSERT(sizeof(MechTouchUIPartySelector) == 0x8c, "MechTouchUIPartySelector size");
 DECOMP_ASSERT(offsetof(MechTouchUIPartySelector, player_button) == 0x84, "party selector player button offset");

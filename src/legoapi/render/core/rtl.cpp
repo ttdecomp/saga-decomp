@@ -186,68 +186,68 @@ extern "C" {
 
 } // extern "C"
 
-static void rtlApplySetScaleLoop(void *set, rtlidata_s *lighting_data, NUVEC *position, NUMTX *rotation,
-                                 i32 identity, f32 scale) {
-        (void)identity;
-        rtldata_s *data = reinterpret_cast<rtldata_s *>(lighting_data);
-        if (set != NULL) {
-            u8 *light = static_cast<u8 *>(set) + 4;
-            for (i32 i = 0; i < 0x80 && light[0x58] != 0; ++i, light += 0x8c) {
-                f32 strength = light[0x58] == 5 ? 2.0f : rtlDistanceStrength(light, position);
-                if (strength != 0.0f && light[0x58] != 7) {
-                    rtlInsertLight(light, data, strength);
-                }
+static void rtlApplySetScaleLoop(void *set, rtlidata_s *lighting_data, NUVEC *position, NUMTX *rotation, i32 identity,
+                                 f32 scale) {
+    (void)identity;
+    rtldata_s *data = reinterpret_cast<rtldata_s *>(lighting_data);
+    if (set != NULL) {
+        u8 *light = static_cast<u8 *>(set) + 4;
+        for (i32 i = 0; i < 0x80 && light[0x58] != 0; ++i, light += 0x8c) {
+            f32 strength = light[0x58] == 5 ? 2.0f : rtlDistanceStrength(light, position);
+            if (strength != 0.0f && light[0x58] != 7) {
+                rtlInsertLight(light, data, strength);
             }
         }
+    }
 
-        for (i32 slot = 0; slot < 3; ++slot) {
-            u8 *light = *reinterpret_cast<u8 **>(data->data + slot * 4);
-            NUVEC *colour = reinterpret_cast<NUVEC *>(data->data + 0x78 + slot * sizeof(NUVEC));
-            NUVEC *direction = reinterpret_cast<NUVEC *>(data->data + 0x9c + slot * sizeof(NUVEC));
-            if (light == NULL) {
-                *colour = {0.0f, 0.0f, 0.0f};
-                *direction = {0.0f, 1.0f, 0.0f};
-                continue;
-            }
-            // rtlCalcLights (original 0x3abcb8) resets the directional
-            // light's selection priority before using it as intensity.
-            if (light[0x58] == 5) {
-                *reinterpret_cast<f32 *>(data->data + 0x0c + slot * 4) = 1.0f;
-            }
-            const f32 strength =
-                *reinterpret_cast<f32 *>(data->data + 0x0c + slot * 4) * *reinterpret_cast<f32 *>(light + 0x6c) * scale;
-            const NUVEC *source_colour = reinterpret_cast<const NUVEC *>(light + 0x18);
-            NuVecScale(colour, const_cast<NUVEC *>(source_colour), strength);
-            if (light[0x58] == 2 || light[0x58] == 3 || light[0x58] == 6 || light[0x58] == 8) {
-                NuVecSub(direction, reinterpret_cast<NUVEC *>(light), position);
-                NuVecNorm(direction, direction);
-            } else if (light[0x58] == 4) {
-                *direction = *reinterpret_cast<NUVEC *>(light + 0x0c);
-            } else {
-                *direction = {0.0f, 0.0f, 1.0f};
-                NuVecRotateX(direction, direction, *reinterpret_cast<i16 *>(light + 0x5a));
-                NuVecRotateY(direction, direction, *reinterpret_cast<i16 *>(light + 0x5c));
-                NuVecMtxRotate(direction, direction, &global_camera.mtx);
-            }
-            if (rotation != NULL) {
-                NuVecMtxRotate(direction, direction, rotation);
-            }
+    for (i32 slot = 0; slot < 3; ++slot) {
+        u8 *light = *reinterpret_cast<u8 **>(data->data + slot * 4);
+        NUVEC *colour = reinterpret_cast<NUVEC *>(data->data + 0x78 + slot * sizeof(NUVEC));
+        NUVEC *direction = reinterpret_cast<NUVEC *>(data->data + 0x9c + slot * sizeof(NUVEC));
+        if (light == NULL) {
+            *colour = {0.0f, 0.0f, 0.0f};
+            *direction = {0.0f, 1.0f, 0.0f};
+            continue;
         }
+        // rtlCalcLights (original 0x3abcb8) resets the directional
+        // light's selection priority before using it as intensity.
+        if (light[0x58] == 5) {
+            *reinterpret_cast<f32 *>(data->data + 0x0c + slot * 4) = 1.0f;
+        }
+        const f32 strength =
+            *reinterpret_cast<f32 *>(data->data + 0x0c + slot * 4) * *reinterpret_cast<f32 *>(light + 0x6c) * scale;
+        const NUVEC *source_colour = reinterpret_cast<const NUVEC *>(light + 0x18);
+        NuVecScale(colour, const_cast<NUVEC *>(source_colour), strength);
+        if (light[0x58] == 2 || light[0x58] == 3 || light[0x58] == 6 || light[0x58] == 8) {
+            NuVecSub(direction, reinterpret_cast<NUVEC *>(light), position);
+            NuVecNorm(direction, direction);
+        } else if (light[0x58] == 4) {
+            *direction = *reinterpret_cast<NUVEC *>(light + 0x0c);
+        } else {
+            *direction = {0.0f, 0.0f, 1.0f};
+            NuVecRotateX(direction, direction, *reinterpret_cast<i16 *>(light + 0x5a));
+            NuVecRotateY(direction, direction, *reinterpret_cast<i16 *>(light + 0x5c));
+            NuVecMtxRotate(direction, direction, &global_camera.mtx);
+        }
+        if (rotation != NULL) {
+            NuVecMtxRotate(direction, direction, rotation);
+        }
+    }
 
-        NUVEC *ambient = reinterpret_cast<NUVEC *>(data->data + 0xc0);
-        *ambient = {0.0f, 0.0f, 0.0f};
-        for (i32 slot = 0; slot < 3; ++slot) {
-            u8 *light = *reinterpret_cast<u8 **>(data->data + 0x18 + slot * 4);
-            if (light == NULL) {
-                continue;
-            }
-            const f32 strength =
-                *reinterpret_cast<f32 *>(data->data + 0x24 + slot * 4) * *reinterpret_cast<f32 *>(light + 0x6c) * scale;
-            const NUVEC *colour = reinterpret_cast<const NUVEC *>(light + 0x18);
-            ambient->x = ClampUnit(ambient->x + colour->x * strength);
-            ambient->y = ClampUnit(ambient->y + colour->y * strength);
-            ambient->z = ClampUnit(ambient->z + colour->z * strength);
+    NUVEC *ambient = reinterpret_cast<NUVEC *>(data->data + 0xc0);
+    *ambient = {0.0f, 0.0f, 0.0f};
+    for (i32 slot = 0; slot < 3; ++slot) {
+        u8 *light = *reinterpret_cast<u8 **>(data->data + 0x18 + slot * 4);
+        if (light == NULL) {
+            continue;
         }
+        const f32 strength =
+            *reinterpret_cast<f32 *>(data->data + 0x24 + slot * 4) * *reinterpret_cast<f32 *>(light + 0x6c) * scale;
+        const NUVEC *colour = reinterpret_cast<const NUVEC *>(light + 0x18);
+        ambient->x = ClampUnit(ambient->x + colour->x * strength);
+        ambient->y = ClampUnit(ambient->y + colour->y * strength);
+        ambient->z = ClampUnit(ambient->z + colour->z * strength);
+    }
 }
 
 extern "C" {

@@ -104,8 +104,15 @@ void Teleports_UpdateAfterGameObjects(WORLDINFO_s *) {
 void Teleports_UpdateBeforeGameObjects(WORLDINFO_s *) {
 }
 
+#include "legoapi/gizmo/base/TeleportObjectInterface.h"
+
 void TELEPORT_s::ClearMechObjectInterface() {
+    delete mech_object_interface;
 }
 
-void TELEPORT_s::GetMechObjectInterface() {
+MechObjectInterface *TELEPORT_s::GetMechObjectInterface() {
+    if (mech_object_interface == NULL) {
+        new TeleportObjectInterface(*this, -1);
+    }
+    return mech_object_interface;
 }

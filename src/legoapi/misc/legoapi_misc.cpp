@@ -45,55 +45,6 @@ void CurrentStart(GameObject_s *, i32, i32) {
 void CDataFromName(char *) {
 }
 
-float CalcValue1648(char *data, i32 quarter, i32 stride, float fraction, ani3_scalemin_s *scale_min) {
-    u16 *next = reinterpret_cast<u16 *>(data + stride);
-    u16 *keys = reinterpret_cast<u16 *>(data);
-
-    switch (quarter) {
-        case 0: {
-            float tangent = static_cast<float>((keys[2] & 0xfff) - (keys[1] & 0xfff)) * fraction +
-                            static_cast<float>(keys[1] & 0xfff);
-            float value = static_cast<float>(static_cast<i32>(*next) - static_cast<i32>(keys[0])) *
-                              (tangent / 4095.0f) +
-                          static_cast<float>(static_cast<i32>(keys[0]));
-            return value * scale_min->scale + scale_min->minimum;
-        }
-        case 1: {
-            float tangent = static_cast<float>((keys[3] & 0xfff) - (keys[2] & 0xfff)) * fraction +
-                            static_cast<float>(keys[2] & 0xfff);
-            float value = static_cast<float>(static_cast<i32>(*next) - static_cast<i32>(keys[0])) *
-                              (tangent / 4095.0f) +
-                          static_cast<float>(static_cast<i32>(keys[0]));
-            return value * scale_min->scale + scale_min->minimum;
-        }
-        case 2: {
-            i32 start = keys[3] & 0xfff;
-            i32 end = ((keys[2] & 0xf000) >> 8) | ((keys[3] & 0xf000) >> 4) | (keys[1] >> 12);
-            float tangent = static_cast<float>(end - start) * fraction +
-                            static_cast<float>(start);
-            float value = static_cast<float>(static_cast<i32>(*next) - static_cast<i32>(keys[0])) *
-                              (tangent / 4095.0f) +
-                          static_cast<float>(static_cast<i32>(keys[0]));
-            return value * scale_min->scale + scale_min->minimum;
-        }
-        case 3: {
-            i32 next_value = *next;
-            i32 tangent = ((keys[2] & 0xf000) >> 8) | ((keys[3] & 0xf000) >> 4) | (keys[1] >> 12);
-            float a = static_cast<float>(next_value - static_cast<i32>(keys[0])) *
-                          static_cast<float>(tangent) / 4095.0f +
-                      static_cast<float>(static_cast<i32>(keys[0]));
-            float b = static_cast<float>(static_cast<i32>(reinterpret_cast<u16 *>(data)[stride]) -
-                                         next_value) *
-                          static_cast<float>(next[1] & 0xfff) / 4095.0f +
-                      static_cast<float>(next_value);
-            float value = (b - a) * fraction + a;
-            return value * scale_min->scale + scale_min->minimum;
-        }
-    }
-
-    return 0.0f;
-}
-
 void NewRumble(nupad_s *, f32, i32);
 void NewRumbleAllPlayers(f32, f32, i32, i32);
 
@@ -166,12 +117,6 @@ void ClearLastSafeTakeOver(GameObject_s *object) {
             candidate->takeover_source = NULL;
         }
     }
-}
-
-void CalcValue1648Get2Values(char *data, i32 quarter, i32 stride, ani3_scalemin_s *scale_min, float *first,
-                             float *second) {
-    *first = CalcValue1648(data, quarter, stride, 0.0f, scale_min);
-    *second = CalcValue1648(data, quarter, stride, 1.0f, scale_min);
 }
 
 void GetNativeTextureFormatName(NUTEXFORMAT) {

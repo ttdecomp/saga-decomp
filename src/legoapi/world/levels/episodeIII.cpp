@@ -1,3 +1,4 @@
+#include <string.h>
 #include "decomp.h"
 #include "legoapi/world/level.h"
 #include "globals.h"
@@ -304,7 +305,24 @@ void VaderA_Init(WORLDINFO_s *) {
 void VaderB_Init(WORLDINFO_s *) {
 }
 
-void VaderC_Init(WORLDINFO_s *) {
+i32 Vader_ObiWanKilledAnakin;
+void *vaderc_netpacket;
+extern "C" i32 FindPlatInst(i32);
+
+void VaderC_Init(WORLDINFO_s *world) {
+    char *names[10] = {"rock1", "rock2", "rock3", "rock4", "rock5", "rock6", "rock7", "rock8", "rock10", "rock11"};
+    memset(&vader_c, 0, sizeof(vader_c));
+    vader_c.final_fight_message = CheckGizAIMessage(gizaimessagesys, "FinalFight", NULL);
+    vader_c.big_jump_locator = AIPathFindLocator(world->ai_sys, "Bigjump_0");
+    for (i32 i = 0; i < 10; ++i) {
+        if (NuSpecialFind(world->current_gscn, &vader_c.rocks[i], names[i], 1))
+            vader_c.platform_ids[i] = FindPlatInst(NuSpecialGetInstanceix(&vader_c.rocks[i]));
+        else
+            vader_c.platform_ids[i] = -1;
+    }
+    Vader_ObiWanKilledAnakin = 0;
+    vaderc_netpacket = SetLevelHack(1);
+    LevGizObst[0] = GizObstacle_FindByName(world->giz_obstacle_sys, "obstacle19");
 }
 
 void VaderA_Reset(WORLDINFO_s *world) {

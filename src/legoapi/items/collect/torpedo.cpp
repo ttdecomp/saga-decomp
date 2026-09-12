@@ -19,8 +19,8 @@ struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
 
-extern "C" void AddVariableShotDebrisEffectTimed1(i32 effect, NUVEC *position, i32 count, f32 time,
-                                                    i16 z_rotation, i16 y_rotation, NUMTX *orientation);
+extern "C" void AddVariableShotDebrisEffectTimed1(i32 effect, NUVEC *position, i32 count, f32 time, i16 z_rotation,
+                                                  i16 y_rotation, NUMTX *orientation);
 void AddPickups(i32, i32, i32, i32, NUVEC *, NUVEC *, f32, i32, f32, f32, GameObject_s *, i32, i32, bool);
 i32 ObjHitObj(GameObject_s *attacker, GameObject_s *target, i32 damage, u16 flags, i32 param, i32 context);
 void NewBuzzFrames(nupad_s *pad, i32 frames, i32 mode);
@@ -38,8 +38,8 @@ void DropTorpedoPickups(TORPEDOPACKET_s *packet, i32 count) {
     if (count < 0)
         return;
     for (i32 index = 1; index <= count; ++index) {
-        AddPickups(0, 0, 1, 0, &packet->pickup_positions[packet->count - index], &v010, 5.0f, -1, 1.0f,
-                   2000000.0f, NULL, 1, 0, true);
+        AddPickups(0, 0, 1, 0, &packet->pickup_positions[packet->count - index], &v010, 5.0f, -1, 1.0f, 2000000.0f,
+                   NULL, 1, 0, true);
     }
     packet->count -= count;
 }

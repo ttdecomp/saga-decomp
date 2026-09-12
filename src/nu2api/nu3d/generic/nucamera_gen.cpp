@@ -450,9 +450,7 @@ void NuCameraBuildClipPlanes(void) {
     dot = global_camera.mtx.m20 * global_camera.mtx.m30 + global_camera.mtx.m21 * global_camera.mtx.m31 +
           global_camera.mtx.m22 * global_camera.mtx.m32;
 
-    ClipPlanes.near_plane.x = global_camera.mtx.m20;
-    ClipPlanes.near_plane.y = global_camera.mtx.m21;
-    ClipPlanes.near_plane.z = global_camera.mtx.m22;
+    memcpy(&ClipPlanes.near_plane, NUMTX_GET_ROW_VEC(&global_camera.mtx, 2), sizeof(NUVEC));
     ClipPlanes.near_plane.w = -dot - global_camera.near_clip;
 
     ClipPlanes.near_far_planes.m00 = -global_camera.mtx.m20;
@@ -514,4 +512,89 @@ void NuCameraBuildClipPlanes(void) {
     ClipPlanes.abs_scissor_planes.m31 = 0.0f;
     ClipPlanes.abs_scissor_planes.m32 = 0.0f;
     ClipPlanes.abs_scissor_planes.m33 = 0.0f;
+}
+
+extern "C" {
+    i32 TreeInitialised;
+    NUMTX CamSpaceFrustrumPlanes;
+    NUMTX CamSpaceScissorPlanes;
+    NUMTX FrustrumPlanes;
+    NUMTX ScissorPlanes;
+    NUVEC4 NearPlane;
+    NUVEC4 AbsNearPlane;
+    NUMTX AbsFrustrumPlanes;
+    NUMTX AbsScissorPlanes;
+}
+
+extern "C" void BuildCamSpaceClipPlanes(void) {
+    f32 near_dist = global_camera.near_clip;
+    f32 near_sq = near_dist * near_dist;
+    TreeInitialised = 1;
+    f32 x = zx * near_dist;
+    f32 y = zy * near_dist;
+    f32 x_inv = 1.0f / NuFsqrt(x * x + near_sq);
+    f32 y_inv = 1.0f / NuFsqrt(y * y + near_sq);
+    NuMtxSetZero(&CamSpaceFrustrumPlanes);
+    CamSpaceFrustrumPlanes.m00 = -near_dist * x_inv;
+    CamSpaceFrustrumPlanes.m01 = -CamSpaceFrustrumPlanes.m00;
+    CamSpaceFrustrumPlanes.m20 = -x * x_inv;
+    CamSpaceFrustrumPlanes.m21 = CamSpaceFrustrumPlanes.m20;
+    CamSpaceFrustrumPlanes.m22 = -y * y_inv;
+    CamSpaceFrustrumPlanes.m23 = CamSpaceFrustrumPlanes.m22;
+    CamSpaceFrustrumPlanes.m12 = near_dist * y_inv;
+    CamSpaceFrustrumPlanes.m13 = -CamSpaceFrustrumPlanes.m12;
+    x = zxs * near_dist;
+    y = zys * near_dist;
+    x_inv = 1.0f / NuFsqrt(x * x + near_sq);
+    y_inv = 1.0f / NuFsqrt(y * y + near_sq);
+    NuMtxSetZero(&CamSpaceScissorPlanes);
+    CamSpaceScissorPlanes.m00 = -near_dist * x_inv;
+    CamSpaceScissorPlanes.m01 = -CamSpaceScissorPlanes.m00;
+    CamSpaceScissorPlanes.m20 = -x * x_inv;
+    CamSpaceScissorPlanes.m21 = CamSpaceScissorPlanes.m20;
+    CamSpaceScissorPlanes.m12 = near_dist * y_inv;
+    CamSpaceScissorPlanes.m22 = -y * y_inv;
+    CamSpaceScissorPlanes.m13 = -CamSpaceScissorPlanes.m12;
+    CamSpaceScissorPlanes.m23 = CamSpaceScissorPlanes.m22;
+}
+
+extern "C" void BuildWorldSpaceClipPlanes(void) {
+    NuMtxMulH(&FrustrumPlanes, &vmtx, &CamSpaceFrustrumPlanes);
+    NuMtxMulH(&ScissorPlanes, &vmtx, &CamSpaceScissorPlanes);
+    f32 dot = global_camera.mtx.m30 * global_camera.mtx.m20 + global_camera.mtx.m31 * global_camera.mtx.m21 +
+              global_camera.mtx.m32 * global_camera.mtx.m22;
+    NearPlane.x = global_camera.mtx.m20;
+    NearPlane.y = global_camera.mtx.m21;
+    NearPlane.z = global_camera.mtx.m22;
+    NearPlane.w = -dot;
+    AbsNearPlane.x = NuFabs(NearPlane.x);
+    AbsNearPlane.y = NuFabs(NearPlane.y);
+    AbsNearPlane.z = NuFabs(NearPlane.z);
+    AbsNearPlane.w = 0;
+    AbsFrustrumPlanes.m00 = NuFabs(FrustrumPlanes.m00);
+    AbsFrustrumPlanes.m01 = NuFabs(FrustrumPlanes.m01);
+    AbsFrustrumPlanes.m02 = NuFabs(FrustrumPlanes.m02);
+    AbsFrustrumPlanes.m03 = NuFabs(FrustrumPlanes.m03);
+    AbsFrustrumPlanes.m10 = NuFabs(FrustrumPlanes.m10);
+    AbsFrustrumPlanes.m11 = NuFabs(FrustrumPlanes.m11);
+    AbsFrustrumPlanes.m12 = NuFabs(FrustrumPlanes.m12);
+    AbsFrustrumPlanes.m13 = NuFabs(FrustrumPlanes.m13);
+    AbsFrustrumPlanes.m20 = NuFabs(FrustrumPlanes.m20);
+    AbsFrustrumPlanes.m21 = NuFabs(FrustrumPlanes.m21);
+    AbsFrustrumPlanes.m22 = NuFabs(FrustrumPlanes.m22);
+    AbsFrustrumPlanes.m23 = NuFabs(FrustrumPlanes.m23);
+    AbsFrustrumPlanes.m30 = AbsFrustrumPlanes.m31 = AbsFrustrumPlanes.m32 = AbsFrustrumPlanes.m33 = 0;
+    AbsScissorPlanes.m00 = NuFabs(ScissorPlanes.m00);
+    AbsScissorPlanes.m01 = NuFabs(ScissorPlanes.m01);
+    AbsScissorPlanes.m02 = NuFabs(ScissorPlanes.m02);
+    AbsScissorPlanes.m03 = NuFabs(ScissorPlanes.m03);
+    AbsScissorPlanes.m10 = NuFabs(ScissorPlanes.m10);
+    AbsScissorPlanes.m11 = NuFabs(ScissorPlanes.m11);
+    AbsScissorPlanes.m12 = NuFabs(ScissorPlanes.m12);
+    AbsScissorPlanes.m13 = NuFabs(ScissorPlanes.m13);
+    AbsScissorPlanes.m20 = NuFabs(ScissorPlanes.m20);
+    AbsScissorPlanes.m21 = NuFabs(ScissorPlanes.m21);
+    AbsScissorPlanes.m22 = NuFabs(ScissorPlanes.m22);
+    AbsScissorPlanes.m23 = NuFabs(ScissorPlanes.m23);
+    AbsScissorPlanes.m30 = AbsScissorPlanes.m31 = AbsScissorPlanes.m32 = AbsScissorPlanes.m33 = 0;
 }

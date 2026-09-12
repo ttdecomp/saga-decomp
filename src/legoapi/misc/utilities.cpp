@@ -120,7 +120,96 @@ i32 SolveQuadratic(f32 a, f32 b, f32 c, f32 *first, f32 *second) {
     return 1;
 }
 
-void XZLinesClosest(nuvec_s *, nuvec_s *, nuvec_s *, nuvec_s *, float *, float *) {
+f32 XZLinesClosest(nuvec_s *a, nuvec_s *b, nuvec_s *c, nuvec_s *d, f32 *first, f32 *second) {
+    NUVEC ac __attribute__((aligned(16)));
+    NUVEC bc __attribute__((aligned(16)));
+    NUVEC ca __attribute__((aligned(16)));
+    NUVEC da __attribute__((aligned(16)));
+    NUVEC direction;
+    NuVecSub(&direction, b, a);
+    i32 angle = NuAtan2D(direction.x, direction.z);
+    NuVecSub(&ca, c, a);
+    NuVecRotateY(&ca, &ca, -angle);
+    NuVecSub(&da, d, a);
+    NuVecRotateY(&da, &da, -angle);
+    NuVecSub(&direction, d, c);
+    angle = NuAtan2D(direction.x, direction.z);
+    NuVecSub(&ac, a, c);
+    NuVecRotateY(&ac, &ac, -angle);
+    NuVecSub(&bc, b, c);
+    NuVecRotateY(&bc, &bc, -angle);
+
+    if (NuFsign(ca.x) != NuFsign(da.x) && NuFsign(ac.x) != NuFsign(bc.x)) {
+        *first = NuFabs(ac.x) / (NuFabs(ac.x) + NuFabs(bc.x));
+        *second = NuFabs(ca.x) / (NuFabs(ca.x) + NuFabs(da.x));
+        return 0.0f;
+    }
+
+    f32 ab_length = NuVecXZDist(b, a, NULL);
+    f32 cd_length = NuVecXZDist(d, c, NULL);
+    f32 closest = 1000000000.0f;
+    f32 distance, fraction;
+    if (ca.z < 0.0f) {
+        distance = NuVecXZDist(a, &ca, NULL);
+        fraction = 0.0f;
+    } else if (ca.z > ab_length) {
+        distance = NuVecXZDist(b, &ca, NULL);
+        fraction = 1.0f;
+    } else {
+        fraction = ca.z / ab_length;
+        distance = NuFabs(ca.x);
+    }
+    if (distance < closest) {
+        *first = fraction;
+        *second = 0.0f;
+        closest = distance;
+    }
+    if (da.z < 0.0f) {
+        distance = NuVecXZDist(a, &da, NULL);
+        fraction = 0.0f;
+    } else if (da.z > ab_length) {
+        distance = NuVecXZDist(b, &da, NULL);
+        fraction = 1.0f;
+    } else {
+        fraction = da.z / ab_length;
+        distance = NuFabs(da.x);
+    }
+    if (distance < closest) {
+        *first = fraction;
+        *second = 1.0f;
+        closest = distance;
+    }
+    if (ac.z < 0.0f) {
+        distance = NuVecXZDist(c, &ac, NULL);
+        fraction = 0.0f;
+    } else if (ac.z > cd_length) {
+        distance = NuVecXZDist(d, &ac, NULL);
+        fraction = 1.0f;
+    } else {
+        fraction = ac.z / cd_length;
+        distance = NuFabs(ac.x);
+    }
+    if (distance < closest) {
+        *second = fraction;
+        *first = 0.0f;
+        closest = distance;
+    }
+    if (bc.z < 0.0f) {
+        distance = NuVecXZDist(c, &bc, NULL);
+        fraction = 0.0f;
+    } else if (bc.z > cd_length) {
+        distance = NuVecXZDist(d, &bc, NULL);
+        fraction = 1.0f;
+    } else {
+        fraction = bc.z / cd_length;
+        distance = NuFabs(bc.x);
+    }
+    if (distance < closest) {
+        *second = fraction;
+        *first = 1.0f;
+        closest = distance;
+    }
+    return closest;
 }
 
 i32 LineIntersectXY(nuvec_s *a, nuvec_s *b, nuvec_s *c, nuvec_s *d, nuvec_s *first, nuvec_s *second) {
@@ -209,7 +298,9 @@ NUVEC TerCrossProduct(NUVEC *a, NUVEC *b) {
     return result;
 }
 
-void DistanceToLineXZ(nuvec_s *, nuvec_s *, nuvec_s *) {
+f32 DistanceToLineXZ(NUVEC *position, NUVEC *first, NUVEC *second) {
+    u16 angle = -NuAtan2D(second->x - first->x, second->z - first->z);
+    return NuFabs((position->x - first->x) * NU_COS_LUT(angle) + (position->z - first->z) * NU_SIN_LUT(angle));
 }
 
 i32 MatrixReflection(numtx_s *, i32, float, float, numtx_s *) {
@@ -331,7 +422,42 @@ void CalcAveragePosAndRad(GIZBUILDIT_s &buildit, VuVec &position, float &radius,
 void LineToPlaneIntersecion(VuVec &, VuVec &, VuVec &, VuVec *) {
 }
 
-void CalculateInterceptVector(nuvec_s *, nuvec_s *, nuvec_s *, float, nuvec_s *, nuvec_s *) {
+void CalculateInterceptVector(NUVEC *origin, NUVEC *target, NUVEC *velocity, f32 speed, NUVEC *direction,
+                              NUVEC *intercept) {
+    NUVEC prediction = *target;
+    {
+        NuVecSub(direction, &prediction, origin);
+        f32 distance = NuVecMag(direction);
+        f32 time = distance;
+        if (distance == 0.0f || speed == 0.0f)
+            time = 0.0f;
+        else
+            time /= speed;
+        NuVecAddScale(&prediction, target, velocity, time);
+    }
+    {
+        NuVecSub(direction, &prediction, origin);
+        f32 distance = NuVecMag(direction);
+        f32 time = distance;
+        if (distance == 0.0f || speed == 0.0f)
+            time = 0.0f;
+        else
+            time /= speed;
+        NuVecAddScale(&prediction, target, velocity, time);
+    }
+    {
+        NuVecSub(direction, &prediction, origin);
+        f32 distance = NuVecMag(direction);
+        f32 time = distance;
+        if (distance == 0.0f || speed == 0.0f)
+            time = 0.0f;
+        else
+            time /= speed;
+        NuVecAddScale(&prediction, target, velocity, time);
+    }
+    NuVecSub(direction, &prediction, origin);
+    if (intercept != NULL)
+        *intercept = prediction;
 }
 
 void LineToSphereIntersection(VuVec &, VuVec &, VuVec &, float, VuVec *, VuVec *) {

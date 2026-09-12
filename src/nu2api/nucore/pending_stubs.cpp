@@ -36,9 +36,6 @@ extern "C" void NuShaderManagerSetShininessFactor(f32 shininess) {
     ShaderManagerTemplate<NuShaderObject>::shininessFactor = shininess;
 }
 
-extern "C" void NuShaderObjectGLSLSetupTextureStates(void) {
-}
-
 extern "C" void NuShaderObjectKeyGenerate2(void) {
 }
 
@@ -50,7 +47,4 @@ extern "C" void NuShaderObjectKeySetUberShaderHash(void) {
 
 extern "C" void *NuShaderObjectLoadFromFile(void) {
     return NULL;
-}
-
-extern "C" void _Z26DisplayListLinkDynamicMtlsv(void) {
 }

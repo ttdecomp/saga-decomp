@@ -165,7 +165,30 @@ void SpeederBlowupHack(GIZMOBLOWUP_s *, i32) {
 void FindPodHoverHeight(GameObject_s *) {
 }
 
-void GetVehicleSpeedMul(GameObject_s *, float) {
+extern i32 ObjInNarrowSock(GameObject_s *, SOCKSYS *, i32);
+i32 IDLESPEEDINNARROWSOCKSONLY = 0;
+f32 GetVehicleSpeedMul(GameObject_s *object, f32 speed) {
+    f32 effective;
+    if (object->character_context == 0x36 || object->character_context == 0x2a || object->character_context == 0x3a)
+        effective = ((GAMECHARACTERDATA_s *)object->apiobj.character_data->field11_0x24)->run_speed;
+    else if ((object->apiobj.flags_low & 0x80) != 0 && WORLD->current_level == DEATHSTARBATTLED_LDATA &&
+             ObjInNarrowSock(object, WORLD->sock_sys, WORLD->level_idx)) {
+        GAMECHARACTERDATA_s *data = (GAMECHARACTERDATA_s *)object->apiobj.character_data->field11_0x24;
+        f32 fraction = (speed - data->field_0x10) / (data->run_speed - data->field_0x10);
+        if (fraction < 0.0f)
+            fraction = 0.0f;
+        effective = (0.5f + fraction * 0.5f) * data->run_speed;
+    } else if ((object->apiobj.flags_low & 0x80) != 0 && (!IDLESPEEDINNARROWSOCKSONLY || object->in_narrow_socket) &&
+               (object->field_0xf03 & 2) == 0) {
+        f32 idle = ((GAMECHARACTERDATA_s *)object->apiobj.character_data->field11_0x24)->field_0x10;
+        effective = idle > speed ? idle : speed;
+    } else {
+        GAMECHARACTERDATA_s *data = (GAMECHARACTERDATA_s *)object->apiobj.character_data->field11_0x24;
+        effective = (speed - data->field_0x10) / (data->run_speed - data->field_0x10) * data->run_speed;
+    }
+    if (effective < 0.0f)
+        effective = 0.0f;
+    return effective / ((GAMECHARACTERDATA_s *)object->apiobj.character_data->field11_0x24)->run_speed;
 }
 
 void ObjIsTargetSpeeder(GameObject_s *) {
@@ -363,4 +386,9 @@ void PodDust(WORLDINFO_s *world, GameObject_s *object) {
             AddVariableShotDebrisEffect(world->debris_sys->entries[25].effect, &position, 1, 0, 0);
         }
     }
+}
+
+extern "C" f32 pod_roll[2];
+f32 getPodRoll(i32 index) {
+    return pod_roll[index];
 }

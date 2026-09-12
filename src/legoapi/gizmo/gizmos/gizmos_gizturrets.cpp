@@ -35,8 +35,8 @@ GameObject_s *GizTurret_GetTgt(GIZTURRET_s *, numtx_s *matrix) {
         }
 
         NUVEC direction;
-        const f32 distance = NuVecDistSqr(&object->apiobj.collision_position,
-                                          reinterpret_cast<NUVEC *>(&matrix->m30), &direction);
+        const f32 distance =
+            NuVecDistSqr(&object->apiobj.collision_position, reinterpret_cast<NUVEC *>(&matrix->m30), &direction);
         if (best_distance > distance) {
             const f32 length = NuFsqrt(distance);
             const f32 scale = length > 0.0f ? 1.0f / length : 0.0f;
@@ -70,8 +70,7 @@ GIZTURRET_s *GizTurret_FindByName(GIZTURRETSYS_s *system, char *name) {
     return NULL;
 }
 
-GIZTURRET_s *GizTurret_FindNearest(GIZTURRETSYS_s *system, nuvec_s *position, GameObject_s *, f32 *distance,
-                                    i32) {
+GIZTURRET_s *GizTurret_FindNearest(GIZTURRETSYS_s *system, nuvec_s *position, GameObject_s *, f32 *distance, i32) {
     if (system == NULL) {
         return NULL;
     }
@@ -143,8 +142,8 @@ GIZTURRET_s *GizTurret_FindByController(GIZTURRETSYS_s *system, GameObject_s &co
 void GizTurrets_OpponentSelection(GIZTURRETSYS_s *, i32, APIOBJECT_s **, i32, APIOBJECT_s **) {
 }
 
-void GizTurret_CalculateInterceptVector(nuvec_s *origin, numtx_s *matrix, nuvec_s *target, nuvec_s *velocity,
-                                        f32 speed, nuvec_s *intercept_out, nuvec_s *velocity_out, u32 fallback) {
+void GizTurret_CalculateInterceptVector(nuvec_s *origin, numtx_s *matrix, nuvec_s *target, nuvec_s *velocity, f32 speed,
+                                        nuvec_s *intercept_out, nuvec_s *velocity_out, u32 fallback) {
     NUVEC forward = {0.0f, 0.0f, -1.0f};
     NuVecMtxRotate(&forward, &forward, matrix);
 

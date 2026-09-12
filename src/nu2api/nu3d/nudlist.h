@@ -97,6 +97,8 @@ typedef struct nudisplaylist_s {
 
 // original 0x2ec550 (_Z20DisplayListPrintItemP19nudisplaylistitem_siiPii --
 // C++ linkage in the original binary); body stubbed in supportall.cpp.
+void DisplayListLinkDynamicMtls(void);
+
 void DisplayListPrintItem(nudisplaylistitem_s *item, i32 index, i32 depth, i32 *, i32 file_handle);
 
 #ifdef __cplusplus
@@ -341,7 +343,6 @@ extern "C" {
     void NuDisplaySceneAddPS(NUDLDLISTSCENE *scene);
     void NuDisplaySceneDestroy(NUDLDLISTSCENE *scene);
     void NuDisplaySceneDestroyPS(NUDLDLISTSCENE *scene);
-    static void DisplayListLinkDynamicMtls(void);
     void DisplayListSwapBuffersPS(void);
     void DisplayListSetAlphaPS(nudisplaylistitem_s *prev_item, nudisplaylistitem_s *item, f32 alpha);
     void DisplayListSetShadowCasterFlagPS(nudisplaylistitem_s *first_item, nudisplaylistitem_s *last_item, i32 enabled);
@@ -362,6 +363,7 @@ extern "C" {
     void RndrStateUpdate(void *state, NUMTL *mtl, nudisplaylistitem_s *item);
     void DisplayListUpdateRenderState(void *dl, void *local_state);
     void NuDisplayListLinkItem(nudisplaylist_s *dl, u8 type, void *call_addr);
+    void NuDisplayListBurstRndrSpecial(nuhspecial_s *handle, u32 count, NUMTX *matrices, i32 clip);
     VARIPTR *NuDisplayListLinkItems(nudisplaylist_s *dl, i32 count);
     void NuDisplayListLinkList(NUDISPLAYLIST *list, NUDISPLAYLISTITEM *first, NUDISPLAYLISTITEM *last);
     void NuDisplayListSetFxParam(i32 handle, i32 parameter, f32 value, i32 mode);
@@ -375,6 +377,7 @@ extern "C" {
     void NuDisplayListCaptureEnd(void);
     void NuDisplayListDraw2D(void);
     void NuDisplayListDrawAll(void);
+    NUDLDLISTSCENE *NuDisplaySceneClone(NUDLDLISTSCENE *source, VARIPTR *buffer);
     void NuDisplaySceneClonePS(NUDLDLISTSCENE *source, NUDLDLISTSCENE *destination, VARIPTR *buffer);
     void DisplayListCreateFxList(VARIPTR *buffer, VARIPTR end, i32 count);
     VARIPTR *NuDisplayListLinkItemVP(nudisplaylist_s *dl, u8 type, void *call_addr, VARIPTR *buf);

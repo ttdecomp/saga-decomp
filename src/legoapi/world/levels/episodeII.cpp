@@ -35,6 +35,16 @@
 #include "legoapi/world/world.h"
 #include "legogame/game.h"
 #include "nu2api/numath/nutrig.h"
+#include "legoapi/gizmo/base/gizmo.h"
+#include "gameapi/edtools/edstubs.h"
+
+struct instNUGCUTSCENE_s;
+extern "C" i32 instNuGCutSceneIsFinished(instNUGCUTSCENE_s *);
+GIZMO *GizmoFindByData(GIZMOSYS *, i32, void *);
+extern i32 addbolt_nosfx;
+extern nuhspecial_s disco_on_spin[3], walllights_disco[2], walllights[2], striplights[2], discolights[2],
+    discorm_wall_off, discorm_wall_on;
+extern GIZMO *disco_off_spina[3], *gizTurrets[2];
 
 // This level's view of the shared 16-byte LevFlag scratch. byte0 holds the
 // bonus-gunship milestone state; byte1 a secondary state.
@@ -58,14 +68,9 @@ extern struct GUNSHIP_LEVFLAG_s LevFlag;
 // live in a shared header.
 
 extern "C" {
-    void *AIPAthFindPathCnx(AISYS_s *, i32, void *, void *, void *); // legoapi/ai pathfinding
+    void *AIPAthFindPathCnx(AISYS_s *, AIPATH *, void *, void *, void *); // legoapi/ai pathfinding
 }
 
-// Defined in legoapi/characters/motion/camera.cpp and legoapi/ai/game/creature.cpp;
-// neither has a header yet.
-i32 OnOrInsidePlane(nuvec_s *point, nuvec_s *plane_point, nuvec_s *plane_normal, nuvec_s *corrected_point,
-                    f32 normal_offset, f32 *distance_out);
-void RemoveGameObject(GameObject_s *object, i32 immediate);
 void ClearAICreatures();
 // Defined in gameapi/edtools/edtoolsall.cpp, which has no header yet.
 nugspline_s *edSpline_SplineFind(nugscn_s *scene, char *name);
@@ -101,18 +106,44 @@ extern "C" {
 // --- File-local statics (original _ZL... symbols; not renamed) ---------------
 
 // Kamino disco-room state (original _ZL11kaminodisco).
-struct KaminoDiscoState {
-    u8 pad_0x000[0x3d4];
-    u8 initialized;
-    u8 mode;
-    i8 first_character;
-    i8 second_character;
-    i32 counter;
-    u8 pending;
-    u8 pad_0x3dd[0xb];
+struct KAMINODISCO_s {
+    AIAREA *area;
+    nuhspecial_s off[16];
+    nuhspecial_s pending[16];
+    nuhspecial_s occupied[16];
+    nuhspecial_s complete[16];
+    nuhspecial_s final[16];
+    u8 tile_state[16];
+    i8 tile_count;
+    union {
+        u8 phase;
+        u8 mode;
+    };
+    i8 first_tile;
+    i8 second_tile;
+    f32 timer;
+    u8 completion_sound;
+    u8 reserved_3dd[3];
+    GIZAIMESSAGE_s *next_tile_message;
+    GIZAIMESSAGE_s *complete_message;
 };
-DECOMP_ASSERT(sizeof(KaminoDiscoState) == 0x3e8, "KaminoDiscoState size");
-static KaminoDiscoState kaminodisco;
+DECOMP_ASSERT(sizeof(KAMINODISCO_s) == 1000, "Kamino disco original layout");
+static KAMINODISCO_s kaminodisco;
+struct KAMINOC_PACKET_s {
+    i16 off_mask;
+    i16 pending_mask;
+    i16 occupied_mask;
+    i16 complete_mask;
+    i16 final_mask;
+    i16 sound_mask;
+    u8 complete;
+    u8 reserved;
+};
+KAMINOC_PACKET_s *kaminoc_netpacket;
+
+nuhspecial_s disco_on_spin[3];
+GIZMO *disco_off_spina[3];
+
 static GIZAIMESSAGE_s *dooku_c; // _ZL7dooku_c
 struct dooku_state_s {
     i32 hit_message;
@@ -120,13 +151,33 @@ struct dooku_state_s {
 };
 static dooku_state_s dooku_state;
 
-// kamino_e level state block and hud scene object.
-struct kamino_e_state_s {
-    char pad_0x00[0x28];
-    f32 field_0x28; // 0x28
+struct KAMINO_E_s {
+    GIZAIMESSAGE_s *jango_fight;
+    GIZAIMESSAGE_s *can_fire;
+    GIZAIMESSAGE_s *reset_turrets;
+    GIZAIMESSAGE_s *show_hearts;
+    GIZAIMESSAGE_s *minicut_started;
+    CUTINFO *intro_cutscene;
+    AIAREA *landing_area;
+    nuhspecial_s slave1;
+    GIZTURRET_s *turrets[4];
+    GIZTURRET_s *active_turret;
+    GIZPANEL_s *panels[4];
+    NUVEC position;
+    i32 pitch;
+    i32 yaw;
+    i32 roll;
+    i32 orbit_pitch;
+    i32 orbit_yaw;
+    f32 departure_timer;
+    f32 elapsed_time;
+    i8 fire_index;
+    u8 departing;
+    i16 platform;
 };
-static struct kamino_e_state_s *kamino_e_state;
-static void *kamino_e_special;    // kamino_e named scene object
+DECOMP_ASSERT(sizeof(KAMINO_E_s) == 120, "Kamino E state ABI");
+static KAMINO_E_s kamino_e;
+
 static void *pursuit_state[0x20]; // bounty-hunter pursuit state
 static i16 gunship_bolts[2];      // gun-ship bolt type ids
 static u8 gunship_flags[0xa];     // gun-ship weapon-select flags
@@ -165,6 +216,12 @@ struct PURSUIT_ARROW_COLOURS_s {
 ZAMARROW_s zamarrow;
 i32 pursuit_c_hack = 1;
 f32 traffic_test_z = -360.0f;
+
+extern i16 id_PADMECLAWED, id_BATTLEDROIDSECURITY, id_SUPERBATTLEDROID, id_JARJAR, id_LUMINARA, id_SHAAKTI,
+    id_BATTLEDROIDGEONOSIAN;
+void RemoveGameObject(GameObject_s *, i32);
+i32 OnOrInsidePlane(NUVEC *, NUVEC *, NUVEC *, NUVEC *, f32, f32 *);
+void CompleteLevel(WORLDINFO_s *);
 
 // Episode 2 level handlers, in the game's Episode_II progression:
 // pursuit (coruscant bounty-hunter) / kamino / factory (geonosis droid
@@ -409,14 +466,345 @@ void KaminoA_AlwaysUpdate(WORLDINFO_s *) {
     object_switches[1] = v;
 }
 
-void KaminoC_Init(WORLDINFO_s *) {
+#include "legoapi/gizmos/traps/gizturrets.h"
+#include "legoapi/gizmos/trigger/gizaimessage.h"
+GIZTURRET_s *GizTurret_FindByName(GIZTURRETSYS_s *, char *);
+extern i32 obstacle_gizmotype_id;
+nuhspecial_s walllights[2], walllights_disco[2], striplights[2], discolights[2];
+nuhspecial_s discorm_wall_on, discorm_wall_off;
+GIZMO *gizTurrets[2];
+i32 last;
+
+void KaminoC_Init(WORLDINFO_s *world) {
+    char name[32];
     memset(&kaminodisco, 0, sizeof(kaminodisco));
+    kaminoc_netpacket = static_cast<KAMINOC_PACKET_s *>(SetLevelHack(sizeof(KAMINOC_PACKET_s)));
+    kaminodisco.tile_count = 0;
+    do {
+        if (kaminodisco.tile_count < 9)
+            sprintf(name, "dot_off_0%d", kaminodisco.tile_count + 1);
+        else
+            sprintf(name, "dot_off_%d", kaminodisco.tile_count + 1);
+        NuSpecialFind(WORLD->current_gscn, &kaminodisco.off[kaminodisco.tile_count], name, 1);
+        if (kaminodisco.tile_count < 9)
+            sprintf(name, "dot_flash_0%d", kaminodisco.tile_count + 1);
+        else
+            sprintf(name, "dot_flash_%d", kaminodisco.tile_count + 1);
+        NuSpecialFind(WORLD->current_gscn, &kaminodisco.pending[kaminodisco.tile_count], name, 1);
+        if (kaminodisco.tile_count < 9)
+            sprintf(name, "dot_select_0%d", kaminodisco.tile_count + 1);
+        else
+            sprintf(name, "dot_select_%d", kaminodisco.tile_count + 1);
+        NuSpecialFind(WORLD->current_gscn, &kaminodisco.occupied[kaminodisco.tile_count], name, 1);
+        if (kaminodisco.tile_count < 9)
+            sprintf(name, "dot_finish_0%d", kaminodisco.tile_count + 1);
+        else
+            sprintf(name, "dot_finish_%d", kaminodisco.tile_count + 1);
+        NuSpecialFind(WORLD->current_gscn, &kaminodisco.complete[kaminodisco.tile_count], name, 1);
+        if (kaminodisco.tile_count < 9)
+            sprintf(name, "dot_on_0%d", kaminodisco.tile_count + 1);
+        else
+            sprintf(name, "dot_on_%d", kaminodisco.tile_count + 1);
+        NuSpecialFind(WORLD->current_gscn, &kaminodisco.final[kaminodisco.tile_count], name, 1);
+        if (!NuSpecialExistsFn(&kaminodisco.off[kaminodisco.tile_count]) ||
+            !NuSpecialExistsFn(&kaminodisco.pending[kaminodisco.tile_count]) ||
+            !NuSpecialExistsFn(&kaminodisco.occupied[kaminodisco.tile_count]) ||
+            !NuSpecialExistsFn(&kaminodisco.complete[kaminodisco.tile_count]))
+            break;
+        ++kaminodisco.tile_count;
+    } while (kaminodisco.tile_count < 16);
+    kaminodisco.area = AISysFindArea(WORLD->ai_sys, "DISCO");
+    NuSpecialFind(WORLD->current_gscn, &walllights[0], "walllights1", 1);
+    NuSpecialFind(WORLD->current_gscn, &walllights[1], "walllights2", 1);
+    NuSpecialFind(WORLD->current_gscn, &walllights_disco[0], "walllights1_disco", 1);
+    NuSpecialFind(WORLD->current_gscn, &walllights_disco[1], "walllights2_disco", 1);
+    NuSpecialFind(WORLD->current_gscn, &striplights[0], "striplights1", 1);
+    NuSpecialFind(WORLD->current_gscn, &striplights[1], "striplights1b", 1);
+    NuSpecialFind(WORLD->current_gscn, &discolights[0], "discolight1", 1);
+    NuSpecialFind(WORLD->current_gscn, &discolights[1], "discolight2", 1);
+    NuSpecialFind(WORLD->current_gscn, &discorm_wall_on, "discorm_wall_on", 1);
+    NuSpecialFind(WORLD->current_gscn, &discorm_wall_off, "discorm_wall_off", 1);
+    sprintf(name, "disco_on_spin%d", 3);
+    NuSpecialFind(WORLD->current_gscn, &disco_on_spin[0], name, 1);
+    if (!netclient) {
+        sprintf(name, "disco_off%d", 1);
+        disco_off_spina[0] = GizmoFindByName(world->gizmo_sys, force_gizmotype_id, name);
+    }
+    sprintf(name, "disco_on_spin%d", 4);
+    NuSpecialFind(WORLD->current_gscn, &disco_on_spin[1], name, 1);
+    if (!netclient) {
+        sprintf(name, "disco_off%d", 2);
+        disco_off_spina[1] = GizmoFindByName(world->gizmo_sys, force_gizmotype_id, name);
+    }
+    sprintf(name, "disco_on_spin%d", 5);
+    NuSpecialFind(WORLD->current_gscn, &disco_on_spin[2], name, 1);
+    if (!netclient) {
+        sprintf(name, "disco_off%d", 3);
+        disco_off_spina[2] = GizmoFindByName(world->gizmo_sys, force_gizmotype_id, name);
+    }
+    if (!netclient) {
+        gizTurrets[0] = GizmoFindByName(world->gizmo_sys, turret_gizmotype_id, "turret01");
+        gizTurrets[1] = GizmoFindByName(world->gizmo_sys, turret_gizmotype_id, "turret02");
+        GIZTURRET_s *turret = GizTurret_FindByName(world->giz_turret_sys, "turret01");
+        if (turret)
+            turret->field_0x140 = 0.6f;
+        turret = GizTurret_FindByName(world->giz_turret_sys, "turret02");
+        if (turret)
+            turret->field_0x140 = 0.6f;
+        LevGizmo[0] = GizmoFindByName(world->gizmo_sys, gizaimessage_gizmotype_id, "msg_KaminoCProgress");
+        LevGizmo[1] = GizmoFindByName(world->gizmo_sys, obstacle_gizmotype_id, "JANGOFIELD01");
+    }
+    last = 0;
 }
 
-void KaminoC_Reset(WORLDINFO_s *) {
+void KaminoC_Reset(WORLDINFO_s *world) {
+    memset(kaminodisco.tile_state, 0, sizeof(kaminodisco.tile_state));
+    kaminodisco.phase = 0;
+    kaminodisco.first_tile = -1;
+    kaminodisco.second_tile = -1;
+    kaminodisco.timer = 0.0f;
+    kaminodisco.completion_sound = 0;
+    kaminoc_netpacket->pending_mask = 0;
+    kaminoc_netpacket->complete_mask = 0;
+    kaminoc_netpacket->occupied_mask = 0;
+    kaminoc_netpacket->final_mask = 0;
+    kaminoc_netpacket->off_mask = -1;
+    kaminoc_netpacket->complete = 0;
+    for (i32 i = 0; i < kaminodisco.tile_count; ++i) {
+        NuSpecialSetVisibility(&kaminodisco.off[i], 1);
+        NuSpecialSetVisibility(&kaminodisco.pending[i], 0);
+        NuSpecialSetVisibility(&kaminodisco.complete[i], 0);
+    }
+    kaminodisco.next_tile_message = SetGizAIMessage(gizaimessagesys, "NextDiscoTile", 0.0f, NULL);
+    kaminodisco.complete_message = SetGizAIMessage(gizaimessagesys, "DiscoComplete", 0.0f, NULL);
+    for (i32 i = 0; i < 3; ++i) {
+        NuSpecialSetVisibility(&disco_on_spin[i], 0);
+        if (netclient == 0) {
+            GizmoSetVisibility(world->gizmo_sys, disco_off_spina[i], 1, 0);
+            if (static_cast<GIZFORCE_s *>(disco_off_spina[i]->object)->anim_set->state == 0)
+                GizmoActivate(world->gizmo_sys, disco_off_spina[i], 1, 0);
+        }
+    }
 }
 
-void KaminoC_Update(WORLDINFO_s *) {
+static inline bool KaminoDiscoPlayerInArea(WORLDINFO_s *world) {
+    APIOBJECT *first = world->ai_sys->player_1;
+    if (first == NULL && world->ai_sys->player_2 == NULL)
+        return false;
+    if (kaminodisco.area == NULL)
+        return false;
+    i32 index = static_cast<i32>(kaminodisco.area - world->ai_sys->areas);
+    u64 mask = static_cast<u64>(static_cast<i64>(static_cast<i32>(1u << (index & 31))));
+    return (first->ai_area_mask & mask) != 0;
+}
+static inline i32 KaminoDiscoChooseTile(i32 excluded, u8 state) {
+    i32 candidates[16], count = 0;
+    for (i32 i = 0; i < kaminodisco.tile_count; ++i)
+        if (i != excluded && kaminodisco.tile_state[i] == state)
+            candidates[count++] = i;
+    return count ? candidates[NuRand(NULL) % count] : -1;
+}
+static inline bool KaminoDiscoOccupied(GameObject_s *object, NUVEC *position) {
+    if (object == NULL || (object->apiobj.object_flags & 0x1001) != 0x1001 || !object->apiobj.field_0x27d)
+        return false;
+    f32 x = position->x - object->apiobj.position.x;
+    f32 y = position->y - object->apiobj.position.y;
+    f32 z = position->z - object->apiobj.position.z;
+    return (x * x + y * y) + z * z < 0.04000000283122063f;
+}
+struct KaminoProgressGizmo_s {
+    u8 reserved_00[0x98];
+    u8 flags;
+};
+void KaminoC_Update(WORLDINFO_s *world) {
+    KaminoProgressGizmo_s *progress = static_cast<KaminoProgressGizmo_s *>(LevGizmo[0]->object);
+    if (GizmoGetOutput(world->gizmo_sys, LevGizmo[0], 0, 0)) {
+        GizmoSetVisibility(world->gizmo_sys, LevGizmo[1], 0, 1);
+    } else if (!(progress->flags & 1)) {
+        GizmoActivate(world->gizmo_sys, LevGizmo[1], 1, 1);
+        if (GizmoGetOutput(world->gizmo_sys, gizTurrets[0], 0, 0) &&
+            GizmoGetOutput(world->gizmo_sys, gizTurrets[1], 0, 0))
+            GizmoSetVisibility(world->gizmo_sys, LevGizmo[1], 0, 1);
+    }
+    kaminoc_netpacket->sound_mask = 0;
+    SetGizAIMessage(gizaimessagesys, "NextDiscoTile", 0.0f, kaminodisco.next_tile_message);
+    SetGizAIMessage(gizaimessagesys, "DiscoComplete", 0.0f, kaminodisco.complete_message);
+    switch (kaminodisco.phase) {
+        case 0:
+            if (KaminoDiscoPlayerInArea(world)) {
+                kaminoc_netpacket->complete = 0;
+                kaminodisco.phase = 1;
+                kaminodisco.timer = 0.0f;
+                kaminodisco.first_tile = KaminoDiscoChooseTile(-1, 0);
+                kaminodisco.second_tile = KaminoDiscoChooseTile(kaminodisco.first_tile, 0);
+                if (kaminodisco.first_tile != -1 && kaminodisco.second_tile != -1) {
+                    kaminodisco.tile_state[kaminodisco.first_tile] = 1;
+                    kaminodisco.tile_state[kaminodisco.second_tile] = 1;
+                }
+            }
+            break;
+        case 1: {
+            i32 occupied_by_player = -1;
+            bool first_occupied = false;
+            bool second_occupied = false;
+            u8 old_state = kaminodisco.tile_state[kaminodisco.first_tile];
+            kaminodisco.tile_state[kaminodisco.first_tile] = 1;
+            NUVEC *position = NuSpecialGetPos(&kaminodisco.pending[kaminodisco.first_tile]);
+            for (i32 i = 0; i < 8; ++i) {
+                GameObject_s *object = Player[i];
+                if (KaminoDiscoOccupied(object, position)) {
+                    first_occupied = true;
+                    if (object == player)
+                        occupied_by_player = kaminodisco.first_tile;
+                    kaminodisco.tile_state[kaminodisco.first_tile] = 2;
+                    break;
+                }
+            }
+            if (old_state != kaminodisco.tile_state[kaminodisco.first_tile] &&
+                kaminodisco.tile_state[kaminodisco.first_tile] == 2)
+                kaminoc_netpacket->sound_mask |= 1u << (kaminodisco.first_tile & 31);
+            old_state = kaminodisco.tile_state[kaminodisco.second_tile];
+            kaminodisco.tile_state[kaminodisco.second_tile] = 1;
+            position = NuSpecialGetPos(&kaminodisco.pending[kaminodisco.second_tile]);
+            for (i32 i = 0; i < 8; ++i) {
+                GameObject_s *object = Player[i];
+                if (KaminoDiscoOccupied(object, position)) {
+                    second_occupied = true;
+                    if (object == player)
+                        occupied_by_player = kaminodisco.second_tile;
+                    kaminodisco.tile_state[kaminodisco.second_tile] = 2;
+                    break;
+                }
+            }
+            if (old_state != kaminodisco.tile_state[kaminodisco.second_tile] &&
+                kaminodisco.tile_state[kaminodisco.second_tile] == 2)
+                kaminoc_netpacket->sound_mask |= 1u << (kaminodisco.second_tile & 31);
+            if (first_occupied && second_occupied) {
+                kaminodisco.timer = 0.0f;
+                kaminodisco.tile_state[kaminodisco.first_tile] = 3;
+                kaminodisco.tile_state[kaminodisco.second_tile] = 3;
+                kaminodisco.first_tile = KaminoDiscoChooseTile(-1, 0);
+                kaminodisco.second_tile = KaminoDiscoChooseTile(kaminodisco.first_tile, 0);
+                if (kaminodisco.first_tile != -1 && kaminodisco.second_tile != -1) {
+                    kaminodisco.tile_state[kaminodisco.first_tile] = 1;
+                    kaminodisco.tile_state[kaminodisco.second_tile] = 1;
+                } else {
+                    kaminodisco.phase = 2;
+                    for (i32 i = 0; i < kaminodisco.tile_count; ++i)
+                        kaminodisco.tile_state[i] = 0;
+                }
+                break;
+            }
+            kaminodisco.timer += FRAMETIME;
+            if (kaminodisco.timer > 2.5f) {
+                kaminodisco.timer = 0.0f;
+                for (i32 i = 0; i < 2; ++i) {
+                    i32 tile = KaminoDiscoChooseTile(-1, 3);
+                    if (tile != -1)
+                        kaminodisco.tile_state[tile] = 0;
+                }
+            }
+            if (player2 == NULL) {
+                GameObject_s *companion = Player[0];
+                if (companion == player)
+                    companion = Player[1];
+                if (companion != NULL) {
+                    if (occupied_by_player == kaminodisco.first_tile)
+                        SetGizAIMessage(gizaimessagesys, "NextDiscoTile", static_cast<f32>(kaminodisco.second_tile + 1),
+                                        kaminodisco.next_tile_message);
+                    else if (occupied_by_player == kaminodisco.second_tile)
+                        SetGizAIMessage(gizaimessagesys, "NextDiscoTile", static_cast<f32>(kaminodisco.first_tile + 1),
+                                        kaminodisco.next_tile_message);
+                }
+            }
+            break;
+        }
+        case 2:
+            SetGizAIMessage(gizaimessagesys, "DiscoComplete", 1.0f, kaminodisco.complete_message);
+            kaminoc_netpacket->complete = 1;
+            if (!KaminoDiscoPlayerInArea(world)) {
+                KaminoC_Reset(world);
+                return;
+            }
+            for (i32 i = 0; i < kaminodisco.tile_count; ++i)
+                kaminodisco.tile_state[i] = 4;
+            kaminodisco.timer += FRAMETIME;
+            if (kaminodisco.timer > 20.0f) {
+                KaminoC_Reset(world);
+                return;
+            }
+            break;
+    }
+    kaminoc_netpacket->final_mask = 0;
+    kaminoc_netpacket->off_mask = 0;
+    kaminoc_netpacket->pending_mask = 0;
+    kaminoc_netpacket->occupied_mask = 0;
+    kaminoc_netpacket->complete_mask = 0;
+    for (i32 i = 0; i < kaminodisco.tile_count; ++i) {
+        switch (kaminodisco.tile_state[i]) {
+            case 0:
+                kaminoc_netpacket->off_mask |= 1u << (i & 31);
+                break;
+            case 1:
+                kaminoc_netpacket->pending_mask |= 1u << (i & 31);
+                break;
+            case 2:
+                kaminoc_netpacket->occupied_mask |= 1u << (i & 31);
+                break;
+            case 3:
+                kaminoc_netpacket->final_mask |= 1u << (i & 31);
+                break;
+            case 4:
+                kaminoc_netpacket->complete_mask |= 1u << (i & 31);
+                break;
+        }
+    }
+    for (i32 i = 0; i < kaminodisco.tile_count; ++i) {
+        u32 bit = 1u << (i & 31);
+        NuSpecialSetVisibility(&kaminodisco.off[i], kaminoc_netpacket->off_mask & bit);
+        NuSpecialSetVisibility(&kaminodisco.pending[i], kaminoc_netpacket->pending_mask & bit);
+        NuSpecialSetVisibility(&kaminodisco.occupied[i], kaminoc_netpacket->occupied_mask & bit);
+        NuSpecialSetVisibility(&kaminodisco.final[i], kaminoc_netpacket->final_mask & bit);
+        NuSpecialSetVisibility(&kaminodisco.complete[i], kaminoc_netpacket->complete_mask & bit);
+        if (kaminoc_netpacket->sound_mask & bit)
+            PlaySfx("Kam_DiscoFloorPanelOn",
+                    reinterpret_cast<NUVEC *>(&NuSpecialGetDrawMtx(&kaminodisco.complete[i])->m30));
+    }
+    if (kaminoc_netpacket->complete) {
+        for (i32 i = 0; i < 3; ++i) {
+            NuSpecialSetVisibility(&disco_on_spin[i], 1);
+            GizmoSetVisibility(world->gizmo_sys, disco_off_spina[i], 0, 0);
+        }
+        NuSpecialSetVisibility(&walllights_disco[0], 1);
+        NuSpecialSetVisibility(&walllights_disco[1], 1);
+        NuSpecialSetVisibility(&walllights[0], 0);
+        NuSpecialSetVisibility(&walllights[1], 0);
+        NuSpecialSetVisibility(&striplights[0], 0);
+        NuSpecialSetVisibility(&striplights[1], 1);
+        NuSpecialSetVisibility(&discolights[0], 1);
+        NuSpecialSetVisibility(&discolights[1], 1);
+        NuSpecialSetVisibility(&discorm_wall_off, 0);
+        NuSpecialSetVisibility(&discorm_wall_on, 1);
+        if (!kaminodisco.completion_sound) {
+            PlaySfx("Kam_DiscoFloorPanelDone", NuSpecialGetDrawPos(&kaminodisco.off[3]));
+            kaminodisco.completion_sound = 1;
+        }
+    } else {
+        for (i32 i = 0; i < 3; ++i) {
+            NuSpecialSetVisibility(&disco_on_spin[i], 0);
+            GizmoSetVisibility(world->gizmo_sys, disco_off_spina[i], 1, 0);
+        }
+        NuSpecialSetVisibility(&walllights_disco[0], 0);
+        NuSpecialSetVisibility(&walllights_disco[1], 0);
+        NuSpecialSetVisibility(&walllights[0], 1);
+        NuSpecialSetVisibility(&walllights[1], 1);
+        NuSpecialSetVisibility(&striplights[0], 1);
+        NuSpecialSetVisibility(&striplights[1], 0);
+        NuSpecialSetVisibility(&discolights[0], 0);
+        NuSpecialSetVisibility(&discolights[1], 0);
+        NuSpecialSetVisibility(&discorm_wall_on, 0);
+        NuSpecialSetVisibility(&discorm_wall_off, 1);
+    }
 }
 
 void KaminoD_Init(WORLDINFO_s *world) {
@@ -437,17 +825,280 @@ void KaminoD_Init(WORLDINFO_s *world) {
     }
 }
 
+#include "legoapi/gizmos/object/gizpanel.h"
+extern "C" i32 FindPlatInst(i32);
+
 void KaminoE_Init(WORLDINFO_s *world) {
     kaminoe_netpacket = SetLevelHack(0x14);
-    GIZMO_s *g = GizmoFindByName(world->gizmo_sys, force_gizmotype_id, "Force");
+    GIZMO_s *g = GizmoFindByName(world->gizmo_sys, force_gizmotype_id, "endblock_b08");
     if (g != NULL)
         LevForce = *(i32 *)g;
 }
 
-void KaminoE_Reset(WORLDINFO_s *) {
+void KaminoE_Reset(WORLDINFO_s *world) {
+    char name[16];
+    memset(&kamino_e, 0, sizeof(kamino_e));
+    kamino_e.landing_area = AISysFindArea(WORLD->ai_sys, "landing_pad");
+    if (NuSpecialFind(world->current_gscn, &kamino_e.slave1, "slave1", 1))
+        kamino_e.platform = FindPlatInst(NuSpecialGetInstanceix(&kamino_e.slave1));
+    for (i32 i = 0; i < 4; ++i) {
+        sprintf(name, "turret%d", i + 1);
+        GIZMO *gizmo = GizmoFindByName(world->gizmo_sys, turret_gizmotype_id, name);
+        if (gizmo) {
+            kamino_e.turrets[i] = static_cast<GIZTURRET_s *>(gizmo->object);
+            kamino_e.turrets[i]->field_0xe4 = &kamino_e.position;
+            kamino_e.turrets[i]->field_0x12c = 2;
+            kamino_e.turrets[i]->flags |= 1;
+        }
+        sprintf(name, "R4_t%d", i + 1);
+        gizmo = GizmoFindByName(world->gizmo_sys, gizpanel_gizmotype_id, name);
+        if (gizmo)
+            kamino_e.panels[i] = static_cast<GIZPANEL_s *>(gizmo->object);
+    }
+    kamino_e.jango_fight = SetGizAIMessage(gizaimessagesys, "JangoFight", 0.0f, NULL);
+    kamino_e.can_fire = SetGizAIMessage(gizaimessagesys, "Slave1CanFire", 0.0f, NULL);
+    kamino_e.reset_turrets = SetGizAIMessage(gizaimessagesys, "ResetTurrets", 0.0f, NULL);
+    kamino_e.show_hearts = CheckGizAIMessage(gizaimessagesys, "ShowHearts", NULL);
+    kamino_e.minicut_started = CheckGizAIMessage(gizaimessagesys, "MiniCutStarted", NULL);
+    CutScene_Find(world->cutscene_sys, "Ep2_Kamino_Intro2");
+    kamino_e.intro_cutscene = CutScene_Find(world->cutscene_sys, "Ep2_Kamino_Intro2");
 }
 
-void KaminoE_Update(WORLDINFO_s *) {
+static NUVEC kamino_e_centre = {56.5f, -2.890000104904175f, 8.0f};
+static NUVEC kamino_e_gunoffset[2] = {{0.2f, -1.1f, 0.9f}, {-0.2f, -1.1f, 0.9f}};
+void KaminoE_Update(WORLDINFO_s *world) {
+    if (kamino_e.reset_turrets != NULL && kamino_e.reset_turrets->value == 1.0f) {
+        kamino_e.active_turret = NULL;
+        for (i32 i = 0; i < 4; ++i) {
+            GIZMO *gizmo = GizmoFindByData(WORLD->gizmo_sys, gizpanel_gizmotype_id, kamino_e.panels[i]);
+            GizmoActivate(WORLD->gizmo_sys, gizmo, 1, 1);
+            kamino_e.turrets[i]->flags &= ~0x10;
+            kamino_e.turrets[i]->field_0x12e = 1;
+        }
+        kamino_e.reset_turrets->value = 0.0f;
+    }
+    if (netclient)
+        return;
+    GameObject_s *jango = FindGameObject(id_JANGOFETT, 1, 1, 1, 0);
+    GameObject_s *other_jango = FindGameObject(id_JANGOFETT, 4, 1, 1, 0);
+    if (jango != NULL) {
+        if (jango->current_hp <= 0) {
+            if (FreePlay)
+                KillBossCompleteLevel(id_JANGOFETT, 0, 0.0f);
+            else
+                KillBossNewLevel(id_JANGOFETT, 0, 0.0f, KAMINOOUTRO_LDATA->idx);
+        }
+    } else
+        jango = other_jango;
+    i32 connection_direction = 0;
+    if (kamino_e.jango_fight->value == 0.0f && !FreePlay && kamino_e.intro_cutscene != NULL &&
+        instNuGCutSceneIsFinished(static_cast<instNUGCUTSCENE_s *>(kamino_e.intro_cutscene->instance)))
+        kamino_e.jango_fight->value = 1.0f;
+    if (kamino_e.active_turret != NULL && (kamino_e.active_turret->flags & 0x10))
+        kamino_e.active_turret = NULL;
+    NUMTX *matrix = NuSpecialGetDrawMtx(&kamino_e.slave1);
+    NUVEC desired = {0.0f, 0.0f, 6.5f};
+    NuVecRotateX(&desired, &desired, kamino_e.orbit_pitch);
+    NuVecRotateY(&desired, &desired, kamino_e.orbit_yaw);
+    NuVecAdd(&desired, &desired, &kamino_e_centre);
+    kamino_e.elapsed_time += FRAMETIME;
+    f32 degrees = kamino_e.elapsed_time * 360.0f;
+    desired.y +=
+        ((NuTrigTable[(static_cast<i32>((degrees / 3.0f) * 182.04444885253906f) >> 1) & 0x7fff] + 1.0f) * 0.5f) * 0.2f;
+    desired.z +=
+        ((NuTrigTable[(static_cast<i32>((0.25f * degrees) * 182.04444885253906f) >> 1) & 0x7fff] + 1.0f) * 0.5f) * 0.2f;
+    if (kamino_e.minicut_started != NULL && kamino_e.minicut_started->value > 0.0f)
+        NuSpecialSetVisibility(&kamino_e.slave1, 1);
+    if (kamino_e.departing)
+        PlaySfx("Slave1_EngineLp", &kamino_e.position);
+    switch (kamino_e.departing) {
+        case 0:
+            if (kamino_e.jango_fight->value > 0.0f) {
+                kamino_e.departing = 1;
+                kamino_e.departure_timer = 0.0f;
+                GizObstacle_FindByName(world->giz_obstacle_sys, "slave1_debris");
+            }
+            kamino_e.position.x = kamino_e_centre.x;
+            kamino_e.position.y = -2.8f;
+            kamino_e.position.z = kamino_e_centre.z;
+            kamino_e.pitch = -0x4000;
+            kamino_e.yaw = 0;
+            kamino_e.orbit_pitch = -3640;
+            kamino_e.orbit_yaw = 0x4000;
+            break;
+        case 1: {
+            kamino_e.departure_timer += FRAMETIME;
+            f32 ratio, base;
+            if (kamino_e.departure_timer < 4.0f) {
+                i32 angle =
+                    static_cast<i32>(((0.25f * kamino_e.departure_timer) * 180.0f - 90.0f) * 182.04444885253906f);
+                ratio = (NuTrigTable[(angle >> 1) & 0x7fff] + 1.0f) * 0.5f;
+                base = (1.0f - ratio) * -2.8f;
+            } else {
+                kamino_e.departure_timer = 0.0f;
+                kamino_e.departing = 2;
+                ratio = 1.0f;
+                base = -0.0f;
+            }
+            kamino_e.position.y = ratio * desired.y + base;
+            break;
+        }
+        case 2:
+            kamino_e.departure_timer += FRAMETIME;
+            if (kamino_e.departure_timer < 4.0f)
+                kamino_e.pitch = SeekRot(kamino_e.pitch, 0, kamino_e.departure_timer);
+            else {
+                kamino_e.pitch = SeekRot(kamino_e.pitch, 0, 4.0f);
+                kamino_e.departing = 3;
+                kamino_e.departure_timer = 0.0f;
+            }
+            break;
+        case 3:
+            kamino_e.departure_timer += FRAMETIME;
+            if (kamino_e.departure_timer < 4.0f)
+                kamino_e.yaw = SeekRot(kamino_e.yaw, 0xc000, kamino_e.departure_timer);
+            else {
+                kamino_e.yaw = SeekRot(kamino_e.yaw, 0xc000, 4.0f);
+                kamino_e.departure_timer = 0.0f;
+                kamino_e.departing = 4;
+            }
+            kamino_e.pitch = SeekRot(kamino_e.pitch, 0, 4.0f);
+            break;
+        case 4: {
+            kamino_e.departure_timer += FRAMETIME;
+            f32 ratio;
+            if (kamino_e.departure_timer < 4.0f) {
+                i32 angle =
+                    static_cast<i32>(((0.25f * kamino_e.departure_timer) * 180.0f - 90.0f) * 182.04444885253906f);
+                ratio = (NuTrigTable[(angle >> 1) & 0x7fff] + 1.0f) * 0.5f;
+            } else {
+                kamino_e.departure_timer = 0.0f;
+                kamino_e.departing = 5;
+                ratio = 1.0f;
+            }
+            kamino_e.position.x = desired.x * ratio + kamino_e_centre.x * (1.0f - ratio);
+            kamino_e.position.z = desired.z * ratio + kamino_e_centre.z * (1.0f - ratio);
+            kamino_e.pitch = SeekRot(kamino_e.pitch, 0xb60, 4.0f);
+            kamino_e.yaw = SeekRot(kamino_e.yaw, 0xc000, 4.0f);
+            break;
+        }
+        case 5: {
+            NUVEC aim, delta;
+            bool have_target = false;
+            if (kamino_e.active_turret != NULL) {
+                aim = *NuSpecialGetDrawPos(&kamino_e.active_turret->primary_anim_obj->special);
+                aim.y += 0.5f;
+                have_target = true;
+            } else if (kamino_e.can_fire->value == 1.0f) {
+                GameObject_s *nearest = NULL;
+                f32 best = 1000000000.0f;
+                for (i32 i = 0; i < 8; ++i) {
+                    GameObject_s *object = Player[i];
+                    if (object == NULL || (object->apiobj.object_flags & 0x1001) != 0x1001 ||
+                        (object->apiobj.character_data->model_flags & 0x80000))
+                        continue;
+                    f32 distance = NuVecDistSqr(&object->apiobj.collision_position,
+                                                reinterpret_cast<NUVEC *>(&matrix->m30), &delta);
+                    if (distance < best) {
+                        best = distance;
+                        nearest = Player[i];
+                    }
+                }
+                if (nearest != NULL) {
+                    aim.x = nearest->apiobj.collision_position.x;
+                    aim.y = 0.1f + nearest->apiobj.field_0x218;
+                    aim.z = nearest->apiobj.collision_position.z;
+                    have_target = true;
+                }
+            }
+            i32 target_pitch, target_yaw;
+            if (have_target) {
+                f32 z = aim.z - kamino_e_centre.z;
+                kamino_e.orbit_pitch = -3640;
+                if (z > 2.5f)
+                    z = 2.5f;
+                else if (z < -2.5f)
+                    z = -2.5f;
+                kamino_e.orbit_yaw = static_cast<i32>(((z / 2.5f) * 30.0f) * 182.04444885253906f) + 0x4000;
+                NUVEC offset = {0.0f, -kamino_e_gunoffset[0].y, -kamino_e_gunoffset[0].z};
+                NuVecMtxRotate(&offset, &offset, matrix);
+                NuVecAdd(&offset, &offset, &aim);
+                NuVecSub(&delta, &offset, &kamino_e.position);
+                target_yaw = static_cast<i32>(NuAtan2(delta.x, delta.z) * 10430.3779296875f);
+                f32 horizontal = NuFsqrt(delta.x * delta.x + delta.z * delta.z);
+                target_pitch = static_cast<i32>(NuAtan2(-delta.y, horizontal) * 10430.3779296875f);
+                f32 timer = kamino_e.departure_timer + FRAMETIME;
+                if (timer > 0.15f) {
+                    NUMTX bolt_matrix = *matrix;
+                    NUVEC origin;
+                    kamino_e.departure_timer = 0.0f;
+                    NuVecMtxTransform(&origin, &kamino_e_gunoffset[kamino_e.fire_index], matrix);
+                    f32 distance = NuVecDist(&origin, &aim, NULL);
+                    i32 adjustment = static_cast<i32>(NuAtan2(-kamino_e_gunoffset[kamino_e.fire_index].x, distance) *
+                                                      10430.3779296875f);
+                    NuMtxPreRotateY(&bolt_matrix, adjustment);
+                    addbolt_nosfx = 1;
+                    BOLT_s *bolt = Bolt_Add(NULL, &origin, &bolt_matrix, 0x27, 0x800);
+                    if (bolt != NULL)
+                        bolt->flags |= 0x10;
+                    kamino_e.fire_index = !kamino_e.fire_index;
+                    bolt_matrix = *matrix;
+                    NuVecMtxTransform(&origin, &kamino_e_gunoffset[kamino_e.fire_index], matrix);
+                    adjustment = static_cast<i32>(NuAtan2(-kamino_e_gunoffset[kamino_e.fire_index].x, distance) *
+                                                  10430.3779296875f);
+                    NuMtxPreRotateY(&bolt_matrix, adjustment);
+                    addbolt_nosfx = 1;
+                    bolt = Bolt_Add(NULL, &origin, &bolt_matrix, 0x27, 0x800);
+                    if (bolt != NULL)
+                        bolt->flags |= 0x10;
+                    kamino_e.fire_index = !kamino_e.fire_index;
+                    PlaySfx("Kam_Slave1BlasterFire", &origin);
+                } else
+                    kamino_e.departure_timer = timer;
+            } else {
+                kamino_e.orbit_pitch = -3640;
+                kamino_e.orbit_yaw = 0x4000;
+                target_pitch = 0xb60;
+                target_yaw = 0xc000;
+            }
+            SeekVec(&kamino_e.position, &kamino_e.position, &desired, 1.0f);
+            kamino_e.pitch = SeekRot(kamino_e.pitch, target_pitch, 1.0f);
+            kamino_e.yaw = SeekRot(kamino_e.yaw, target_yaw, 1.0f);
+            break;
+        }
+    }
+    NuMtxSetTranslation(matrix, &kamino_e.position);
+    NuMtxPreRotateY(matrix, kamino_e.yaw);
+    NuMtxPreRotateX(matrix, kamino_e.pitch);
+    i32 *connection =
+        static_cast<i32 *>(AIPAthFindPathCnx(world->ai_sys, world->ai_sys->path_sys->active_path, (void *)"Bridge1_a",
+                                             (void *)"Bridge1_b", &connection_direction));
+    AIAREA *fight_area = AISysFindArea(WORLD->ai_sys, "Fight");
+    if (connection == NULL || jango == NULL || fight_area == NULL)
+        return;
+    if (connection[connection_direction] >= 0 && connection[!connection_direction] >= 0)
+        return;
+    i32 area_index = static_cast<i32>(fight_area - world->ai_sys->areas);
+    u64 mask = static_cast<u64>(static_cast<i64>(static_cast<i32>(1u << (area_index & 31))));
+    if (jango->apiobj.ai_area_mask & mask)
+        return;
+    AILOCATOR *wait = AIPathFindLocator(world->ai_sys, "WAIT");
+    if (wait == NULL)
+        return;
+    jango->apiobj.position = wait->position;
+    jango->apiobj.field_0x276 = wait->direction;
+    jango->apiobj.facing_angle = wait->direction;
+    jango->apiobj.movement_facing_angle = wait->direction;
+    jango->ai.path_info = wait->path_info;
+    jango->apiobj.initial_position = wait->position;
+    jango->apiobj.collision_position = wait->position;
+    plr_lastpos = wait->position;
+    jango->apiobj.start_position = wait->position;
+    jango->apiobj.respawn_position = wait->position;
+    jango->apiobj.last_safe_position = wait->position;
+    jango->saved_position = wait->position;
+    jango->apiobj.velocity = v000;
+    InitSurfaceInfo(jango);
 }
 
 void KaminoE_AlwaysUpdate(WORLDINFO_s *) {
@@ -459,14 +1110,14 @@ void KaminoE_AlwaysUpdate(WORLDINFO_s *) {
 
 void KaminoE_Draw(WORLDINFO_s *world) {
     if (netclient == 0) {
-        if (kamino_e_state != NULL && kamino_e_state->field_0x28 > 0.0f) {
+        if (kamino_e.show_hearts->value > 0.0f) {
             GameObject_s *obj = (GameObject_s *)FindGameObject((i32)(i16)id_JANGOFETT, 1, 1, 1, 0);
-            if (obj != NULL && kamino_e_state != NULL && obj->apiobj.anim_packet.time_secondary == 1.0f)
+            if (obj != NULL && kamino_e.show_hearts != NULL && kamino_e.show_hearts->value == 1.0f)
                 DrawBossHitPoints(obj);
         }
     }
-    NuSpecialSetDrawMtx(&kamino_e_special, NuSpecialGetDrawMtx(&kamino_e_special));
-    NuSpecialSetVisibility(&kamino_e_special, 1);
+    NuSpecialSetDrawMtx(&kamino_e.slave1, NuSpecialGetDrawMtx(&kamino_e.slave1));
+    NuSpecialSetVisibility(&kamino_e.slave1, 1);
 }
 
 void KaminoE_CheckPlatHit(BOLT_s *) {

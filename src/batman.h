@@ -70,7 +70,7 @@ extern "C" {
     void NuRndrGlobalFrameCountPause(i32);
     void NuRndrShadowOnOff(i32);
     void NuRndrLine3dDbgFlush(void);
-    void NuRndrShadPolys(void *);
+    void NuRndrShadPolys(struct numtl_s *material);
     void NuRndrFx(i32, void *);
     void NuLgtLaserDraw(i32);
     void NuMtlAnimateSetSpeedScale(float);
@@ -165,7 +165,7 @@ void BurnoutApply(i32);
 void EnableShadowMapRendering(i32);
 void ResetShadowMapRendering(void);
 void DrawGameObjects(void);
-void DrawGameObjectsProcess(void);
+i32 DrawGameObjectsProcess(void);
 void ManageGameObjects(void);
 void UpdateGameObjects(WORLDINFO_s *);
 void GameObjectStuffAfterAnimation(void);
@@ -243,7 +243,7 @@ void GameFog_Set(void);
 void SetLevelLights(void *, float);
 void SetSpotLightMode(void);
 void RenderShadowLights(i32);
-void NuRndrShadPolys(void *);
+void NuRndrShadPolys(struct numtl_s *material);
 void NuLgtLaserDraw(i32);
 
 // ----------------------------------------------------------------------

@@ -222,3 +222,6 @@ void InitPanel(i32) {
     PANEL3DMULX = aspect_ratio * panel_fov / divisor;
     PANEL3DMULY = panel_fov / divisor;
 }
+
+// DrawPanel reads the private slide timer maintained by the panel lifecycle.
+f32 Panel_GetRedBrickSlideTime() { return redbrickslidetime; }
