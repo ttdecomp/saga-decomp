@@ -1,6 +1,7 @@
 """Read source-to-object mappings from Bazel's C++ compile actions."""
 
 from pathlib import Path
+import re
 import shlex
 import subprocess
 import sys
@@ -69,6 +70,14 @@ def bazel_units(root: Path, bazel: str, target: str) -> list[dict]:
                 "source": f"src/{relative_source.as_posix()}",
                 "object": object_path.as_posix(),
                 "object_path": object_abs,
+                "optimization": next(
+                    (
+                        arg
+                        for arg in reversed(arguments)
+                        if re.fullmatch(r"-O[0-3s]", arg)
+                    ),
+                    None,
+                ),
             }
         )
     if not units:

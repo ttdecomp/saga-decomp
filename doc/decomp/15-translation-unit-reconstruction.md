@@ -103,6 +103,54 @@ medium, or unresolved confidence rather than forcing every symbol into a TU.
 
 ## Reconstruction workflow
 
+The symbol ledger for step 1 is reproducible with:
+
+```sh
+bazel build --config=target //src:saga_target
+PYTHONPATH=. python3 scripts/generate_original_tu_map.py
+PYTHONPATH=. python3 scripts/calibrate_tu_map.py
+```
+
+It writes `.work/original-tu-map.json` (ignored by Git). The schema records
+each original and current object symbol with its own symbol-table index,
+section, address, size, type, binding, and visibility; aliases and zero-sized
+symbols remain separate. Current source/object pairs and explicit `-O` flags
+come from the live Bazel action graph. `null` means no explicit optimization
+flag in that compile action. Original-to-current candidate IDs are exact-name,
+same-type joins within the same local/nonlocal binding class; they identify a
+possible **current owner**, not a proven original TU. The generated artifact
+is deliberately not a hand-maintained build authority.
+
+On the `fabus1184/restructure` baseline, the ledger contains 32,596 named,
+defined allocated original symbols: 14,541 in `.text`, 9,384 in `.rodata`,
+6,625 in `.bss`, 1,796 in `.data`, and 250 in other allocated sections. The
+type split is 13,459 `FUNC`, 8,916 `OBJECT`, and 10,221 `NOTYPE`. All 523
+target compile actions are represented. There are 325 initializer-delimited
+local-symbol blocks and an undelimited tail, 327 `.init_array` entries,
+21 distinct embedded source paths, 247 name-derived function-local-static
+anchors, and 1,105 same-location/size/type alias groups. Of original symbols,
+17,742 have one same-name/type current object
+candidate, 10,771 have multiple, and 4,083 have none. These figures are
+**candidate counts**, not recovered-TU
+coverage. For example, the block ending in
+`_GLOBAL__sub_I_NuInputDevice_android.cpp` contains a local squish function
+and squish lookup tables before that initializer. This proves that assigning
+the entire local block to its ending basename would be wrong. Static symbols
+remain valuable evidence only when corroborated by text address and usage.
+
+The separate `.work/tu-map-calibration.json` hides 555 actual `STT_FILE`
+records in the current ELF, then checks inferred initializer-delimited blocks
+against those records. Among 13,767 local symbols with a preceding file
+marker, only 77.12% lie in their inferred block's majority true file; 293 of
+363 inferred blocks mix multiple true files. This sharply limits using a
+constructor basename as ownership for every preceding local. Among 12,628
+uniquely object-attributable current text functions, 98.04% fall in their
+owner's largest contiguous address run (for owners with at least five such
+functions). Address order is useful evidence, but the remaining splits and
+unowned symbols require independent checks. These calibration figures are
+not original-TU assignment accuracy; the original has no `STT_FILE` ground
+truth.
+
 1. **Capture a reproducible baseline.** Derive original symbol index, address,
    size, binding, type, section, constructor basename, initializer order, and
    embedded paths directly from `res/libTTapp.so`. Derive current source-to-
@@ -130,6 +178,10 @@ medium, or unresolved confidence rather than forcing every symbol into a TU.
 5. **Move one evidenced group at a time.** Create or rename the real source
    owner, keep its language and definition order, update the per-file map only
    when justified, and retain the same target/native/WASM source boundary.
+   Put cross-TU declarations in the proper exported or internal headers and
+   include them at both definitions and call sites. Do not paper over an
+   incorrect split with ad-hoc `extern` declarations that merely resolve at
+   link time.
    Bazel's source glob will pick up new files, but inspect the effective action
    and object link order after each change. Do not create empty files solely
    to reproduce `_GLOBAL__sub_I_*` names.
@@ -162,3 +214,16 @@ the largest catch-all. A TU move is accepted only when symbol coverage and
 host builds remain intact and any matching regression is explained. Revisit
 link/archive order after ownership and optimization are reliable; changing
 linker layout to conceal incorrect source structure would undermine the goal.
+
+The first pilot screen found a credible `nushaderprogram_android.cpp` cluster:
+the original local block includes `GetHLSLRegisterIndex` clones and shader
+program state, and its normal code contains adjacent `LinkShaderProgram`,
+`ValidateShaderProgram`, and `NuShaderProgramCreateIOS` functions. Today these
+are in `src/nu2api/nu3d/nushader.cpp`. But the first two functions already
+match exactly, while the original also has a missing
+`BuildRegisterIndexToUniformLocationMapping` function with a 256-byte
+function-local buffer and a 377-byte initializer. The current file instead
+has a TU-global buffer and no corresponding initializer. Splitting just the
+present functions would risk exact matches without reconstructing the missing
+structure, so no move was made. Revisit this group only as a complete TU with
+before/after object and whole-binary comparison.
