@@ -704,3 +704,65 @@ whole-binary fuzzy score by about 0.0001 percentage points without losing an
 exact match. `NuGScnDestroyPS` is likewise an empty body versus a
 substantial original function. Ownership gains for these symbols should not
 be mistaken for body matching.
+
+### Character-name lookup pair
+
+The original `characters.cpp` run contains `CharIDFromName` at `0x0045fd80`,
+`CDataFromName` at `0x0045fe00`, then `RedirectAnim` and `CharScenes_Init`.
+Its initializer/local-symbol block owns the character-scene static data, so
+the run and block together support the plural `characters.cpp` owner.
+Moving unchanged `CharIDFromName` from the singular `character.cpp` into
+that owner leaves its 99.67% score and all other scores unchanged.
+
+The neighboring `CDataFromName` was an empty, incorrectly `void` stub in
+`legoapi_misc.cpp`. The original body iterates `CHARCOUNT`, compares the
+name to `CDataList[i].file`, and returns the matching record or null. Its
+observed 0x4c stride and `file` offset 0x0c agree with the declared
+`CHARACTERDATA` layout. The real lookup now resides between `CharIDFromName`
+and `RedirectAnim`, with its exported return type in the character owner
+header. Its measured match rises from 11.74% to 99.67%; whole-binary fuzzy
+matching rises from 44.6873% to 44.6894%, with no other function score
+changes and no exact-match transitions. The remaining fractional difference
+is not papered over with an instruction-shaping change.
+
+### AI-message translation unit
+
+The original `gizmessage.cpp` text run at `0x004b68e0..0x004b6ef0`
+interleaves five message-gizmo callbacks, the generic message-system APIs,
+and the gizmo registration. Its local-symbol block ends at
+`_GLOBAL__sub_I_gizmessage.cpp` and contains those callbacks, the
+registration-local `addtype`, `GetOutputName`'s local return buffer, and a
+five-byte `gizaimessage_prefix` object. The current callbacks were split into
+`gizaimessage.cpp`, while the generic APIs were in `gizmessage.cpp`; both had
+independent pointer-valued prefix statics. Both sources used `-O3`.
+
+The unchanged bodies now live in the original-named owner in original text
+order. One `static char gizaimessage_prefix[] = "msg_"` serves both sides,
+restoring its original five-byte object type and its `.data` position directly
+after `gizaimessage_gizmotype_id`. The emptied trigger source/header and its
+obsolete per-file option were removed. Cross-TU declarations now use the
+base message header and the actual global/AI allocator owner headers; the
+allocator header is also included at its definition.
+
+This move raises `CreateGizAIMessageSys` from 97.65% to exact and preserves
+all previous exact functions. `ResetGizAIMessageSys` and registration improve
+slightly; `CheckGizAIMessage`, whose body is already far from matching,
+declines from 12.68% to 8.32%. Whole-binary fuzzy matching therefore changes
+from 44.6894% to 44.6892%. The ownership and data evidence are retained;
+the Check body needs ordinary source-level reconstruction, not a TU or
+attribute workaround.
+
+### Grapple helper run
+
+The original `grapples.cpp` initializer/local block and ordinary-text run
+place `Grapple_SetPlayerTargetPoint` at `0x004d6eb0`,
+`Grapple_SetTargetMom` at `0x004d6f90`, and `Grapple_SetRotOrder` at
+`0x004d7090`, after the grapple registration/dynamic-movement functions and
+before `Grapple_LookAtPos`. These three real bodies had remained in a
+separate `-O3` gizmo wrapper while the original-named `grapples.cpp` owner
+was also `-O3`. Their unchanged definitions now sit in that owner in address
+order, using its existing public header. The move changes no function score:
+`SetRotOrder` stays exact, `SetTargetMom` stays 99.96%, and
+`SetPlayerTargetPoint` stays 84.13%. The residual wrapper still contains
+unfinished stubs, including an empty `__used__` local helper; those are not
+moved or used as a matching shortcut.

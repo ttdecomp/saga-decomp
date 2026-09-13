@@ -15,7 +15,7 @@
 #include "legoapi/gizmos/trigger/ai.h"
 #include "legoapi/gizmos/door/door.h"
 #include "legoapi/gizmos/fx/edgizshadowmachine.h"
-#include "legoapi/gizmos/trigger/gizaimessage.h"
+#include "legoapi/gizmo/base/gizmessage.h"
 #include "legoapi/gizmos/traps/gizbombgen.h"
 #include "legoapi/gizmos/object/gizbuildits.h"
 #include "legoapi/gizmos/traps/gizforce.h"

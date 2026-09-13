@@ -19,6 +19,8 @@ extern "C" {
     struct AIPATH_s;
     struct AIPATHNODE_s;
 
+    void *AISysBufferAlloc(VARIPTR *cursor, VARIPTR *buf_end, u32 size);
+
     AILOCATOR_s *AIPathFindLocator(AISYS_s *aisys, char *name);
     AIAREA_s *AISysFindArea(AISYS_s *ai_sys, char *name);
     AIPATH_s *AISysFindPath(AISYS_s *ai_sys, char *name);

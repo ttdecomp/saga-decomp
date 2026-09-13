@@ -1,46 +1,79 @@
-#include "decomp.h"
-#include "legoapi/gizmo/base/gizmo.h"
-#include "legoapi/legoapi_types.h"
-#include "nu2api/nu3d/nutex.h"
-#include "nu2api/nucore/nulist.h"
-#include "nu2api/nucore/nustring.h"
+#include "legoapi/gizmo/base/gizmessage.h"
 
 #include <stdio.h>
 #include <string.h>
 
-struct AIROW_s;
-struct nuqthdr_s;
-struct nunativegscene_s;
-struct SHOPINPUT;
+#include "decomp.h"
+#include "globals.h"
+#include "legoapi/ai/core/ai_sys_stubs.h"
+#include "legoapi/legoapi_types.h"
+#include "nu2api/nucore/nulist.h"
+#include "nu2api/nucore/nustring.h"
 
-extern "C" void *AISysBufferAlloc(VARIPTR *cursor, VARIPTR *buf_end, u32 size);
+i32 gizaimessage_gizmotype_id = -1;
+static char gizaimessage_prefix[] = "msg_";
 
-static char *gizaimessage_prefix = "msg_";
-
-void ResetGizAIMessageSys(GIZAIMESSAGESYS_s *sys);
-
-float GetGizAIMessage(GIZAIMESSAGESYS_s *sys, char const *name, GIZAIMESSAGE_s *out) {
-    GIZAIMESSAGE_s *msg = CheckGizAIMessage(sys, name, out);
-    return (msg != NULL) ? msg->value : 0.0f;
+static i32 GizAIMessage_GetMaxGizmos(void *) {
+    return 0x40;
 }
 
-// libTTapp.so 0x4b6db0: fetch (or claim) the message and store its value.
-GIZAIMESSAGE_s *SetGizAIMessage(GIZAIMESSAGESYS_s *sys, char const *name, float value, GIZAIMESSAGE_s *out) {
-    GIZAIMESSAGE_s *msg = CheckGizAIMessage(sys, name, out);
-    if (msg != NULL) {
-        msg->value = value;
+static i32 GizAIMessage_GetOutput(GIZMO *gizmo, i32 output_index, i32) {
+    if ((gizmo == NULL) || (gizmo->object == NULL) || ((u32)output_index > 7)) {
+        return 0;
     }
-    return msg;
+
+    GIZAIMESSAGE_s *message = (GIZAIMESSAGE_s *)gizmo->object;
+    return message->value == (f32)message->output_values[output_index];
 }
 
-// libTTapp.so 0x4b6c20: find a message by name on the system's active list;
-// when no active message matches, move the head of the free list to the
-// active list, name it, and return it. Names without the "msg_" prefix get
-// one prepended (bounded to 0x1e characters). A non-NULL `out` argument is
-// returned as-is, and so is NULL for a NULL system or name.
-// libTTapp.so 0x4b6ae0: carve the system header (0x18 bytes) and the message
-// pool (count * 0x38 bytes) from the permbuffer, then hand the pool to the
-// free list. Returns NULL when the buffer is exhausted.
+static i32 GizAIMessage_GetNumOutputs(GIZMO *gizmo) {
+    if ((gizmo == NULL) || (gizmo->object == NULL)) {
+        return 0;
+    }
+    return ((GIZAIMESSAGE_s *)gizmo->object)->output_count;
+}
+
+static char *GizAIMessage_GetOutputName(GIZMO *gizmo, i32 output_index) {
+    static char returnstr[4];
+
+    if ((gizmo == NULL) || (gizmo->object == NULL) || ((u32)output_index > 7)) {
+        return NULL;
+    }
+
+    GIZAIMESSAGE_s *message = (GIZAIMESSAGE_s *)gizmo->object;
+    sprintf(returnstr, "%i", (i32)message->output_values[output_index]);
+    return returnstr;
+}
+
+static void GizAIMessage_AddGizmos(GIZMOSYS *gizmo_sys, i32, void *, void *) {
+    if (gizaimessagesys == NULL) {
+        return;
+    }
+
+    GIZAIMESSAGE_s *message = (GIZAIMESSAGE_s *)NuLinkedListGetHead(&gizaimessagesys->active_list);
+    while (message != NULL) {
+        if ((message->flags & GIZAIMESSAGE_FLAG_ADD_GIZMO) != 0) {
+            AddGizmo(gizmo_sys, gizaimessage_gizmotype_id, NULL, message);
+            message->flags |= GIZAIMESSAGE_FLAG_GIZMO_ADDED;
+        }
+        message = (GIZAIMESSAGE_s *)NuLinkedListGetNext(&gizaimessagesys->active_list, &message->links);
+    }
+}
+
+void ResetGizAIMessageSys(GIZAIMESSAGESYS_s *sys) {
+    if (sys == NULL) {
+        return;
+    }
+    sys->free_list.head = NULL;
+    sys->free_list.tail = NULL;
+    sys->active_list.head = NULL;
+    sys->active_list.tail = NULL;
+    memset(sys->messages, 0, (usize)sys->count * sizeof(GIZAIMESSAGE_s));
+    for (i32 i = 0; i < sys->count; i++) {
+        NuLinkedListAppend(&sys->free_list, &sys->messages[i].links);
+    }
+}
+
 GIZAIMESSAGESYS_s *CreateGizAIMessageSys(VARIPTR *buf, VARIPTR *buf_end, i32 size) {
     GIZAIMESSAGESYS_s *sys = (GIZAIMESSAGESYS_s *)AISysBufferAlloc(buf, buf_end, 0x18);
     if (sys != NULL) {
@@ -52,6 +85,16 @@ GIZAIMESSAGESYS_s *CreateGizAIMessageSys(VARIPTR *buf, VARIPTR *buf_end, i32 siz
         }
     }
     return sys;
+}
+
+void ClearGizAIMessageSys(GIZAIMESSAGESYS_s *sys) {
+    if (sys == NULL) {
+        return;
+    }
+    for (NULISTLNK *node = NuLinkedListGetHead(&sys->active_list); node != NULL;
+         node = NuLinkedListGetNext(&sys->active_list, node)) {
+        ((GIZAIMESSAGE_s *)node)->value = 0.0f;
+    }
 }
 
 GIZAIMESSAGE_s *CheckGizAIMessage(GIZAIMESSAGESYS_s *sys, char const *name, GIZAIMESSAGE_s *out) {
@@ -92,43 +135,72 @@ GIZAIMESSAGE_s *CheckGizAIMessage(GIZAIMESSAGESYS_s *sys, char const *name, GIZA
     return (GIZAIMESSAGE_s *)node;
 }
 
-// libTTapp.so 0x4b6bd0: reset every active message's value to zero (the
-// messages stay on the active list).
-void ClearGizAIMessageSys(GIZAIMESSAGESYS_s *sys) {
-    if (sys == NULL) {
-        return;
+GIZAIMESSAGE_s *SetGizAIMessage(GIZAIMESSAGESYS_s *sys, char const *name, float value, GIZAIMESSAGE_s *out) {
+    GIZAIMESSAGE_s *msg = CheckGizAIMessage(sys, name, out);
+    if (msg != NULL) {
+        msg->value = value;
     }
-    for (NULISTLNK *node = NuLinkedListGetHead(&sys->active_list); node != NULL;
-         node = NuLinkedListGetNext(&sys->active_list, node)) {
-        ((GIZAIMESSAGE_s *)node)->value = 0.0f;
-    }
+    return msg;
 }
 
-// libTTapp.so 0x4b6ea0: the message's name lives right behind the links.
-char *GizAIMessage_GetName(GIZAIMESSAGE_s *msg) {
-    return (msg != NULL) ? msg->name : NULL;
+float GetGizAIMessage(GIZAIMESSAGESYS_s *sys, char const *name, GIZAIMESSAGE_s *out) {
+    GIZAIMESSAGE_s *msg = CheckGizAIMessage(sys, name, out);
+    return (msg != NULL) ? msg->value : 0.0f;
 }
 
-// libTTapp.so 0x4b6a50: zero the two list headers and the pool, then queue
-// every pooled message onto the free list.
-void ResetGizAIMessageSys(GIZAIMESSAGESYS_s *sys) {
-    if (sys == NULL) {
-        return;
-    }
-    sys->free_list.head = NULL;
-    sys->free_list.tail = NULL;
-    sys->active_list.head = NULL;
-    sys->active_list.tail = NULL;
-    memset(sys->messages, 0, (usize)sys->count * sizeof(GIZAIMESSAGE_s));
-    for (i32 i = 0; i < sys->count; i++) {
-        NuLinkedListAppend(&sys->free_list, &sys->messages[i].links);
-    }
-}
-
-// libTTapp.so 0x4b6e50: iterate the active list — pass NULL to get the head.
 GIZAIMESSAGE_s *QueryGizAIMessage(GIZAIMESSAGESYS_s *sys, GIZAIMESSAGE_s *msg) {
     if (msg != NULL) {
         return (GIZAIMESSAGE_s *)NuLinkedListGetNext(&sys->active_list, &msg->links);
     }
     return (GIZAIMESSAGE_s *)NuLinkedListGetHead(&sys->active_list);
+}
+
+char *GizAIMessage_GetName(GIZAIMESSAGE_s *msg) {
+    return (msg != NULL) ? msg->name : NULL;
+}
+
+static char *GizAIMessage_GetGizmoName(GIZMO *gizmo) {
+    if (gizmo == NULL) {
+        return NULL;
+    }
+    return GizAIMessage_GetName((GIZAIMESSAGE_s *)gizmo->object);
+}
+
+ADDGIZMOTYPE *GizAIMessage_RegisterGizmo(i32 type_id) {
+    static ADDGIZMOTYPE addtype;
+
+    addtype = Default_ADDGIZMOTYPE;
+    addtype.name = "Message";
+    addtype.prefix = gizaimessage_prefix;
+    addtype.fns.unknown1 = 0;
+    addtype.fns.early_update_fn = NULL;
+    addtype.fns.panel_draw_fn = NULL;
+    addtype.fns.get_visibility_fn = NULL;
+    addtype.fns.get_max_gizmos_fn = GizAIMessage_GetMaxGizmos;
+    addtype.fns.get_pos_fn = NULL;
+    addtype.fns.using_special_fn = NULL;
+    addtype.fns.add_gizmos_fn = GizAIMessage_AddGizmos;
+    addtype.fns.bolt_hit_plat_fn = NULL;
+    addtype.fns.get_best_bolt_target_fn = NULL;
+    addtype.fns.late_update_fn = NULL;
+    addtype.fns.bolt_hit_fn = NULL;
+    addtype.fns.draw_fn = NULL;
+    addtype.fns.get_gizmo_name_fn = GizAIMessage_GetGizmoName;
+    addtype.fns.get_output_fn = GizAIMessage_GetOutput;
+    addtype.fns.get_output_name_fn = GizAIMessage_GetOutputName;
+    addtype.fns.get_num_outputs_fn = GizAIMessage_GetNumOutputs;
+    addtype.fns.activate_fn = NULL;
+    addtype.fns.activate_rev_fn = NULL;
+    addtype.fns.set_visibility_fn = NULL;
+    addtype.fns.allocate_progress_data_fn = NULL;
+    addtype.fns.clear_progress_fn = NULL;
+    addtype.fns.store_progress_fn = NULL;
+    addtype.fns.reset_fn = NULL;
+    addtype.fns.reserve_buffer_space_fn = NULL;
+    addtype.fns.load_fn = NULL;
+    addtype.fns.post_load_fn = NULL;
+    addtype.fns.add_level_sfx_fn = NULL;
+    gizaimessage_gizmotype_id = type_id;
+
+    return &addtype;
 }

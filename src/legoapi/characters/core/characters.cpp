@@ -500,6 +500,26 @@ void CharScene_Draw(WORLDINFO_s *world, i32 character_id, numtx_s *matrix, numtx
     }
 }
 
+i32 CharIDFromName(char *name) {
+    for (i32 i = 0; i < CHARCOUNT; i++) {
+        if (NuStrICmp(CDataList[i].file, name) == 0) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+CHARACTERDATA *CDataFromName(char *name) {
+    for (i32 i = 0; i < CHARCOUNT; i++) {
+        if (NuStrICmp(CDataList[i].file, name) == 0) {
+            return &CDataList[i];
+        }
+    }
+
+    return nullptr;
+}
+
 i32 RedirectAnim(char *path, ANIMREDIRECT *redirects, ANIMLIST_s *animation_list, char *directory) {
     CHARACTERANIM_s *animation = reinterpret_cast<CHARACTERANIM_s *>(animation_list);
     for (ANIMREDIRECT *redirect = redirects; redirect->name != NULL; ++redirect) {

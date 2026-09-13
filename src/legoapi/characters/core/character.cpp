@@ -579,16 +579,6 @@ GAMECHARACTERDATA GCDATA_DEFAULT = {
 
 i32 g_loadingCharacterInHub;
 
-i32 CharIDFromName(char *name) {
-    for (i32 i = 0; i < CHARCOUNT; i++) {
-        if (NuStrICmp(CDataList[i].file, name) == 0) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
 CHARACTERDATA *ConfigureCharacterList(char *file, VARIPTR *bufferStart, VARIPTR *bufferEnd, i32 count, i32 *countDest,
                                       i32 count2, GAMECHARACTERDATA **dataList) {
     bool bVar1;

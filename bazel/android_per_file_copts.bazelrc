@@ -174,7 +174,6 @@ build:target --per_file_copt=^src/legoapi/world/levelstreaming\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/world/mission\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/world/missions\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/trigger/ai\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmos/trigger/gizaimessage\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/traps/attractos\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/door/door\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/fx/edgizshadowmachine\.cpp$@-O3

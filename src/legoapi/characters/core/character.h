@@ -584,6 +584,7 @@ extern "C" {
 #ifdef __cplusplus
 
 i32 CharIDFromName(char *name);
+CHARACTERDATA *CDataFromName(char *name);
 
 extern "C" {
 #endif

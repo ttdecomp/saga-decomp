@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.687298,
+    "fuzzy_match_percent": 44.689217,
     "total_code": "4722419",
-    "matched_code": "387314",
-    "matched_code_percent": 8.201602,
+    "matched_code": "387543",
+    "matched_code_percent": 8.206451,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4636,
-    "matched_functions_percent": 34.44535,
+    "matched_functions": 4637,
+    "matched_functions_percent": 34.45278,
     "total_units": 1
   },
   "text": {
@@ -43713,14 +43713,6 @@
           "match_percent": 100.0
         },
         {
-          "name": "_Z14CharIDFromNamePc",
-          "demangled_name": "CharIDFromName(char*)",
-          "address": 4586880,
-          "offset": 3696912,
-          "size": 120,
-          "match_percent": 99.67391
-        },
-        {
           "name": "_Z13CanPullLeversi",
           "demangled_name": "CanPullLevers(int)",
           "address": 4632912,
@@ -44053,6 +44045,22 @@
           "offset": 2288990,
           "size": 175,
           "match_percent": 8.4
+        },
+        {
+          "name": "_Z14CharIDFromNamePc",
+          "demangled_name": "CharIDFromName(char*)",
+          "address": 4586880,
+          "offset": 3696912,
+          "size": 120,
+          "match_percent": 99.67391
+        },
+        {
+          "name": "_Z13CDataFromNamePc",
+          "demangled_name": "CDataFromName(char*)",
+          "address": 4587008,
+          "offset": 3697040,
+          "size": 115,
+          "match_percent": 99.67391
         },
         {
           "name": "_Z12RedirectAnimPcP12ANIMREDIRECTP10ANIMLIST_sS_",
@@ -52519,12 +52527,52 @@
           "match_percent": 99.35294
         },
         {
+          "name": "_ZL25GizAIMessage_GetMaxGizmosPv",
+          "demangled_name": "GizAIMessage_GetMaxGizmos(void*)",
+          "address": 4942048,
+          "offset": 4052080,
+          "size": 12,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL22GizAIMessage_GetOutputP7GIZMO_sii",
+          "demangled_name": "GizAIMessage_GetOutput(GIZMO_s*, int, int)",
+          "address": 4942064,
+          "offset": 4052096,
+          "size": 60,
+          "match_percent": 71.625
+        },
+        {
+          "name": "_ZL26GizAIMessage_GetNumOutputsP7GIZMO_s",
+          "demangled_name": "GizAIMessage_GetNumOutputs(GIZMO_s*)",
+          "address": 4942128,
+          "offset": 4052160,
+          "size": 27,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL26GizAIMessage_GetOutputNameP7GIZMO_si",
+          "demangled_name": "GizAIMessage_GetOutputName(GIZMO_s*, int)",
+          "address": 4942160,
+          "offset": 4052192,
+          "size": 100,
+          "match_percent": 99.965515
+        },
+        {
+          "name": "_ZL22GizAIMessage_AddGizmosP10GIZMOSYS_siPvS1_",
+          "demangled_name": "GizAIMessage_AddGizmos(GIZMOSYS_s*, int, void*, void*)",
+          "address": 4942272,
+          "offset": 4052304,
+          "size": 137,
+          "match_percent": 100.0
+        },
+        {
           "name": "_Z20ResetGizAIMessageSysP17GIZAIMESSAGESYS_s",
           "demangled_name": "ResetGizAIMessageSys(GIZAIMESSAGESYS_s*)",
           "address": 4942416,
           "offset": 4052448,
           "size": 131,
-          "match_percent": 66.15
+          "match_percent": 66.525
         },
         {
           "name": "_Z21CreateGizAIMessageSysP9variptr_uS0_i",
@@ -52532,7 +52580,7 @@
           "address": 4942560,
           "offset": 4052592,
           "size": 229,
-          "match_percent": 97.64706
+          "match_percent": 100.0
         },
         {
           "name": "_Z20ClearGizAIMessageSysP17GIZAIMESSAGESYS_s",
@@ -52548,7 +52596,7 @@
           "address": 4942880,
           "offset": 4052912,
           "size": 387,
-          "match_percent": 12.67619
+          "match_percent": 8.32381
         },
         {
           "name": "_Z15SetGizAIMessageP17GIZAIMESSAGESYS_sPKcfP14GIZAIMESSAGE_s",
@@ -52581,6 +52629,22 @@
           "offset": 4053552,
           "size": 19,
           "match_percent": 100.0
+        },
+        {
+          "name": "_ZL25GizAIMessage_GetGizmoNameP7GIZMO_s",
+          "demangled_name": "GizAIMessage_GetGizmoName(GIZMO_s*)",
+          "address": 4943552,
+          "offset": 4053584,
+          "size": 44,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_Z26GizAIMessage_RegisterGizmoi",
+          "demangled_name": "GizAIMessage_RegisterGizmo(int)",
+          "address": 4943600,
+          "offset": 4053632,
+          "size": 366,
+          "match_percent": 99.34545
         }
       ]
     },
@@ -54990,30 +55054,6 @@
           "offset": 4184528,
           "size": 104,
           "match_percent": 15.0
-        },
-        {
-          "name": "_Z28Grapple_SetPlayerTargetPointP12GameObject_sP7nuvec_s",
-          "demangled_name": "Grapple_SetPlayerTargetPoint(GameObject_s*, nuvec_s*)",
-          "address": 5074608,
-          "offset": 4184640,
-          "size": 220,
-          "match_percent": 84.125
-        },
-        {
-          "name": "_Z20Grapple_SetTargetMomP12GameObject_s",
-          "demangled_name": "Grapple_SetTargetMom(GameObject_s*)",
-          "address": 5074832,
-          "offset": 4184864,
-          "size": 248,
-          "match_percent": 99.958336
-        },
-        {
-          "name": "_Z19Grapple_SetRotOrderP12GameObject_s",
-          "demangled_name": "Grapple_SetRotOrder(GameObject_s*)",
-          "address": 5075088,
-          "offset": 4185120,
-          "size": 23,
-          "match_percent": 100.0
         },
         {
           "name": "_Z17Grapple_LookAtPosP12GameObject_sP7nuvec_s",
@@ -59373,6 +59413,30 @@
           "offset": 4179392,
           "size": 111,
           "match_percent": 66.53333
+        },
+        {
+          "name": "_Z28Grapple_SetPlayerTargetPointP12GameObject_sP7nuvec_s",
+          "demangled_name": "Grapple_SetPlayerTargetPoint(GameObject_s*, nuvec_s*)",
+          "address": 5074608,
+          "offset": 4184640,
+          "size": 220,
+          "match_percent": 84.125
+        },
+        {
+          "name": "_Z20Grapple_SetTargetMomP12GameObject_s",
+          "demangled_name": "Grapple_SetTargetMom(GameObject_s*)",
+          "address": 5074832,
+          "offset": 4184864,
+          "size": 248,
+          "match_percent": 99.958336
+        },
+        {
+          "name": "_Z19Grapple_SetRotOrderP12GameObject_s",
+          "demangled_name": "Grapple_SetRotOrder(GameObject_s*)",
+          "address": 5075088,
+          "offset": 4185120,
+          "size": 23,
+          "match_percent": 100.0
         }
       ]
     },
@@ -61282,69 +61346,6 @@
           "offset": 688416,
           "size": 356,
           "match_percent": 97.01887
-        }
-      ]
-    },
-    {
-      "name": "legoapi/gizmos/trigger/gizaimessage.cpp.o",
-      "source": "src/legoapi/gizmos/trigger/gizaimessage.cpp",
-      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/gizaimessage.o",
-      "functions": [
-        {
-          "name": "_ZL25GizAIMessage_GetMaxGizmosPv",
-          "demangled_name": "GizAIMessage_GetMaxGizmos(void*)",
-          "address": 4942048,
-          "offset": 4052080,
-          "size": 12,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL22GizAIMessage_GetOutputP7GIZMO_sii",
-          "demangled_name": "GizAIMessage_GetOutput(GIZMO_s*, int, int)",
-          "address": 4942064,
-          "offset": 4052096,
-          "size": 60,
-          "match_percent": 71.625
-        },
-        {
-          "name": "_ZL26GizAIMessage_GetNumOutputsP7GIZMO_s",
-          "demangled_name": "GizAIMessage_GetNumOutputs(GIZMO_s*)",
-          "address": 4942128,
-          "offset": 4052160,
-          "size": 27,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL26GizAIMessage_GetOutputNameP7GIZMO_si",
-          "demangled_name": "GizAIMessage_GetOutputName(GIZMO_s*, int)",
-          "address": 4942160,
-          "offset": 4052192,
-          "size": 100,
-          "match_percent": 99.965515
-        },
-        {
-          "name": "_ZL22GizAIMessage_AddGizmosP10GIZMOSYS_siPvS1_",
-          "demangled_name": "GizAIMessage_AddGizmos(GIZMOSYS_s*, int, void*, void*)",
-          "address": 4942272,
-          "offset": 4052304,
-          "size": 137,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL25GizAIMessage_GetGizmoNameP7GIZMO_s",
-          "demangled_name": "GizAIMessage_GetGizmoName(GIZMO_s*)",
-          "address": 4943552,
-          "offset": 4053584,
-          "size": 44,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_Z26GizAIMessage_RegisterGizmoi",
-          "demangled_name": "GizAIMessage_RegisterGizmo(int)",
-          "address": 4943600,
-          "offset": 4053632,
-          "size": 366,
-          "match_percent": 99.163635
         }
       ]
     },
@@ -72001,14 +72002,6 @@
           "offset": 1858784,
           "size": 255,
           "match_percent": 9.89011
-        },
-        {
-          "name": "_Z13CDataFromNamePc",
-          "demangled_name": "CDataFromName(char*)",
-          "address": 4587008,
-          "offset": 3697040,
-          "size": 115,
-          "match_percent": 11.73913
         },
         {
           "name": "_Z9DieRumbleP12GameObject_s",
@@ -129673,7 +129666,7 @@
     }
   ],
   "summary": {
-    "bazel_units": 514,
+    "bazel_units": 513,
     "functions": 13454,
     "assigned_functions": 12319,
     "ambiguous_functions": 231,

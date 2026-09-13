@@ -1,4 +1,5 @@
 #include "editor/edpath.h"
+#include "legoapi/ai/core/ai_sys_stubs.h"
 #include "legoapi/world/world_shared.h"
 #include "decomp.h"
 #include "editor/aieditor_state.h"
@@ -594,7 +595,6 @@ void AIMoveDirectlyToDestination(AISYS *system, AIPACKET *packet, APIOBJECT *obj
 typedef i32 MIDSPECIALMOVE(AISYS *system, AIPACKET *packet, APIOBJECT *object);
 extern MIDSPECIALMOVE *MidSpecialMoveFn;
 
-extern "C" void *AISysBufferAlloc(VARIPTR *cursor, VARIPTR *buf_end, u32 size);
 extern "C" i32 AISysSetLevelPath(AISYS *system, char *path_name);
 extern "C" void AISysFindRoute(AIPACKET *packet);
 extern "C" void AISysCharacterSetPath(AIPACKET *packet, AIPATH *path);
