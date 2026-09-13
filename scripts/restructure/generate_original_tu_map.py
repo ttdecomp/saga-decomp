@@ -219,6 +219,7 @@ def build_map(original: Path, current: Path, units: list[dict]) -> dict:
 
     mapped = []
     candidate_counts = Counter()
+    candidate_by_section: dict[str, Counter] = defaultdict(Counter)
     for symbol in original_symbols:
         binding_class = 0 if symbol["binding"] == 0 else 1
         candidates = sorted(
@@ -228,7 +229,13 @@ def build_map(original: Path, current: Path, units: list[dict]) -> dict:
             evidence = "local-name-only; requires independent corroboration"
         else:
             evidence = "global-name-match; current owner, not original TU proof"
-        candidate_counts["unique" if len(candidates) == 1 else "ambiguous" if candidates else "none"] += 1
+        candidate_class = (
+            "unique" if len(candidates) == 1 else "ambiguous" if candidates else "none"
+        )
+        candidate_counts[candidate_class] += 1
+        candidate_by_section[
+            original_sections[symbol["section_index"]]["name"]
+        ][candidate_class] += 1
         mapped.append(
             {
                 **symbol,
@@ -267,6 +274,10 @@ def build_map(original: Path, current: Path, units: list[dict]) -> dict:
             "alias_groups": len(aliases),
             "original_by_section": dict(sorted(original_section_counts.items())),
             "current_candidate_counts": dict(sorted(candidate_counts.items())),
+            "current_candidates_by_original_section": {
+                section: dict(sorted(counts.items()))
+                for section, counts in sorted(candidate_by_section.items())
+            },
         },
         "original_local_blocks": blocks,
         "original_alias_groups": aliases,

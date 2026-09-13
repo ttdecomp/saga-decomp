@@ -107,14 +107,17 @@ The symbol ledger for step 1 is reproducible with:
 
 ```sh
 bazel build --config=target //src:saga_target
-PYTHONPATH=. python3 scripts/generate_original_tu_map.py
-PYTHONPATH=. python3 scripts/calibrate_tu_map.py
+PYTHONPATH=. python3 scripts/restructure/generate_original_tu_map.py
+PYTHONPATH=. python3 scripts/restructure/calibrate_tu_map.py
+PYTHONPATH=. python3 -m unittest scripts.restructure.test_original_tu_map scripts.restructure.test_calibrate_tu_map
 ```
 
 It writes `.work/original-tu-map.json` (ignored by Git). The schema records
 each original and current object symbol with its own symbol-table index,
 section, address, size, type, binding, and visibility; aliases and zero-sized
-symbols remain separate. Current source/object pairs and explicit `-O` flags
+symbols remain separate. The ledger uses `.symtab`; a defined-name comparison
+with `.dynsym` found no dynamic-only defined names in this reference ELF.
+Current source/object pairs and explicit `-O` flags
 come from the live Bazel action graph. `null` means no explicit optimization
 flag in that compile action. Original-to-current candidate IDs are exact-name,
 same-type joins within the same local/nonlocal binding class; they identify a
@@ -137,6 +140,12 @@ coverage. For example, the block ending in
 and squish lookup tables before that initializer. This proves that assigning
 the entire local block to its ending basename would be wrong. Static symbols
 remain valuable evidence only when corroborated by text address and usage.
+Candidate quality differs sharply by section: `.text` has 12,590 unique
+same-name/type current-object candidates, while `.rodata` has only 367 unique
+and 8,480 ambiguous, mostly because compiler literal labels repeat. For
+writable data, `.data` has 1,232 unique candidates and `.bss` has 3,417.
+The ledger exposes these counts per section so text-only progress cannot hide
+unresolved data placement.
 
 The separate `.work/tu-map-calibration.json` hides 555 actual `STT_FILE`
 records in the current ELF, then checks inferred initializer-delimited blocks
@@ -227,3 +236,13 @@ has a TU-global buffer and no corresponding initializer. Splitting just the
 present functions would risk exact matches without reconstructing the missing
 structure, so no move was made. Revisit this group only as a complete TU with
 before/after object and whole-binary comparison.
+
+A second plausible cluster is original `timing.cpp`: its unique `TBGAMECOUNT`,
+`TBDRAWCOUNT`, `TBPLAYERCOUNT`, and `TBAICOUNT` statics accompany the adjacent
+`TBRESET`, `TBOPENFN`, `TBCLOSEFN`, and `TimingBars` text run. The first three
+currently live in `supportall.cpp`; `TimingBars` lives in `timing.cpp`, which
+also has two exactly matched frame-counter functions. `TBOPENFN` and
+`TBCLOSEFN` still have very low body scores, so merely moving their existing
+definitions could regress the exact neighbors without a real matching gain.
+Before revisiting, reconstruct those bodies and use a proper timing header for
+cross-TU declarations instead of scattered local `extern` declarations.

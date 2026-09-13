@@ -2,7 +2,7 @@
 
 import unittest
 
-from scripts.calibrate_tu_map import (
+from scripts.restructure.calibrate_tu_map import (
     address_contiguity,
     block_purity,
     calibrate,

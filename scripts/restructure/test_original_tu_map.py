@@ -5,7 +5,7 @@ from pathlib import Path
 import struct
 import tempfile
 
-from scripts.generate_original_tu_map import (
+from scripts.restructure.generate_original_tu_map import (
     allocated_symbols,
     alias_groups,
     function_local_anchors,

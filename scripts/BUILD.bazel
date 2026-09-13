@@ -12,24 +12,6 @@ py_test(
     visibility = ["//scripts/checks:__pkg__"],
 )
 
-py_test(
-    name = "test_original_tu_map",
-    size = "small",
-    srcs = ["test_original_tu_map.py"],
-    deps = [":original_tu_map_lib"],
-    env = _PYTHON_ENV,
-    main = "test_original_tu_map.py",
-)
-
-py_test(
-    name = "test_calibrate_tu_map",
-    size = "small",
-    srcs = ["test_calibrate_tu_map.py"],
-    deps = [":calibrate_tu_map_lib"],
-    env = _PYTHON_ENV,
-    main = "test_calibrate_tu_map.py",
-)
-
 py_binary(
     name = "wasm_server",
     srcs = ["wasm_server.py"],
@@ -55,46 +37,6 @@ py_binary(
     deps = ["//scripts/lib:bazel_actions"],
     env = _PYTHON_ENV,
     main = "generate_bazel_objdiff_report.py",
-)
-
-py_library(
-    name = "bazel_objdiff_report_lib",
-    srcs = ["generate_bazel_objdiff_report.py"],
-    deps = ["//scripts/lib:bazel_actions"],
-)
-
-py_library(
-    name = "original_tu_map_lib",
-    srcs = ["generate_original_tu_map.py"],
-    deps = [
-        ":bazel_objdiff_report_lib",
-        "//scripts/lib:bazel_actions",
-    ],
-)
-
-py_binary(
-    name = "generate_original_tu_map",
-    srcs = ["generate_original_tu_map.py"],
-    deps = [":original_tu_map_lib"],
-    env = _PYTHON_ENV,
-    main = "generate_original_tu_map.py",
-)
-
-py_library(
-    name = "calibrate_tu_map_lib",
-    srcs = ["calibrate_tu_map.py"],
-    deps = [
-        ":bazel_objdiff_report_lib",
-        "//scripts/lib:bazel_actions",
-    ],
-)
-
-py_binary(
-    name = "calibrate_tu_map",
-    srcs = ["calibrate_tu_map.py"],
-    deps = [":calibrate_tu_map_lib"],
-    env = _PYTHON_ENV,
-    main = "calibrate_tu_map.py",
 )
 
 py_binary(

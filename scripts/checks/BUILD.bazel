@@ -82,8 +82,6 @@ py_test(
 test_suite(
     name = "checks",
     tests = [
-        "//scripts:test_calibrate_tu_map",
-        "//scripts:test_original_tu_map",
         "//scripts:test_pages",
         ":check_bazel_optimization_map",
         ":check_duplicate_definitions",
