@@ -1,4 +1,5 @@
 #include "legoapi/items/objects/gameobjects.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "legoapi/audio/audio.h"
 #include "legoapi/gizmos/transport/grapples.h"
 #include "legoapi/gizmos/fx/gizmopickups.h"
@@ -5731,7 +5732,6 @@ extern "C" f32 AnimDuration(i32, i32, f32, f32, i32);
 f32 SpeederChaseATATInOutMul(NUVEC *, NUVEC *);
 void PlayJumpSfx(GameObject_s *, i32);
 void ReleaseForce(GameObject_s *, i32);
-void ReleaseBuildIt(GameObject_s *, i32);
 void ReleasePush(GameObject_s *);
 void Player_ResetContexts(PLAYERPACKET_s *);
 void SetWeaponIn(GameObject_s *);

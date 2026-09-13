@@ -6,3 +6,4 @@ void InitShadowLights();
 float BlobShadowFade(struct nuvec_s *position, float fade_start, float fade_end, float alpha);
 
 extern "C" int EShadowInfo();
+extern "C" int ShadowInfo();

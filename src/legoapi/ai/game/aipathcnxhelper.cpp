@@ -1,4 +1,5 @@
 #include "decomp.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "gameapi/ai/aisys/aisys.h"
 #include "globals.h"
 #include "legoapi/ai/core/ai_sys_stubs.h"
@@ -23,7 +24,6 @@ struct SHOPINPUT;
 
 extern "C" void *AIPAthFindPathCnx(AISYS_s *, AIPATH_s *, char *, char *, i32 *);
 extern void *CutScene_FindInst(CUTSYS *, char *);
-extern GIZBUILDIT_s *GizBuildIt_Find(WORLDINFO_s *, char *);
 extern FLOWBOX_s *FlowBoxFindByName(GIZFLOW_s *, char *);
 
 void AIPathCalcExtents(AIPATH *path) {

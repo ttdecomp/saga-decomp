@@ -154,7 +154,6 @@ build:target --per_file_copt=^src/legoapi/world/levels/episode\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_teleport\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_gizactions\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_gizmopickups\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_spinner\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/object/gizbuildit\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/object/gizminicut\.cpp$@-O2
 # Turret lookup and hint traversal use the same optimized leaf/loop forms as
@@ -210,7 +209,7 @@ build:target --per_file_copt=^src/legoapi/gizmos/traps/shards\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/trigger/signals\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/props/objects/signal\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/props/objects/tubes\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmos/door/spinner\.cpp$@-O3
+build:target --per_file_copt=^src/legoapi/gizmos/door/gizspinner\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/object/technos\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/transport/teleport\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/transport/tightropes\.cpp$@-O3

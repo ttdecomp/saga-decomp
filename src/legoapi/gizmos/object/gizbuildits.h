@@ -14,6 +14,8 @@ struct VuVec;
 struct GameObject_s;
 struct WORLDINFO_s;
 struct GAMEANIMOBJ_s;
+struct HINT_s;
+enum BUILDIT_FIND_ENUM : i32;
 
 extern i32 LEGOCONTEXT_BUILDIT;
 extern i16 GizBuilditGDeb[6];
@@ -38,6 +40,14 @@ void GizBuildIt_TurnOff(GIZBUILDIT_s *buildit);
 void GizBuildIt_SetHeadTarget(GIZBUILDIT_s *buildit, GameObject_s *player);
 void ReleaseBuildIt(GameObject_s *player, i32 completed);
 void BuildIt_MoveCode(GameObject_s *player);
+void ForceBuildItToUseNext(GIZBUILDIT_s &buildit);
+i32 GizBuildIts_UpdateHint(HINT_s *hint);
+void GizBuildIt_SetToStart(GIZBUILDIT_s *buildit, i32 emit_debris, i32 keep_built_pieces);
+void GizBuildIt_SetToEnd(GIZBUILDIT_s *buildit);
+GIZBUILDIT_s *GizBuildIt_Find(WORLDINFO_s *world, char *name);
+GIZBUILDIT_s *GizBuildIt_FindNearest(WORLDINFO_s *world, GameObject_s *player, BUILDIT_FIND_ENUM mode, i32 shadow);
+f32 GizBuildItMul(GameObject_s *player);
+void GizDrawBuildItPiece(GameObject_s *player, i32 draw_reflection);
 
 extern "C" {
 #endif

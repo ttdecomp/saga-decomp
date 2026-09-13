@@ -1,4 +1,5 @@
 #include "decomp.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "legoapi/actions/character/snake.h"
 #include "MechInputTouch/MechInputTouch_types.h"
 #include "globals.h"
@@ -112,7 +113,6 @@ void JumpCode(GameObject_s *object, i32 jump_pressed, i32 jump_held, u32 animati
 void GizPanel_MoveCode(WORLDINFO_s *world, GameObject_s *object, i32 special_pressed);
 void HatMachine_MoveCode(WORLDINFO_s *world, GameObject_s *object, i32 special_pressed);
 void ZipUp_MoveCode(GameObject_s *object, i32 special_pressed);
-void BuildIt_MoveCode(GameObject_s *object);
 void Lever_MoveCode(WORLDINFO_s *world, GameObject_s *object);
 i32 ThermalDetonator_MoveCode(GameObject_s *object);
 void Detonator_MoveCode(GameObject_s *object);

@@ -555,7 +555,6 @@ void UpdateCoinPacket(COINPACKET_s *, i32, i32) {
 }
 
 u32 GizmoBlowups_TotalScore(void *);
-u32 GizBuildIts_TotalScore(void *);
 u32 GizForce_TotalScore(void *);
 u32 GizObstacles_TotalScore(void *);
 u32 GizTurrets_TotalScore(void *);

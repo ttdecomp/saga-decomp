@@ -331,6 +331,9 @@ cross-TU declarations instead of scattered local `extern` declarations.
   59.54%); no exact function is lost. Target build, four checks, and 120-frame
   Map smoke pass. The context-table owner and body-codegen differences remain
   to be reconstructed.
+  A subsequent API sweep moves the remaining BuildIt call-site declarations
+  into `gizbuildits.h`; it changes no function scores and passes the target
+  build, checks, and 120-frame Map smoke.
 - Original `gizspecial.cpp` combines the callback run, `createGizSpecial`,
   `GizSpecial_GetName`, and `GizSpecial_FindByName`. Moving those three
   functions from the unrelated-helper file into the `-O3` owner and replacing
@@ -356,3 +359,16 @@ cross-TU declarations instead of scattered local `extern` declarations.
   `-O3`; no other function score changes. The `-O3` setting is retained,
   raising whole-binary fuzzy matching from 44.5785% to 44.5985%. The
   remaining body mismatch must be addressed through real source/layout work.
+- Original `gizspinner.cpp` has a single text run of spinner callbacks and
+  implementation functions, with one initializer and adjacent spinner data.
+  The two current `-O3` sources were consolidated under the original basename
+  in `gizmos/door/gizspinner.cpp`. The spinner ID, failure-state array, and
+  output-name array now use the original values and storage types: `-1`,
+  `{-1, -1, 0}`, and `"100% Complete"`, respectively. The merged initializer
+  rises from 0% to 99.35%, `GizSpinner_GetTargetPoints` and
+  `GizSpinner_GetOutputName` improve slightly, and all 11 prior exact bodies
+  remain exact. Whole-binary fuzzy matching rises approximately 44.5985% to
+  44.6004%; no function regresses. The compiler still emits these data
+  definitions in a different order from the original, so their remaining
+  address/layout difference is not considered solved. Target build and
+  120-frame Map smoke pass.

@@ -1,4 +1,5 @@
 #include "decomp.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "globals.h"
 #include "legoapi/legoapi_types.h"
 #include "MechInputTouch/MechInputTouch_types.h"
@@ -356,7 +357,6 @@ static __used__ i32 UnlockHubStuff_UpdateHint(HINT_s *hint) {
 }
 
 i32 GizForce_UpdateHint(HINT_s *);
-i32 GizBuildIts_UpdateHint(HINT_s *);
 i32 ZipUps_UpdateHint(HINT_s *);
 i32 Tag_UpdateHint(HINT_s *);
 i32 Push_UpdateHints(HINT_s *);

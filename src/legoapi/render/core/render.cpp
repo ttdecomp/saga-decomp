@@ -1,4 +1,5 @@
 #include "legoapi/render/core/render.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "nu2api/nu3d/numtl.h"
 #include "legoapi/cutscenes/cutscenes.h"
 #include <stdio.h>
@@ -3905,7 +3906,6 @@ static void DrawCharacterAttachments(GameObject_s *object, NUMTX *joint_matrices
 void CharScene_Draw(WORLDINFO_s *, i32, NUMTX *, NUMTX *);
 void CharMiniKit_Draw(i32, NUMTX *, i32, f32, f32);
 void Customiser_DrawAccessories(CUSTOMISER *, GameObject_s *, NUMTX *);
-void GizDrawBuildItPiece(GameObject_s *, i32);
 i32 Batarang_GetObjectFromCharID(i32);
 void SuperCarry_DrawObject(GameObject_s *);
 void Grapple_DrawLine(GameObject_s *);

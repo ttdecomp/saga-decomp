@@ -1,4 +1,5 @@
 #include "globals.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 
 extern GAMESAVE_s TempGame;
 #include "batman.h"
@@ -49,9 +50,6 @@ extern void InitShop(WORLDINFO_s *);
 extern void DrawShop3D(WORLDINFO_s *);
 extern void Draw3DObjectMtx(WORLDINFO_s *, i32, NUMTX *);
 extern void CutScenePlayer_Reset();
-extern GIZBUILDIT_s *GizBuildIt_Find(WORLDINFO_s *, char *);
-extern void GizBuildIt_SetToEnd(GIZBUILDIT_s *);
-extern GIZBUILDIT_s *GizBuildIt_FindNearest(WORLDINFO_s *, GameObject_s *, BUILDIT_FIND_ENUM, i32);
 extern FadeSystem FadeSys;
 extern GAMESAVE_s TempGame;
 extern i32 shop_save_done;

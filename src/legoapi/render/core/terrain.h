@@ -4,3 +4,4 @@
 
 extern "C" i32 FindPlatInst(i32 instance_index);
 extern "C" i32 TerrainPlatId();
+extern "C" void NewTerrPlatformsOff(void);

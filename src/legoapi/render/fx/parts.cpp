@@ -1,5 +1,6 @@
 #include "legoapi/audio/sfx.h"
 #include "legoapi/render/fx/parts.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "legoapi/legoapi_types.h"
 #include "globals.h"
 #include "gamelib/util/gamelib_util_types.h"
@@ -254,7 +255,6 @@ void CollectHitPoint(GameObject_s *object, NUVEC *position, i32) {
     NewBuzz(object->pad_gamepad->pad, 0.1f, 0);
 }
 void GameCam_Judder(GAMECAMERA_s *, f32, i32, NUVEC *);
-void ReleaseBuildIt(GameObject_s *, i32);
 void ReleasePush(GameObject_s *);
 void ObjHitShield(GameObject_s *, GameObject_s *, i32, BOLT_s *);
 i32 CannotKill(GameObject_s *);
