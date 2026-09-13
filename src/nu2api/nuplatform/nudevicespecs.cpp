@@ -22,11 +22,17 @@ void NuDeviceSpecs::Create() {
     ms_instance->DetermineDeviceSpecs();
 }
 
+void NuDeviceSpecs::Exists() {
+}
+
 void NuDeviceSpecs::Destroy() {
     if (ms_instance != NULL) {
         free(ms_instance);
         ms_instance = NULL;
     }
+}
+
+NuDeviceSpecs::~NuDeviceSpecs() {
 }
 
 void NuDeviceSpecs::DetermineDeviceSpecs() {

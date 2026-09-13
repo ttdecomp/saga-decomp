@@ -133,21 +133,6 @@ NuApplicationState *NuCore::GetApplicationState(void) {
     return state;
 }
 
-NuApplicationState::NuApplicationState() : status(NUAPPLICATIONSTATUS_IDLE) {
-}
-
-void NuPlatform::Destroy() {
-}
-
-void NuPlatform::Exists() {
-}
-
-NuPlatform::NuPlatform() {
-}
-
-NuPlatform::~NuPlatform() {
-}
-
 void NuCopyFilter::destroyResources() {
     NuFramebufferDestroy(copy_fbo);
     NuPostFilterGen::destroyResources();
@@ -267,12 +252,6 @@ void NuPostFilter::initSharedResources(i32, i32) {
 }
 
 void NuPostFilter::renderFrustum(numtx_s *) {
-}
-
-void NuDeviceSpecs::Exists() {
-}
-
-NuDeviceSpecs::~NuDeviceSpecs() {
 }
 
 #include "nu2api/nu3d/nurndrstat.h"
@@ -1805,17 +1784,6 @@ void NuMotionFilterGen::render() {
 }
 
 void NuSpeedBlurFilter::initResources() {
-}
-
-void NuApplicationState::SetStatus(NUAPPLICATIONSTATUS value) {
-    status = value;
-}
-
-NUAPPLICATIONSTATUS NuApplicationState::GetStatus() const {
-    return status;
-}
-
-NuApplicationState::~NuApplicationState() {
 }
 
 NuDeferredFilterGen::NuDeferredFilterGen() {

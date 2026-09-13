@@ -13,6 +13,20 @@ void NuPlatform::Create(void) {
     }
 }
 
+void NuPlatform::Exists() {
+}
+
+void NuPlatform::Destroy() {
+    free(ms_instance);
+    ms_instance = NULL;
+}
+
+NuPlatform::NuPlatform() {
+}
+
+NuPlatform::~NuPlatform() {
+}
+
 char *g_fontExtension = NULL;
 char *g_platformName = NULL;
 

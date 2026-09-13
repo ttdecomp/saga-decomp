@@ -899,3 +899,29 @@ per-lane maximum. Ordinary explicit field operations at `-O3` match both
 arithmetic operators exactly and bring `Max` to 99.95%, raising overall
 matching from 44.691140% to 44.693275% without regressions. No vector
 intrinsics, assembly, attributes, or forced initializer were needed.
+
+### Application-state and platform lifecycle boundaries
+
+The original local-symbol sequence separates `NuApplicationState.cpp`,
+`NuPlatform.cpp`, and `nudevicespecs.cpp` into adjacent initializer blocks.
+The four exact application-state methods form the complete text run
+`0x000f0f80..0x000f0fbf`; they now live in `NuApplicationState.cpp` at
+their previous effective `-O2`, with no score change. No unused include was
+added to manufacture its absent initializer.
+
+`NuPlatform::{Exists,Destroy,NuPlatform,~NuPlatform}` were stranded in
+`nucore.cpp` between `Create` and `SetCurrentPlatform` in the original
+address sequence. They now join the real `NuPlatform.cpp` owner at `-O3`.
+The old `nucore/NuPlatform.h` declared an incompatible second class; it now
+forwards to the canonical platform header, which declares the moved
+methods. The original `Destroy` frees `ms_instance` and clears it; that
+ordinary lifetime body raises the function from 30% to exact.
+
+`NuDeviceSpecs::Exists` and its destructor similarly rejoin the existing
+`nudevicespecs.cpp` owner. A per-file optimization trial found `-O3`
+strictly better than `-O2`: both give the same five non-initializer scores,
+but the genuine initializer reaches 99.35% only at `-O3`. Against the
+previous default setting, `Create`, `Destroy`, and the constructor become
+exact, while `DetermineDeviceSpecs` rises from 0% to 86.62%. Together with
+`NuPlatform::Destroy`, this batch raises overall matching from 44.693275%
+to 44.7138% with four newly exact functions and no regressions.

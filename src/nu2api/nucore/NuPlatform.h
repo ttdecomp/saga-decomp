@@ -1,8 +1,3 @@
 #pragma once
 
-struct NuPlatform {
-    void Destroy();
-    void Exists();
-    NuPlatform();
-    ~NuPlatform();
-};
+#include "nu2api/nuplatform/nuplatform.h"
