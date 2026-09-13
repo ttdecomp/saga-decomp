@@ -12,6 +12,7 @@ extern float DIEAIRJUMPSPEED;
 #include "nu2api/nucore/numechptr.hpp"
 
 // Character motion / animation / camera helpers (module legoapi/characters).
+void Move_BEAST(GameObject_s *object);
 i32 SetObjTarget(GameObject_s *object, GameObject_s *target);
 i32 SetPartTarget(GameObject_s *object, PART_s *target);
 PART_s *TargetPart(GameObject_s *, NUVEC *, NUVEC *, f32, f32, i32, i32);

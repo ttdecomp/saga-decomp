@@ -275,3 +275,20 @@ cross-TU declarations instead of scattered local `extern` declarations.
   objdiff shows changed branch/boolean-result codegen; resolve that from the
   function's actual control flow, not an optimization or attribute shortcut.
   Target build, symbol coverage, checks, and 120-frame Map smoke passed.
+- Original `gizobstacle.cpp` local symbols join the registration callbacks,
+  eight-entry update table's static callbacks, and the 64-byte trigger array
+  with its count. The latter two were incorrectly exported from a separate
+  current file. Merging the `gizmo/gizmos/gizmos_gizobstacles.cpp` functions
+  into the owner under `gizmos/object/gizobstacle.cpp`, retaining `-O3`,
+  makes those trigger variables file-local and reconstructs the 93-byte
+  `_GLOBAL__sub_I_gizobstacle.cpp` initializer. The similarly named
+  `gizmo/object/gizobstacle.cpp` containing `InitPaintPuzzle` remains separate;
+  the initializer name alone is not ownership evidence. Across merge plus
+  rename, all 18 previously exact obstacle functions stay exact, the
+  initializer rises 29.41% to 99.35%, and `GizObstacles_AddTrigger` rises
+  40.40% to 71.30%. Whole-binary fuzzy matching moves 44.5710% to 44.5703%
+  because the large, already low-scoring proximity/reset/update bodies
+  currently lose some fuzzy alignment. Their remaining codegen differences
+  require body-level diagnosis, not a reversal of the evidenced static-data
+  ownership. Target build, symbol coverage, checks, and 120-frame Map smoke
+  pass.
