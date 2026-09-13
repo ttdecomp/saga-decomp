@@ -527,7 +527,7 @@ void HomeNearestTorpTarget(BOLT_s *bolt, TORPEDOPACKET_s *packet) {
         f32 seek = (1.0f + NU_SIN_LUT(bolt->time / type->field_14 * 16384.0f + 32768.0f + 16384.0f)) * 15.0f;
         target_x = SeekRot(current_x, target_x, seek);
         target_y = SeekRot(current_y, target_y, seek);
-        NUMTX matrix __attribute__((aligned(16)));
+        NUMTX_ALIGNED16 matrix;
         NuMtxSetIdentity(&matrix);
         NUANGVEC angles;
         angles.x = target_x;
@@ -551,7 +551,7 @@ void Torpedo_Ricochet(BOLT_s *bolt, TORPEDOPACKET_s *packet) {
             NUVEC axis;
             NuVecCross(&axis, &packet->ricochet_position, &bolt->velocity);
             NuVecNorm(&axis, &axis);
-            NUMTX matrix __attribute__((aligned(16)));
+            NUMTX_ALIGNED16 matrix;
             NuMtxSetIdentity(&matrix);
             f32 lengths = NuVecMag(&packet->ricochet_position) * NuVecMag(&bolt->velocity);
             f32 dot = NuVecDot(&packet->ricochet_position, &bolt->velocity);

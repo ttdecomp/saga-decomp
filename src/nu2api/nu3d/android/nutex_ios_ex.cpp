@@ -26,7 +26,7 @@ GLuint g_earlyColorFramebuffer;
 GLuint g_defaultFramebuffer;
 GLuint g_currentFramebuffer;
 GLuint g_earlyColorMSAAFramebuffer;
-__attribute__((weak)) GLuint g_earlyColorTexture = 0;
+SAGA_HOST_WEAK GLuint g_earlyColorTexture = 0;
 
 u32 g_textureHash;
 i32 comeFromHash;

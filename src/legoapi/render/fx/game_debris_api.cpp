@@ -65,7 +65,7 @@ extern "C" {
 
     i32 AddGameDebrisMtx(APIDEBRISSYS_s *system, i32 type, NUVEC *position, i32 count, NUMTX *matrix) {
         if (type >= 0 && type < system->capacity && system->entries[type].effect != -1 && count > 0) {
-            NUMTX orientation __attribute__((aligned(16)));
+            NUMTX_ALIGNED16 orientation;
             NuMtxSetRotationX(&orientation, 0x4000);
             NuMtxMulR(&orientation, &orientation, matrix);
             AddVariableShotDebrisEffectMtx3(system->entries[type].effect, position, &nuvec_zero, count, &orientation,

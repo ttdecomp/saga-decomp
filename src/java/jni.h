@@ -1162,7 +1162,7 @@ jint JNI_GetCreatedJavaVMs(JavaVM**, jsize, jsize*);
 #endif
 
 #define JNIIMPORT
-#define JNIEXPORT __attribute__((visibility("default")))
+#define JNIEXPORT
 #define JNICALL
 
     /*

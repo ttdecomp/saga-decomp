@@ -101,7 +101,7 @@ static void Shards_Draw(void *context, void *, float) {
         shard->state_flags &= ~0x10;
         if ((shard->state_flags & 0x0a) != 2)
             continue;
-        NUMTX matrix __attribute__((aligned(16)));
+        NUMTX_ALIGNED16 matrix;
         if (shard->state_flags & 4) {
             u16 spin = (u16)(i32)((f32)(i32)shard->spin_angle + 98304.0f * shard->collection_time);
             NuMtxSetRotationY(&matrix, spin);

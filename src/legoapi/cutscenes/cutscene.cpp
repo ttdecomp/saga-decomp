@@ -123,7 +123,6 @@ f32 cutscenecam_focusDistance = 0.0f;
 f32 cutscenecam_focalLength = 0.0f;
 i32 CameraDOFHack = 0;
 u8 set_cutscenecammtx = 0;
-__attribute__((visibility("hidden"))) CHARSCENE_s *CharScene_Area = NULL;
 
 static void CS_no_fog(NUFPAR *) {
     CS_CutInfo->flags |= 4;
@@ -529,7 +528,7 @@ static NUFPCOMJMP CutScene_ConfigKeywords[] = {
     {NULL, NULL},
 };
 
-static __attribute__((noinline)) void CutScene_Configure(CUTINFO *cut, char *name, VARIPTR *buf, VARIPTR *buf_end) {
+static __used__ void CutScene_Configure(CUTINFO *cut, char *name, VARIPTR *buf, VARIPTR *buf_end) {
     CUTSCENEPLAYEROBJ state_entries[32];
 
     CS_CutInfo = cut;
@@ -713,36 +712,6 @@ void *CutScenes_Load(char *config, NUGSCN *gscn1, NUGSCN *gscn2, i32 param1, VAR
     memmove(sys->cuts, entries, sys->count * sizeof(CUTINFO *));
     buf->void_ptr = reinterpret_cast<char *>(buf->void_ptr) + sys->count * sizeof(CUTINFO *);
     return sys;
-}
-
-void CharScenes_LevelLoad(WORLDINFO *world) {
-    if (CHARCOUNT <= 0) {
-        return;
-    }
-
-    for (i32 i = 0; i < CHARCOUNT; i++) {
-        CHARSCENE_s *entry = &world->minikit.character_scenes[i];
-        entry->scene = NULL;
-
-        // Check if we should load this character scene
-        if ((CharScene_Area == NULL || CharScene_Area[i].scene == NULL) && (CDataList[i].flags & 1) != 0 &&
-            world->cutscene_sys != NULL) {
-            // Check if this character is in a cutscene
-            u32 *cutscene_flags = *(u32 **)((char *)world->cutscene_sys + 8);
-            u32 flag = (cutscene_flags[i >> 5] >> (i & 0x1f)) & 1;
-            if (flag != 0) {
-                // Load the character scene
-                char path[136];
-                VARIPTR buf_end = world->unknown_0108;
-                sprintf(path, "chars\\%s\\%s.gsc", CDataList[i].dir, CDataList[i].file);
-                NUGSCN *scene = NuGScnRead(&world->giz_buffer, buf_end, path);
-                entry->scene = scene;
-                if (scene != NULL) {
-                    NuSpecialFind(scene, &entry->special_scene, CDataList[i].file, 1);
-                }
-            }
-        }
-    }
 }
 
 // --- Extern "C" block: functions with confirmed C linkage in original libTTapp.so ---

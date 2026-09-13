@@ -108,7 +108,16 @@ typedef unsigned long abi_ulong; // NOLINT
 
 ## 3. Calling conventions (i686, plain GCC cdecl — no fastcall/thiscall)
 
-Everything, including `this` and floats, goes on the stack, right-to-left.
+For ordinary C++ calls, including `this` and float arguments, parameters go
+on the stack, right-to-left.
+Do not add `regparm`, `fastcall`, `thiscall`, or similar calling-convention
+attributes to reconstructed functions to improve a match score. Even when a
+register appears to hold an argument in the original disassembly, reproduce
+the behavior through ordinary C++ types and control flow, and document any
+unresolved calling-convention difference instead of forcing an ABI in source.
+One such unresolved local case is `pathEditor_DestroySharedNode`: the original
+callee reads its pointer from `%eax`. This observation does not justify a
+source-level calling-convention override.
 Verified at `-O0` (frame pointers):
 
 ```

@@ -58,9 +58,9 @@ struct nudisplayscene_s {
     i32 unknown_40;        // 0x40
     u32 unknown_44;        // 0x44
     u32 unknown_48;        // 0x48
-    u32 unknown_4c;        // 0x4c
-    u32 unknown_50;        // 0x50
-    u32 unknown_54;        // 0x54
+    f32 unknown_4c;        // 0x4c — deferred-shading parameter 0
+    f32 unknown_50;        // 0x50 — deferred-shading parameter 1
+    f32 unknown_54;        // 0x54 — deferred-shading parameter 2
     union {
         NuBloomParameters bloom;
         struct {

@@ -256,7 +256,7 @@ void NuRenderDevice::SetThisTreadAsRender() {
 // Re-entrant GL critical section
 // ---------------------------------------------------------------------------
 
-void __attribute__((weak)) NuRenderDevice::BeginCriticalSection(const char * /*file*/, i32 /*line*/) {
+void SAGA_HOST_WEAK NuRenderDevice::BeginCriticalSection(const char * /*file*/, i32 /*line*/) {
     pthread_mutex_lock(&this->mutex2);
     const i32 previous_lock_count = this->lock_count++;
     if (previous_lock_count == 0) {
@@ -273,7 +273,7 @@ void __attribute__((weak)) NuRenderDevice::BeginCriticalSection(const char * /*f
     }
 }
 
-void __attribute__((weak)) NuRenderDevice::EndCriticalSection(const char * /*file*/, i32 /*line*/) {
+void SAGA_HOST_WEAK NuRenderDevice::EndCriticalSection(const char * /*file*/, i32 /*line*/) {
     if (--this->lock_count == 0) {
         const i32 context_index = gt_glContextIndex;
         const bool render_state_requires_detach = static_cast<u32>(this->field50_0x50 - 2) <= 1;
@@ -285,7 +285,7 @@ void __attribute__((weak)) NuRenderDevice::EndCriticalSection(const char * /*fil
     pthread_mutex_unlock(&this->mutex2);
 }
 
-void __attribute__((weak)) NuRenderDevice::SwapBuffers() {
+void SAGA_HOST_WEAK NuRenderDevice::SwapBuffers() {
     if (NuCore::GetApplicationState()->GetStatus() == 1) {
         return;
     }
@@ -305,7 +305,7 @@ void NuRenderDevice::OnWindowCreated(ANativeWindow *window) {
 // EGL config selection + backbuffer sizing
 // ---------------------------------------------------------------------------
 
-EGLConfig __attribute__((weak)) NuRenderDevice::SelectEGLConfig() {
+EGLConfig SAGA_HOST_WEAK NuRenderDevice::SelectEGLConfig() {
     // Preferred EGL config: 565 colour, 24-bit depth, GLES2 conformant,
     // pbuffer + window capable.
     pthread_mutex_lock(&this->mutex);
@@ -361,7 +361,7 @@ void NuRenderDevice::DetermineBackBufferResolution(i32 width, i32 height) {
     }
 }
 
-void __attribute__((weak)) NuRenderDevice::InitialiseOpenGLContext(ANativeWindow *window_) {
+void SAGA_HOST_WEAK NuRenderDevice::InitialiseOpenGLContext(ANativeWindow *window_) {
     EGLNativeWindowType window = reinterpret_cast<EGLNativeWindowType>(window_);
 
     pthread_mutex_lock(&this->mutex);

@@ -1,12 +1,15 @@
 #pragma once
 
+#include "decomp.h"
 #include "nu2api/nucore/common.h"
 
 #include "nu2api/nusound/nusound_system.hpp"
 
-class __attribute__((packed, aligned(4))) NuSoundBuffer {
+// Android x86 naturally uses 4-byte alignment; the host needs the attribute
+// to retain the target offsets of the embedded 64-bit fields.
+class SAGA_HOST_PACKED_ALIGN4 NuSoundBuffer {
   public:
-    struct __attribute__((packed, aligned(4))) Context {
+    struct SAGA_HOST_PACKED_ALIGN4 Context {
         u64 read_size;
         u64 size2;
         u64 size3;

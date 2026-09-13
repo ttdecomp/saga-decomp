@@ -5794,6 +5794,7 @@ void Tag_SetMode(i32 mode) {
 
 extern i16 id_LUKESKYWALKERDAGOBAH;
 i32 TakeOverYodaSeekDistanceHack(GameObject_s *, GameObject_s *, NUVEC *);
+// GCC otherwise rewrites this once-called helper; the original has a separate local body.
 static __attribute__((noinline)) GameObject_s *Tag_FindGameObject_TRANSFER(GameObject_s *object) {
     f32 nearest_distance = object->character_context == 0x17 ? 1.44f : 0.48999998f;
     const i32 count = Tag_Mode == 3 ? HIGHGAMEOBJECT : 8;

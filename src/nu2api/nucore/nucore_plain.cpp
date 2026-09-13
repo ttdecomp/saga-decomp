@@ -47,10 +47,16 @@ extern "C" NUGCUTLOCATORFNENTRY_s *locatorfns;
 #include "nu2api/nucore/numemory.h"
 #include "nu2api/numath/nufloat.h"
 #include "nu2api/nu3d/nutex.h"
+#include "nu2api/nu3d/android/nutex_ios_ex.h"
 #include "nu2api/nu3d/nuqfnt.h"
 
 void NuErrorPrint(char *);
 void NuDebugMsgPrint(char *);
+extern i32 nuspecial_draw_state;
+extern NUQFNT *system_qfont;
+i32 UnicodeToIndexFast(VUCHARIDX *map, i32 count, u16 unicode);
+void NuLgtArcLaserEx(i32 type, NUVEC *start, NUVEC *end, NUVEC *control, f32 width, f32 segment_length, f32 wobble,
+                     f32 duration, i32 colour, i32 flags);
 
 #include "decomp.h"
 #include "java/java.h"
@@ -61,6 +67,7 @@ void NuDebugMsgPrint(char *);
 #include "nu2api/nucore/nugcutscene.h"
 #include "nu2api/nucore/nupad.h"
 #include "nu2api/nucore/nuthread.h"
+#include "nu2api/nucore/bgproc.h"
 #include "nu2api/nucore/nuptrblock.h"
 #include "nu2api/nufile/nufile.h"
 #include "nu2api/nu3d/nudlist.h"
@@ -70,6 +77,7 @@ void NuDebugMsgPrint(char *);
 #include "nu2api/nu3d/nurndrstat.h"
 #include "nu2api/nu3d/nuspecial.h"
 #include "nu2api/nu3d/nupostresources.h"
+#include "nu2api/nu3d/android/nutimebar_plain.h"
 #include "nu2api/nu3d/nuvport.h"
 #include "nu2api/nu3d/nuocclusion.h"
 #include "nu2api/nu3d/nurndr.h"
@@ -79,6 +87,7 @@ void NuDebugMsgPrint(char *);
 #include "nu2api/numath/nuquat.h"
 #include "nu2api/nu3d/NuRenderDevice.h"
 #include "nu2api/nucore/NuDynamicLight.h"
+#include "nu2api/nucore/nuvuvec.hpp"
 #include "nu2api/numath/numtx.h"
 #include "globals.h"
 
@@ -108,10 +117,16 @@ extern "C" {
     i32 nuspecial_shadowLightHaveClipOverrides = 0;
     void *nuspecial_shadowLight[4];
     i32 nuspecial_shadowLightClipOverride[4];
+    GLuint g_colorRenderbuffer;
+    GLuint g_depthRenderbuffer;
+    extern i32 g_writingSaveCriticalSection;
 }
 
 extern "C" void ANI_FixUpAddrs(ani3_animheader_s *, isize, i32);
 extern "C" void ANI_Ani3ExtractAllNodeCurves(ani3_animheader_s *, f32, f32 *, i32, char *);
+extern "C" {
+    i32 nuspecial_clip_state = -1;
+}
 
 namespace {
     struct NuPlainSpecialHandleLayout {
@@ -176,7 +191,6 @@ namespace {
         NuPlainLegacyObjectBoundsLayout *next;
     };
 
-    static i32 nuspecial_clip_state = -1;
 } // namespace
 
 static i32 NuTimeBar_EngineEnabled;
@@ -946,34 +960,33 @@ extern "C" {
 
 // Local helpers matching original static display-list setters (t local symbols)
 
-static __attribute__((used)) void NuDisplayListSetID(nudisplaylistitem_s *item, unsigned char id) {
+static __used__ void NuDisplayListSetID(nudisplaylistitem_s *item, unsigned char id) {
     item->id = id;
 }
-static __attribute__((used)) void NuDisplayListAddItem(nudisplaylist_s *list, unsigned char id, void *item) {
+static __used__ void NuDisplayListAddItem(nudisplaylist_s *list, unsigned char id, void *item) {
     (void)list;
     (void)id;
     (void)item;
 }
-static __attribute__((used)) void NuDisplayListSetItem(nudisplaylistitem_s *item, unsigned char a, unsigned char b,
-                                                       void *c) {
+static __used__ void NuDisplayListSetItem(nudisplaylistitem_s *item, unsigned char a, unsigned char b, void *c) {
     (void)item;
     (void)a;
     (void)b;
     (void)c;
 }
-static __attribute__((used)) void NuDisplayListSetNext(nudisplaylistitem_s *item, void *next) {
+static __used__ void NuDisplayListSetNext(nudisplaylistitem_s *item, void *next) {
     item->next = next;
 }
-static __attribute__((used)) void NuDisplayListSetID_CNT(nudisplaylistitem_s *item) {
+static __used__ void NuDisplayListSetID_CNT(nudisplaylistitem_s *item) {
     item->id = 0;
 }
-static __attribute__((used)) void NuDisplayListSetID_RET(nudisplaylistitem_s *item) {
+static __used__ void NuDisplayListSetID_RET(nudisplaylistitem_s *item) {
     item->id = 4;
 }
-static __attribute__((used)) void NuDisplayListSetID_CALL(nudisplaylistitem_s *item) {
+static __used__ void NuDisplayListSetID_CALL(nudisplaylistitem_s *item) {
     (void)item;
 }
-static __attribute__((used)) void NuDisplayListSetID_NEXT(nudisplaylistitem_s *item) {
+static __used__ void NuDisplayListSetID_NEXT(nudisplaylistitem_s *item) {
     item->id = 1;
 }
 
@@ -1286,12 +1299,47 @@ extern "C" {
     void NuIOS_AwardAchievement(void) {
     }
     void NuIOS_CheckCurrentFramebuffer(void) {
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        }
     }
+    void NuIOS_DeallocateSystemRenderbuffer(GLuint renderbuffer);
     void NuIOS_DeallocateSystemFramebuffers(void) {
+        NuIOS_DeallocateSystemRenderbuffer(g_colorRenderbuffer);
+        if (g_earlyColorFramebuffer != 0) {
+            glDeleteFramebuffers(1, &g_earlyColorFramebuffer);
+            g_earlyColorFramebuffer = 0;
+        }
+        if (g_earlyColorTexture != 0) {
+            glDeleteTextures(1, &g_earlyColorTexture);
+            g_earlyColorTexture = 0;
+        }
+        if (g_defaultFramebuffer != 0) {
+            glDeleteFramebuffers(1, &g_defaultFramebuffer);
+            g_defaultFramebuffer = 0;
+        }
+        if (g_colorRenderbuffer != 0) {
+            glDeleteRenderbuffers(1, &g_colorRenderbuffer);
+            g_colorRenderbuffer = 0;
+        }
+        if (g_depthRenderbuffer != 0) {
+            glDeleteRenderbuffers(1, &g_depthRenderbuffer);
+            g_depthRenderbuffer = 0;
+        }
+        g_currentFramebuffer = 0;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    void NuIOS_DeallocateSystemRenderbuffer(void) {
+    void NuIOS_DeallocateSystemRenderbuffer(GLuint) {
     }
     void NuIOS_FreeMemoryForSuspend(void) {
+        const char *source_path = "i:/SagaTouch-Android_9176564/nu2api.saga/nuandroid/ios_graphics.cpp";
+        BeginCriticalSectionGL(source_path, 270);
+        NuIOS_DeallocateSystemFramebuffers();
+        glReleaseShaderCompiler();
+        glFinish();
+        EndCriticalSectionGL(source_path, 279);
+        NuThreadCriticalSectionBegin(g_performingBgProcWorkCritSec);
+        NuThreadCriticalSectionBegin(g_writingSaveCriticalSection);
     }
     // Locale string filled by the platform layer (Java nativeSetLanguage on
     // device; LANG environment on host) and cached result index.
@@ -1359,7 +1407,8 @@ extern "C" {
             return g_languageIndex = 0x11;
         return -1;
     }
-    void NuIOS_HardwareSupportsRetina(void) {
+    i32 NuIOS_HardwareSupportsRetina(void) {
+        return 1;
     }
     i32 NuIOS_IsLowestEndDevice(void) {
         return g_isLowestEndDevice;
@@ -2883,9 +2932,29 @@ extern "C" {
     }
     void NuQFntCreate(void) {
     }
-    void NuQFntDestroy(void) {
+    void NuQFntDestroy(VUFNT *font) {
+        if (font != NULL) {
+            NUMTL *material = font->mtl;
+            i32 texture_id = material->tex_id;
+            NuMtlDestroy(material);
+            if ((font->flags & 1) == 0) {
+                NuTexDestroy(texture_id);
+            }
+        }
     }
-    void NuQFntEncodeUnicodeString(void) {
+    void NuQFntEncodeUnicodeString(NUQFNT *font, u16 *text) {
+        if (font == NULL) {
+            font = system_qfont;
+        }
+        if (font == NULL) {
+            return;
+        }
+        VUFNT *vufnt = static_cast<VUFNT *>(font);
+        while (*text != 0) {
+            i32 index = UnicodeToIndexFast(vufnt->unicode_map, vufnt->unicode_count, *text);
+            *text = static_cast<u16>(static_cast<u16>(index) == 0xffff ? '?' : index);
+            ++text;
+        }
     }
     NUQFNT_CSMODE NuQFntGetCoordinateSystem(void) {
         return NuQFntCSMode;
@@ -2915,17 +2984,47 @@ extern "C" {
         NuQFntPrintU(font, text);
         NuQFntPopPrintMode();
     }
-    void NuQFntPrint2dW(void) {
+    void NuQFntPrint2dW(NUQFNT *font, u16 *text) {
+        NuQFntPushPrintMode(2);
+        NuQFntPrintW(font, text);
+        NuQFntPopPrintMode();
     }
-    void NuQFntPrint3DU(void) {
+    void NuQFntPrint3DU(NUQFNT *font, char *text) {
+        NuQFntPushPrintMode(4);
+        NuQFntPrintU(font, text);
+        NuQFntPopPrintMode();
     }
-    void NuQFntPrint3DW(void) {
+    void NuQFntPrint3DW(NUQFNT *font, u16 *text) {
+        NuQFntPushPrintMode(4);
+        NuQFntPrintW(font, text);
+        NuQFntPopPrintMode();
     }
-    void NuQFntPrintEx(void) {
+    void NuQFntPrintEx(NUQFNT *font, i32 x, i32 y, i32 alignment, const char *format, ...) {
+        char text[1024];
+        NuQFntPushPrintMode(2);
+        va_list arguments;
+        va_start(arguments, format);
+        vsprintf(text, format, arguments);
+        va_end(arguments);
+        i32 width = static_cast<i32>(NuQFntPrintLenU(font, text));
+        if (alignment == 0x20) {
+            x -= width;
+        } else if (alignment == 0x40) {
+            x -= width / 2;
+        }
+        NuQFntMove(font, static_cast<f32>(x), static_cast<f32>(y), 0.0f);
+        NuQFntPrintU(font, text);
+        NuQFntPopPrintMode();
     }
-    void NuQFntPrintLenV(void) {
+    f32 NuQFntPrintLenV(NUQFNT *font, const char *format, va_list arguments) {
+        char text[1024];
+        vsprintf(text, format, arguments);
+        return NuQFntPrintLenU(font, text);
     }
-    void NuQFntPrintV(void) {
+    void NuQFntPrintV(NUQFNT *font, const char *format, va_list arguments) {
+        char text[1024];
+        vsprintf(text, format, arguments);
+        NuQFntPrintU(font, text);
     }
     void NuQFntPushCoordinateSystem(NUQFNT_CSMODE mode) {
         if (NuQFntCSModeStackIndex < 16) {
@@ -2934,19 +3033,45 @@ extern "C" {
         }
         NuQFntSetCoordinateSystem(mode);
     }
-    void NuQFntSet2d(void) {
+    void NuQFntSet2d(NUQFNT *font) {
+        NuQFntPushPrintMode(2);
+        NuQFntSet(font);
+        NuQFntPopPrintMode();
     }
     void NuQFntSetColour2d(NUQFNT *font, u32 colour) {
         NuQFntPushPrintMode(2);
         NuQFntSetColour(font, colour);
         NuQFntPopPrintMode();
     }
-    void NuQFntSetPointSize(void) {
+    void NuQFntSetScale2d(NUQFNT *font, f32 x_scale, f32 y_scale);
+    void NuQFntSetPointSize(NUQFNT *font, f32 width, f32 height) {
+        if (font == NULL) {
+            font = system_qfont;
+        }
+        if (font == NULL) {
+            return;
+        }
+        VUFNT *vufnt = static_cast<VUFNT *>(font);
+        u16 glyph_index = NuQFntEncodeUnicodeChar(font, 'M');
+        f32 x_scale;
+        f32 y_scale;
+        if (glyph_index == 0xffff) {
+            y_scale = height * 18.0f / vufnt->height;
+            x_scale = y_scale / height;
+        } else {
+            x_scale = width * 7.0f / vufnt->glyphs[glyph_index].width;
+            y_scale = height * 18.0f / vufnt->height;
+        }
+        NuQFntSetScale(font, x_scale, y_scale);
+        NuQFntSetScale2d(font, x_scale, y_scale);
     }
     void NuQFntSetPrintMode(u32 mode) {
         NuQFntMode = mode;
     }
-    void NuQFntSetScale2d(void) {
+    void NuQFntSetScale2d(NUQFNT *font, f32 x_scale, f32 y_scale) {
+        NuQFntPushPrintMode(2);
+        NuQFntSetScale(font, x_scale, y_scale);
+        NuQFntPopPrintMode();
     }
     void NuQFntWrite(void) {
     }
@@ -2979,19 +3104,24 @@ extern "C" {
         currentScene.unknown_48 = 1;
     }
     void NuDeferredShadingSetParameterf(i32 parameter, f32 value) {
-        if (parameter == 0)
-            memcpy(&currentScene.unknown_4c, &value, sizeof(value));
-        else if (parameter == 1)
-            memcpy(&currentScene.unknown_50, &value, sizeof(value));
-        else if (parameter == 2)
-            memcpy(&currentScene.unknown_54, &value, sizeof(value));
+        switch (parameter) {
+            case 0:
+                currentScene.unknown_4c = value;
+                break;
+            case 1:
+                currentScene.unknown_50 = value;
+                break;
+            case 2:
+                currentScene.unknown_54 = value;
+                break;
+        }
     }
     void NuDepthOfFieldEffect(f32 strength, f32 near_distance, f32 far_distance) {
         currentScene.dof.enabled = 1;
         currentScene.dof.strength = strength;
         currentScene.dof.near_distance = near_distance;
-        currentScene.dof.bias = 0.0f;
         currentScene.dof.far_distance = far_distance;
+        currentScene.dof.bias = 0.0f;
         currentScene.dof.mode = 3;
         if (NuRndrDoingScreenGrab != 0) {
             currentScene.dof.enabled = 0;
@@ -3116,6 +3246,7 @@ extern "C" {
     void NuFramebufferResolveAll(bool) {
     }
     void NuFramebufferResolveMultisample(i32) {
+        NuFramebufferResolveAll(true);
     }
     void NuFramebufferSetClearColor(void) {
     }
@@ -3180,7 +3311,7 @@ extern "C" {
         laser->end_width_ratio = end_width / width;
         // The original tests the arc cursor here, even for a straight laser.
         if ((NuLgtArcLaserFrame & 1) == 0 || NuLgtLaserData[NuLgtArcLaserCnt].seed == 0) {
-            laser->seed = NuLgtRand();
+            NuLgtLaserData[NuLgtLaserCnt].seed = NuLgtRand();
         }
         NuLgtRand();
         NuLgtRand();
@@ -3440,7 +3571,7 @@ extern "C" {
     }
     void NuRenderContextSetAlphaBlend(void) {
     }
-    __attribute__((weak)) void NuRenderContextSetViewProj(NUMTX *view, NUMTX *projection) {
+    SAGA_HOST_WEAK void NuRenderContextSetViewProj(NUMTX *view, NUMTX *projection) {
         extern f32 g_renderContext_viewProj[16];
         extern f32 g_renderContext_viewProjInverse[16];
         extern f32 g_renderContext_view[16];
@@ -3527,8 +3658,20 @@ extern "C" {
     }
     void NuSpecialClearShadowLights(void) {
     }
-    i32 NuSpecialClipTestExtents(void *, void *) {
-        return 0;
+    i32 NuSpecialClipTestExtents(void *special, void *matrix_arg) {
+        NUMTX *matrix = static_cast<NUMTX *>(matrix_arg);
+        NuPlainSpecialHandleLayout *handle = static_cast<NuPlainSpecialHandleLayout *>(special);
+        if (handle->special != NULL) {
+            NuPlainLegacySceneLayout *scene = reinterpret_cast<NuPlainLegacySceneLayout *>(handle->scene);
+            NuPlainLegacySpecialLayout *legacy = static_cast<NuPlainLegacySpecialLayout *>(handle->special);
+            NuPlainLegacyInstanceBoundsLayout *instance =
+                reinterpret_cast<NuPlainLegacyInstanceBoundsLayout *>(legacy->instance);
+            NuPlainLegacyObjectBoundsLayout *object =
+                static_cast<NuPlainLegacyObjectBoundsLayout *>(scene->objects[instance->object_index]);
+            return NuCameraClipTestExtents(&object->minimum, &object->maximum, matrix, 0.0f, 0);
+        }
+        NuPlainDisplaySpecialLayout *display = static_cast<NuPlainDisplaySpecialLayout *>(handle->display_special);
+        return NuCameraClipTestExtents(&display->min, &display->max, matrix, 0.0f, 0);
     }
     i32 NuSpecialClipTestShadowLights(NUVEC *, NUVEC *, i32) {
         return 0;
@@ -3543,10 +3686,22 @@ extern "C" {
         return 0;
     }
     void NuSpecialConstAlpha(i32 enabled, f32 alpha) {
+        if (enabled != 0) {
+            nuspecial_const_alpha = alpha;
+            nuspecial_draw_state |= 1;
+        } else {
+            nuspecial_draw_state &= ~1;
+        }
         nuspecial_const_alpha_enabled = enabled;
-        nuspecial_const_alpha = alpha;
     }
-    void NuSpecialConstTint(i32, NUVEC *) {
+    void NuSpecialConstTint(i32 enabled, NUVEC *tint) {
+        if (enabled != 0) {
+            memcpy(&nuspecial_const_tint, tint, sizeof(nuspecial_const_tint));
+            nuspecial_draw_state |= 2;
+        } else {
+            nuspecial_draw_state &= ~2;
+        }
+        nuspecial_const_tint_enabled = enabled;
     }
     i32 NuSpecialDrawAt(void *special, NUMTX *mtx) {
         NuPlainSpecialHandleLayout *handle = reinterpret_cast<NuPlainSpecialHandleLayout *>(special);
@@ -3568,18 +3723,35 @@ extern "C" {
         }
         return NuDisplayListRndrSpecial(reinterpret_cast<nuhspecial_s *>(special), mtx, 0, NULL, NULL);
     }
-    void NuSpecialDrawSmoothSkin(void) {
+    i32 NuSpecialDrawSmoothSkin(void *special, NUMTX *skin_matrices, NUMTX *world_matrix) {
+        NuPlainSpecialHandleLayout *handle = static_cast<NuPlainSpecialHandleLayout *>(special);
+        if (handle->scene == NULL || handle->display_special == NULL) {
+            return 0;
+        }
+        return NuDisplayListRndrSpecial(reinterpret_cast<nuhspecial_s *>(special), world_matrix, 2, skin_matrices,
+                                        NULL);
     }
     i32 NuSpecialDrawSmoothSkinDwa(void *special, NUMTX *skin_matrices, NUMTX *world_matrix,
                                    DEFORMERWEIGHTSARRAY *blend_values) {
         NuPlainSpecialHandleLayout *handle = static_cast<NuPlainSpecialHandleLayout *>(special);
-        if (handle == NULL || handle->scene == NULL || handle->display_special == NULL) {
+        if (handle->scene == NULL || handle->display_special == NULL) {
             return 0;
         }
         return NuDisplayListRndrSpecial(reinterpret_cast<nuhspecial_s *>(special), world_matrix, 2, skin_matrices,
                                         blend_values);
     }
-    void NuSpecialDrawWith(void) {
+    i32 NuSpecialDrawWith(void *special, NUMTX *mtx) {
+        NuPlainSpecialHandleLayout *handle = static_cast<NuPlainSpecialHandleLayout *>(special);
+        if (handle->scene == NULL) {
+            return 0;
+        }
+        NUMTX combined;
+        if (handle->display_special != NULL) {
+            NuMtxMul(&combined, static_cast<NUMTX *>(handle->display_special), mtx);
+            return NuDisplayListRndrSpecial(reinterpret_cast<nuhspecial_s *>(special), &combined, 0, NULL, NULL);
+        }
+        NuMtxMul(&combined, static_cast<NUMTX *>(handle->special), mtx);
+        return 0;
     }
     i32 NuSpecialFindMulti(NUGSCN *, nuhspecial_s *, char *, i32, i32) {
         return 0;
@@ -3635,19 +3807,21 @@ extern "C" {
         NuPlainDisplaySpecialLayout *display = static_cast<NuPlainDisplaySpecialLayout *>(handle->display_special);
         if (display != NULL) {
             usize instance_animation = reinterpret_cast<usize>(display->instance_animation);
-            NUMTX *matrix = instance_animation != 0 && instance_animation != static_cast<usize>(-1)
-                                ? reinterpret_cast<NUMTX *>(display->instance_animation)
-                                : &display->draw_mtx;
-            return NUMTX_GET_ROW_VEC(matrix, 3);
+            NUVEC *draw_position = NUMTX_GET_ROW_VEC(&display->draw_mtx, 3);
+            NUVEC *animated_position = reinterpret_cast<NUVEC *>(instance_animation + offsetof(NUMTX, m30));
+            return instance_animation != 0 && instance_animation != static_cast<usize>(-1) ? animated_position
+                                                                                           : draw_position;
         }
 
         NuPlainLegacySpecialLayout *legacy = static_cast<NuPlainLegacySpecialLayout *>(handle->special);
-        if (legacy == NULL || legacy->instance == NULL) {
+        if (legacy == NULL) {
             return NULL;
         }
         NUMTX *instance = reinterpret_cast<NUMTX *>(legacy->instance);
         NUMTX *draw_mtx = *reinterpret_cast<NUMTX **>(legacy->instance + 0x48);
-        return NUMTX_GET_ROW_VEC(draw_mtx != NULL ? draw_mtx : instance, 3);
+        NUVEC *instance_position = NUMTX_GET_ROW_VEC(instance, 3);
+        NUVEC *draw_position = reinterpret_cast<NUVEC *>(reinterpret_cast<usize>(draw_mtx) + offsetof(NUMTX, m30));
+        return draw_mtx != NULL ? draw_position : instance_position;
     }
     i32 NuSpecialGetInstanceix(nuhspecial_s *special) {
         NuPlainSpecialHandleLayout *handle = reinterpret_cast<NuPlainSpecialHandleLayout *>(special);
@@ -3728,21 +3902,20 @@ extern "C" {
     }
     void NuSpecialGetRadius(void *special, NUVEC *position, f32 *radius) {
         NuPlainSpecialHandleLayout *handle = reinterpret_cast<NuPlainSpecialHandleLayout *>(special);
-        if (handle->special == NULL) {
+        if (handle->special != NULL) {
+            NuPlainLegacySceneLayout *scene = reinterpret_cast<NuPlainLegacySceneLayout *>(handle->scene);
+            NuPlainLegacySpecialLayout *legacy = static_cast<NuPlainLegacySpecialLayout *>(handle->special);
+            NuPlainLegacyInstanceBoundsLayout *instance =
+                reinterpret_cast<NuPlainLegacyInstanceBoundsLayout *>(legacy->instance);
+            NuPlainLegacyObjectBoundsLayout *object =
+                static_cast<NuPlainLegacyObjectBoundsLayout *>(scene->objects[instance->object_index]);
+            *radius = object->radius;
+            *position = object->center;
+        } else {
             NuPlainDisplaySpecialLayout *display = static_cast<NuPlainDisplaySpecialLayout *>(handle->display_special);
             *position = display->center;
             *radius = display->radius;
-            return;
         }
-
-        NuPlainLegacySceneLayout *scene = reinterpret_cast<NuPlainLegacySceneLayout *>(handle->scene);
-        NuPlainLegacySpecialLayout *legacy = static_cast<NuPlainLegacySpecialLayout *>(handle->special);
-        NuPlainLegacyInstanceBoundsLayout *instance =
-            reinterpret_cast<NuPlainLegacyInstanceBoundsLayout *>(legacy->instance);
-        NuPlainLegacyObjectBoundsLayout *object =
-            static_cast<NuPlainLegacyObjectBoundsLayout *>(scene->objects[instance->object_index]);
-        *position = object->center;
-        *radius = object->radius;
     }
     i32 NuSpecialGetShadowClipTestResult(i32 index) {
         if (nuspecial_shadowLightHaveClipOverrides != 0) {
@@ -3835,9 +4008,14 @@ extern "C" {
     }
     void NuSpecialSetRenderPlane(void) {
     }
-    void NuSpecialVertexOffsets(void) {
+    void NuSpecialVertexOffsets(i32 count, VARIPTR offsets) {
+        nuspecial_vertex_offsets = offsets;
+        nuspecial_vertex_noffsets = count;
     }
-    void NuSpecialVertexStates(void) {
+    void NuSpecialVertexStates(NUSPECIALVERTEXSTATES *states) {
+        nuspecial_vertex_states = states;
+        ++render_state.state.global_id;
+        ++render_state.state.vertex_groups_id;
     }
 
     void NuTimeBarSlotLastValue(void) {
@@ -3858,7 +4036,10 @@ extern "C" {
     void NuDynamicLightAddShadowCasterScene(NuDynamicLight *light, nugscn_s *scene) {
         light->addShadowCasterScene(scene);
     }
-    void NuDynamicLightBeginCapture(void) {
+    void NuDynamicLightBeginCapture(NuDynamicLight *light, i32 render_set) {
+        currentScene.unknown_3c = light;
+        currentScene.unknown_38 = 1;
+        currentScene.unknown_40 = render_set;
     }
     NuDynamicLight *NuDynamicLightClone(NuDynamicLight *light, VARIPTR *arena, VARIPTR end) {
         return light->clone(arena, end);
@@ -3876,7 +4057,40 @@ extern "C" {
     }
     void NuDynamicLightGetDList(void) {
     }
-    void NuDynamicLightGetParameterf(void) {
+    f32 NuDynamicLightGetParameterf(NuDynamicLight *light, i32 parameter) {
+        switch (parameter) {
+            case 0:
+                return light->parameter_7c0;
+            case 1:
+                return light->parameter_7c4;
+            case 2:
+                return light->parameter_7c8;
+            case 3:
+                return light->parameter_7cc;
+            case 6:
+            case 7:
+                return light->render_sets[0].parameter_110;
+            case 8:
+                return light->render_sets[1].parameter_110;
+            case 9:
+            case 10:
+            case 11:
+            case 15:
+            case 16:
+                return light->render_sets[1].parameter_104;
+            case 12:
+            case 13:
+            case 14:
+            case 17:
+            case 18:
+                return light->render_sets[0].parameter_100;
+            case 19:
+                return light->parameter_7d0;
+            case 20:
+                return light->parameter_7d4;
+            default:
+                return 0.0f;
+        }
     }
     i32 NuDynamicLightGetParameteri(NuDynamicLight *light, i32 parameter) {
         switch (parameter) {
@@ -3897,16 +4111,88 @@ extern "C" {
     i32 NuDynamicLightIsUsedOnSpecials(NuDynamicLight *light) {
         return light->used_on_specials;
     }
-    void NuDynamicLightLookAt(void) {
+    void NuDynamicLightLookAt(NuDynamicLight *light, NUVEC *eye, NUVEC *target, NUVEC *up) {
+        NUVEC direction;
+        direction.z = target->z - eye->z;
+        direction.y = target->y - eye->y;
+        direction.x = target->x - eye->x;
+        light->direction_w = 0.0f;
+        light->direction = direction;
+        NuVecNorm(&light->direction, &light->direction);
+        NUVEC position;
+        position.z = eye->z;
+        position.y = eye->y;
+        position.x = eye->x;
+        light->position_w = 1.0f;
+        light->position = position;
+        NuMtxLookAtD3D(&light->view, eye, target, up);
     }
     void NuDynamicLightResetGeometry(NuDynamicLight *light) {
         light->resetGeometry();
     }
-    void NuDynamicLightSetDirectional(void) {
+    void NuDynamicLightSetDirectional(NuDynamicLight *light, f32 left, f32 right, f32 bottom, f32 top, f32 near_plane,
+                                      f32 far_plane) {
+        light->parameter_4 = 0;
+        NuMtxSetOrthoBlend(&light->projection, left, right, bottom, top, near_plane, far_plane);
     }
-    void NuDynamicLightSetEnabled(void) {
+    void NuDynamicLightSetEnabled(NuDynamicLight *light, i32 enabled) {
+        if (enabled != 0 && light->enabled == 0 && light->render_set_count > 0) {
+            NuDynamicLight::RenderSet *set = light->render_sets;
+            NuDynamicLight::RenderSet *end = set + light->render_set_count;
+            do {
+                set->field_2a0 = set->field_29c;
+                set->field_2e4 = set->field_2e0;
+                ++set;
+            } while (set != end);
+        }
+        light->enabled = enabled;
     }
-    void NuDynamicLightSetParameterf(void) {
+    void NuDynamicLightSetParameterf(NuDynamicLight *light, i32 parameter, f32 value) {
+        switch (parameter) {
+            case 0:
+                light->parameter_7c0 = value;
+                break;
+            case 1:
+                light->parameter_7c4 = value;
+                break;
+            case 2:
+                light->parameter_7c8 = value;
+                break;
+            case 3:
+                light->parameter_7cc = value;
+                break;
+            case 6:
+            case 7:
+                light->render_sets[0].parameter_110 = value;
+                break;
+            case 8:
+                light->render_sets[1].parameter_110 = value;
+                break;
+            case 9:
+            case 10:
+            case 11:
+                light->render_sets[0].parameter_104 = value;
+                break;
+            case 12:
+            case 13:
+            case 14:
+                light->render_sets[0].parameter_100 = value;
+                break;
+            case 15:
+            case 16:
+                light->render_sets[1].parameter_104 = value;
+                break;
+            case 17:
+            case 18:
+                light->render_sets[1].parameter_100 = value;
+                break;
+            case 19:
+                light->parameter_7d0 = value;
+                break;
+            case 20:
+                light->parameter_7d4 = value;
+                break;
+        }
     }
     void NuDynamicLightSetParameteri(NuDynamicLight *light, i32 parameter, i32 value) {
         if (parameter == 4) {
@@ -3923,11 +4209,37 @@ extern "C" {
     }
     void NuDynamicLightTestShadowExtrusionExtent(void) {
     }
-    void NuDynamicLightTestShadowExtrusions(void) {
+    void NuDynamicLightTestShadowExtrusions(NuDynamicLight *light, const VuVec *first, const VuVec *second) {
+        VuVec first_copy;
+        VuVec second_copy;
+        second_copy.x = second->x;
+        second_copy.y = second->y;
+        second_copy.z = second->z;
+        second_copy.w = second->w;
+        first_copy.x = first->x;
+        first_copy.y = first->y;
+        first_copy.z = first->z;
+        first_copy.w = first->w;
+        light->testShadowExtrusions(first_copy, second_copy);
     }
-    void NuDynamicLightTestShadowExtrusionsExtent(void) {
+    void NuDynamicLightTestShadowExtrusionsExtent(NuDynamicLight *light, const NUVEC *center, const NUVEC *extent) {
+        VuVec minimum;
+        VuVec maximum;
+        minimum.x = center->x - extent->x;
+        minimum.y = center->y - extent->y;
+        minimum.z = center->z - extent->z;
+        maximum.x = center->x + extent->x;
+        maximum.y = center->y + extent->y;
+        maximum.z = center->z + extent->z;
+        light->testShadowExtrusions(minimum, maximum);
     }
-    void NuDynamicLightTestShadowExtrusionsSpecial(void) {
+    void NuDynamicLightTestShadowExtrusionsSpecial(NuDynamicLight *light, void *special, NUMTX *matrix) {
+        VuVec minimum;
+        VuVec maximum;
+        NuSpecialGetBounds(special, &minimum.xyz, &maximum.xyz);
+        NuVecMtxTransform(&minimum.xyz, &minimum.xyz, matrix);
+        NuVecMtxTransform(&maximum.xyz, &maximum.xyz, matrix);
+        light->testShadowExtrusions(minimum, maximum);
     }
     void NuWindAnimate(NUWIND *wind, f32 frametime) {
         if (wind != NULL) {
@@ -3944,16 +4256,19 @@ extern "C" {
     extern "C++" void NuWindFreeGrp(NuWindGType *group);
 
     i32 NuWindLoad(NUWIND *wind, i32 index, char *name, VARIPTR *buffer, VARIPTR *buffer_end) {
-        if (wind != NULL && (u32)index < 8) {
-            if (wind->unk0[index] >= 0) {
-                NuTexDestroy(wind->unk0[index]);
+        if (wind != NULL) {
+            if ((u32)index < 8) {
+                if (wind->unk0[index] >= 0) {
+                    NuTexDestroy(wind->unk0[index]);
+                }
+                i32 texture = NuTexRead(name, buffer, buffer_end);
+                if (texture != 0) {
+                    wind->unk0[index] = texture;
+                    return texture;
+                }
+                wind->unk0[index] = -1;
+                return -1;
             }
-            i32 texture = NuTexRead(name, buffer, buffer_end);
-            if (texture != 0) {
-                wind->unk0[index] = texture;
-                return texture;
-            }
-            wind->unk0[index] = -1;
         }
         return -1;
     }
@@ -4363,9 +4678,17 @@ extern "C" {
         }
         return &object->points_of_interest[point_index];
     }
-    void NuHGobjJointMtx(void) {
+    void NuHGobjJointMtx(nuhgobj_s *object, u8 index, NUMTX *world_matrix, NUMTX *joint_matrices, NUMTX *result) {
+        u8 joint_index = object->joint_override_map[index];
+        NuMtxMulVU0(result, &joint_matrices[joint_index], world_matrix);
     }
-    void NuHGobjPOILocalMtxFromIX(void) {
+    void NuHGobjPOILocalMtxFromIX(nuhgobj_s *object, u8 index, NUMTX *joint_matrices, NUMTX *result) {
+        nuhgobjpoi_s *point = &object->points_of_interest[index];
+        if (point->joint_index == 0xff) {
+            *result = point->local_matrix;
+        } else {
+            NuMtxMulVU0(result, &point->local_matrix, &joint_matrices[point->joint_index]);
+        }
     }
     void NuHGobjPOIMtx(nuhgobj_s *object, u8 index, NUMTX *world_matrix, NUMTX *joint_matrices, NUMTX *result) {
         nuhgobjpoi_s *point = &object->points_of_interest[object->point_of_interest_map[index]];
@@ -4379,7 +4702,10 @@ extern "C" {
         nuapi.reversible_characters = enabled;
         return previous;
     }
-    void NuHGobjRndr(void) {
+    i32 NuHGobjRndr(nuhgobj_s *object, NUMTX *world_matrix, i32 render_count, i16 *render_indices) {
+        NUMTX joint_matrices[256];
+        NuHGobjEval(object, 0, NULL, joint_matrices);
+        return NuHGobjRndrMtxDwa(object, world_matrix, render_count, render_indices, joint_matrices, NULL, 0);
     }
     // Original @0x2f56a0. Draw rigid hierarchy pieces at their evaluated joint
     // matrices, then build skin matrices for the smooth hierarchy pieces.
@@ -4956,7 +5282,13 @@ extern "C" {
     void NuOcclusionManagerSetOccluderScreenSpaceThreshold(f32 threshold) {
         g_OcclusionManager.unknown_15c = threshold;
     }
-    void NuInvalidateClipRanges(void) {
+    void NuInvalidateClipRanges(nudldlistscene_s *scene) {
+        for (i32 index = 0; index < scene->nclip_objects; ++index) {
+            if (scene->lod_ranges[index] != 0.0f) {
+                scene->lod_ranges[index] = FLT_MAX;
+            }
+            scene->far_clip_ranges[index] = FLT_MAX;
+        }
     }
 
     // ---------------------------------------------------------------------------
@@ -5011,6 +5343,8 @@ extern "C" {
         NuTimeBar_GpuFrameOutEnabled = enabled;
     }
     void NuTimeBarInit(void) {
+        VARIPTR unused = {};
+        NuTimeBarInitEx(NULL, unused);
     }
     extern "C++" {
         static i32 NuTimeBar_PeakReset;

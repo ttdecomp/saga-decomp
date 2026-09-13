@@ -331,7 +331,7 @@ void Tag_DrawIcon_Batman(GameObject_s *) {
 extern "C" void AddVariableShotDebrisEffectTimed1(i32, NUVEC *, i32, f32, i16, i16, NUMTX *);
 
 void Tag_UpdateTransfers(i32 effect0, i32 effect1, i32 count) {
-    NUVEC position __attribute__((aligned(16)));
+    NUVEC_ALIGNED16 position;
     if (Player[0] == NULL) {
         Tag_Transfer[0].time = Tag_TransferResetTimer;
         goto second_player;

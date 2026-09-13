@@ -7547,7 +7547,7 @@ __used__ static i32 Action_SetViewDistance(AISYS *sys, AISCRIPTPROCESS *processo
 extern i32 LineIntersectSphere(NUVEC *, NUVEC *, NUVEC *, f32, f32 *);
 
 // The original shooting action calls the out-of-line PartyMemberInWay clone.
-static __attribute__((noinline)) i32 PartyMemberInWay(GameObject_s *object, GameObject_s *opponent) {
+static i32 PartyMemberInWay(GameObject_s *object, GameObject_s *opponent) {
     NUVEC difference, direction;
     const f32 target_distance =
         NuVecDistSqr(&opponent->apiobj.collision_position, &object->apiobj.collision_position, &difference);

@@ -21,6 +21,7 @@ void CalcAveragePosAndRad(GIZBUILDIT_s &, VuVec &, f32 &, bool);
 bool CalculateRayBoxIntersection(VuVec const &, VuVec const &, VuVec const &, VuVec const &, f32, f32 &);
 extern "C" void NewRayCastGetImpactNormal(NUVEC *);
 f32 CalcCapsuleIntersectDistance(VuVec const &, VuVec const &, f32, VuVec const &, f32);
+void PerformPauseButtonStuff();
 
 i32 MechInputTouchSystem::s_baseControlMode = 1;
 i32 MechInputTouchSystem::s_actualTouchMode = 2;
@@ -32,13 +33,30 @@ char const *MechInputTouchSystem::GetName() {
 void MechAutoJumpGetBest(JumpTriggerPacket const &, i32) {
 }
 
-void MechAutoJumpSetIsUsing(GameObject_s &, MechAutoJumpConnection &) {
+void MechAutoJumpSetIsUsing(GameObject_s &object, MechAutoJumpConnection &connection) {
+    object.ai.path_info.connection = connection.connection;
+    object.ai.path_info.direction = connection.direction;
+
+    WORLDINFO *world = WorldInfo_CurrentlyActive();
+    if (world != NULL && world->mech_auto_jump_manager != NULL) {
+        for (MechAutoJumpConnection *current = reinterpret_cast<MechAutoJumpConnection *>(
+                 NuLinkedListGetHead(&world->mech_auto_jump_manager->jump_connections));
+             current != NULL;
+             current = reinterpret_cast<MechAutoJumpConnection *>(NuLinkedListGetNext(
+                 &world->mech_auto_jump_manager->jump_connections, reinterpret_cast<NULISTLNK *>(current)))) {
+            current->is_using = 0;
+            current->cooldown = 0.0f;
+        }
+    }
+    connection.is_using = 1;
 }
 
 void MechTouchUITagButton_OnClick_Callback(MechTouchUIElement &, TouchHolder &) {
 }
 
-void MechTouchUIPauseButton_OnClick_Callback(MechTouchUIElement &, TouchHolder &) {
+void MechTouchUIPauseButton_OnClick_Callback(MechTouchUIElement &element, TouchHolder &) {
+    static_cast<MechTouchUIPauseButton &>(element).disable_timer = 0.5f;
+    PerformPauseButtonStuff();
 }
 
 void MechTouchUIPartySelector_OnRelease_Callback(MechTouchUIElement &, TouchHolder &) {
@@ -50,10 +68,18 @@ void MechInputTouchSystem::AddChangeLayoutButtons(NuVirtualTouchDevice &, i32) {
 void MechInputTouchSystem::ChooseTouchLayout(bool) {
 }
 
-void MechInputTouchSystem::ConvertToScreenCoords(float, float, float &, float &) {
+void MechInputTouchSystem::ConvertToScreenCoords(float x, float y, float &screen_x, float &screen_y) {
+    screen_x = (x - 0.5f) * 2.0f;
+    screen_y = -(y - 0.5f) * 2.0f;
 }
 
-void MechInputTouchSystem::CouldTouchBeLockedBy(u32, MechInputTouchButton *) {
+bool MechInputTouchSystem::CouldTouchBeLockedBy(u32 touch_id, MechInputTouchButton *button) {
+    for (i32 index = 0; index < 10; ++index) {
+        if (locked_touch_ids[index] == touch_id) {
+            return locked_buttons[index] == NULL || locked_buttons[index] == button;
+        }
+    }
+    return true;
 }
 
 void MechInputTouchSystem::CreateGamePanels() {
@@ -473,19 +499,63 @@ MechObjectInterface *MechInputTouchSystem::FindTargetObject(GameObject_s &object
 }
 
 void MechInputTouchSystem::Init() {
+    CreateGamePanels();
+    initialized = 1;
 }
 
 MechInputTouchSystem::MechInputTouchSystem() {
+    initialized = 0;
+    for (i32 index = 0; index < 10; ++index) {
+        locked_buttons[index] = NULL;
+        locked_touch_ids[index] = 0xff;
+    }
 }
 
 void MechInputTouchSystem::ProcessEvenWhenPaused(ThingProcessData *) {
 }
 
 void MechInputTouchSystem::ResetAllOwners() {
+    for (i32 index = 0; index < 10; ++index) {
+        if (locked_buttons[index] != NULL) {
+            locked_buttons[index]->Reset();
+        }
+    }
 }
 
-void MechInputTouchSystem::SetTouchLockedBy(u32, MechInputTouchButton *, bool) {
+void MechInputTouchSystem::SetTouchLockedBy(u32 touch_id, MechInputTouchButton *button, bool) {
+    for (i32 index = 0; index < 10; ++index) {
+        if (locked_touch_ids[index] == touch_id) {
+            MechInputTouchButton *previous = locked_buttons[index];
+            if (previous != NULL) {
+                if (previous == button) {
+                    return;
+                }
+                previous->ClearTouchLocked(true);
+            }
+            locked_buttons[index] = button;
+            if (button == NULL) {
+                locked_touch_ids[index] = 0xff;
+            }
+            return;
+        }
+    }
+
+    if (button != NULL) {
+        for (i32 index = 0; index < 10; ++index) {
+            if (locked_touch_ids[index] == 0xff) {
+                locked_touch_ids[index] = touch_id;
+                locked_buttons[index] = button;
+                return;
+            }
+        }
+    }
 }
 
-void MechInputTouchSystem::TouchLockedBy(u32) {
+MechInputTouchButton *MechInputTouchSystem::TouchLockedBy(u32 touch_id) {
+    for (i32 index = 0; index < 10; ++index) {
+        if (locked_touch_ids[index] == touch_id) {
+            return locked_buttons[index];
+        }
+    }
+    return NULL;
 }

@@ -61,10 +61,12 @@ _TYPEDEF_OPEN = re.compile(r"\btypedef\s+(struct|class|union|enum)\b")
 # Matches a type/namespace scope opener that opens a body with '{':
 #   struct Foo { | class Foo : public Bar { | union Foo { | enum Foo { |
 #   namespace Foo { | namespace Foo::Bar { | namespace { | enum class Foo {
+# SAGA_HOST_PACKED_ALIGN4 is an annotation between the keyword and tag.
 # The tag is captured; it may be empty for an anonymous namespace.
 _SCOPE_OPEN = re.compile(
     r"\b(?P<kw>namespace|struct|class|union|enum)\b"
     r"\s*(?:\bclass\b\s*)?"
+    r"(?:SAGA_HOST_PACKED_ALIGN4\s*)?"
     r"(?P<tag>[A-Za-z_][A-Za-z0-9_:]*|)"
     r"\s*(?::\s*[^{;]*)?\s*\{"
 )

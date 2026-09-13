@@ -1,6 +1,7 @@
 #include "editor/edpath.h"
 #include "legoapi/world/world_shared.h"
 #include "decomp.h"
+#include "editor/aieditor_state.h"
 #include "gameapi/ai/aisys/aisys.h"
 #include "globals.h"
 #include "gameapi/edtools/edfile.h"

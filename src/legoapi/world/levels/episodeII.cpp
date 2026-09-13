@@ -1314,7 +1314,7 @@ struct JEDIB_s {
     f32 wave_timer;     // 0x63dc
     // One bit per player that generated baddies must not target, OR'd into each
     // spawned baddie's own exclusion mask.
-    union __attribute__((packed, aligned(4))) {
+    union SAGA_HOST_PACKED_ALIGN4 {
         u64 exclusion_mask; // 0x63e0
         struct {
             u32 exclusion_mask_low;

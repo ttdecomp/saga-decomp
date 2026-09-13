@@ -7,6 +7,8 @@
 # apply only to the corresponding source.
 
 build:target --per_file_copt=^src/batman\.cpp$@-O2
+# Editor path callbacks in the original use optimized frameless PIC call sequences.
+build:target --per_file_copt=^src/editor/edpath\.cpp$@-O2
 # Recovered Android entry points; -O2 and -O3 emit the same measured bodies.
 build:target --per_file_copt=^src/java/android\.cpp$@-O2
 # Original OBB lookup uses optimized inlined strlen/strcat and omits leaf frames.
@@ -31,6 +33,8 @@ build:target --per_file_copt=^src/gameapi/edtools/edfile\.cpp$@-O3
 build:target --per_file_copt=^src/gameapi/edtools/edsplines\.cpp$@-O3
 build:target --per_file_copt=^src/gameapi/edtools/edtoolsall_stubs\.cpp$@-O2
 build:target --per_file_copt=^src/gameframework/savesystem\.cpp$@-O3
+# The click-to-start tracker is an optimized, frameless leaf in the original.
+build:target --per_file_copt=^src/legoapi/core/input/input\.cpp$@-O2
 build:target --per_file_copt=^src/gameapi/gui/apimenu\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/menus/core/panel\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/menus/core/text\.cpp$@-O2

@@ -57,6 +57,16 @@ enum AREA_FLAGS {
 
 #define __used__ __attribute__((used)) // NOLINT(readability-identifier-naming)
 
+// Reconstructed platform defaults can be overridden by the host harness, but
+// the corresponding symbols in the Android target are strong.
+#ifdef HOST_BUILD
+#define SAGA_HOST_WEAK __attribute__((weak))
+#define SAGA_HOST_PACKED_ALIGN4 __attribute__((packed, aligned(4)))
+#else
+#define SAGA_HOST_WEAK
+#define SAGA_HOST_PACKED_ALIGN4
+#endif
+
 #ifdef HOST_BUILD
 #define SAGA_HOST_STATIC static
 #define SAGA_HOST_SAFE_MEMSET(dest, value, size)                                                                       \

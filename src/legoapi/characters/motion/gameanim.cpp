@@ -2006,7 +2006,7 @@ void GameAnimSet_DrawReflection(GAMEANIMSET_s *set, i32 axis, float offset, numt
     NuRndrStartReflectionRender(0);
     for (GAMEANIMOBJ_s *object = set->objects; object != NULL; object = object->next) {
         if ((object->flags & 2) == 0 && NuSpecialGetVisibilityFn(&object->special) != 0) {
-            NUMTX reflection __attribute__((aligned(16)));
+            NUMTX_ALIGNED16 reflection;
             extern i32 MatrixReflection(NUMTX *, i32, f32, f32, NUMTX *);
             NUMTX *draw_matrix = NuSpecialGetDrawMtx(&object->special);
             if (MatrixReflection(draw_matrix, axis, plane, WORLD->current_level->unknown_0cc, &reflection) != 0) {
@@ -3413,7 +3413,7 @@ extern "C" {
 void SetAnimFrame(nuhspecial_s *special, float frame) {
     if (NuSpecialExistsFn(special) == 0)
         return;
-    NUMTX matrix __attribute__((aligned(16)));
+    NUMTX_ALIGNED16 matrix;
     NuMtxSetIdentity(&matrix);
     nuinstanim_s *instance_animation = NuSpecialGetInstAnim(special);
     if (instance_animation == NULL)

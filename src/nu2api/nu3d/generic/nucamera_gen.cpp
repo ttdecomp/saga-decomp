@@ -1,5 +1,7 @@
 #include "nu2api/nu3d/nucamera.h"
 
+#include "decomp.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -305,7 +307,7 @@ NUMTX *NuCameraGetClipPlanes(void) {
     return &clip_planes;
 }
 
-__attribute__((weak)) i32 NuCameraClipTestSphere(NUVEC *pnt, f32 radius, NUMTX *world_mtx) {
+SAGA_HOST_WEAK i32 NuCameraClipTestSphere(NUVEC *pnt, f32 radius, NUMTX *world_mtx) {
     NUCAMERA *cam = NuCameraGetCam();
     NUMTX *view = NuCameraGetViewMtx();
 

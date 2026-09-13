@@ -34,7 +34,7 @@ void NuIOSInitOpenGLES(void) {
     EndCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nuandroid/ios_graphics.cpp", 312);
 }
 
-__attribute__((weak)) void NuIOS_AllocateSystemFramebuffers(void) {
+SAGA_HOST_WEAK void NuIOS_AllocateSystemFramebuffers(void) {
     BeginCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nuandroid/ios_graphics.cpp", 106);
     NuCheckGLErrorsFL("i:/SagaTouch-Android_9176564/nu2api.saga/nuandroid/ios_graphics.cpp", 108);
 
@@ -70,7 +70,7 @@ i32 NuIOS_ShouldUseMSAA(void) {
 // Filesystem shims — original iOS used NSBundle / Documents.
 // ---------------------------------------------------------------------------
 
-__attribute__((weak)) char *NuIOS_GetDocumentsPath(void) {
+SAGA_HOST_WEAK char *NuIOS_GetDocumentsPath(void) {
     return "res/";
 }
 

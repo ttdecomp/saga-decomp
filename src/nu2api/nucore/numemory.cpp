@@ -282,7 +282,7 @@ void NuMemoryManager::GetBlockDebugBackTrace(void *, void **) {
 void NuMemoryManager::GetBlockDebugContext(void *) {
 }
 
-__attribute__((weak)) u32 NuMemoryManager::GetBlockSize(void *ptr) {
+SAGA_HOST_WEAK u32 NuMemoryManager::GetBlockSize(void *ptr) {
     ValidateAddress(ptr, __FUNCTION__);
 
     Header *header = (Header *)((usize)ptr - m_headerSize);

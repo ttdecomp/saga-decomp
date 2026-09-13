@@ -102,6 +102,14 @@ Changing `int` to `long`, signedness, const qualification, a namespace, or a
 class name can change mangling even when layout is unchanged. See
 [`04-types-abi.md`](04-types-abi.md).
 
+Use `__attribute__` only when it is genuinely necessary for a documented
+linkage, layout, platform, or runtime requirement. Verify the need against the
+original binary or the relevant build/runtime contract, and explain it near
+the declaration. Do not add an attribute merely to improve an objdiff score
+or force an assembly shape; recover the underlying types, data, and control
+flow instead. In particular, calling-convention attributes are prohibited as
+matching shortcuts (see [04-types-abi.md](04-types-abi.md)).
+
 ## 5. Types and placeholders
 
 - Use `u8/u16/u32/u64`, `i8/i16/i32/i64`, `f32/f64`, `usize`, and `isize` from

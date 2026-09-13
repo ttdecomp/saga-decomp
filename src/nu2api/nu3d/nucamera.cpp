@@ -47,8 +47,8 @@ void NuCameraRestoreState(i32 handle) {
     }
 }
 
-__attribute__((weak)) i32 NuCameraClipTestExtents(NUVEC *min, NUVEC *max, NUMTX *world_mtx, f32 far_clip,
-                                                  i32 should_clip_to_screen) {
+SAGA_HOST_WEAK i32 NuCameraClipTestExtents(NUVEC *min, NUVEC *max, NUMTX *world_mtx, f32 far_clip,
+                                           i32 should_clip_to_screen) {
     NUVEC extents[8];
     NUVEC clip_space_extents[8];
     char results[8];
@@ -145,7 +145,7 @@ __attribute__((weak)) i32 NuCameraClipTestExtents(NUVEC *min, NUVEC *max, NUMTX 
 // against the world-space planes built by NuCameraBuildClipPlanes.  Treating
 // them as corners makes large bounds (notably the Cantina floor and walls)
 // appear outside the camera even while the camera is inside them.
-__attribute__((weak)) i32 NuCameraClipTestExtentsAxisAligned(NUVEC *center, NUVEC *extent, f32 far_clip) {
+SAGA_HOST_WEAK i32 NuCameraClipTestExtentsAxisAligned(NUVEC *center, NUVEC *extent, f32 far_clip) {
     auto transformPlanes = [](const NUVEC &point, const NUMTX &planes, f32 out[4]) {
         out[0] = point.x * planes.m00 + point.y * planes.m10 + point.z * planes.m20 + planes.m30;
         out[1] = point.x * planes.m01 + point.y * planes.m11 + point.z * planes.m21 + planes.m31;

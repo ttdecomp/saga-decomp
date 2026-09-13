@@ -1,6 +1,7 @@
 #include "decomp.h"
 #include "editor/edpath.h"
 #include <string.h>
+#include <stdio.h>
 
 #include "gameapi/edtools/edui.h"
 #include "gameapi/edtools/edcam.h"
@@ -16,8 +17,10 @@ extern "C" {
     extern f32 default_path_heighttol;
     void creatureEditor_PathNodeMoved(EDAIPATHNODE_s *);
     void locatorEditor_PathNodeMoved(EDAIPATHNODE_s *);
-    eduiitem_s *eduiItemSelCreate(usize, u32 *, i32, i32, void (*)(eduimenu_s *, eduiitem_s *, u32), char *);
-    eduiitem_s *eduiItemToggleCreate(usize, u32 *, i32, i32, void (*)(eduimenu_s *, eduiitem_s *, u32), char *);
+    eduiitem_s *eduiItemSelCreate(i32, const void *, i32, i32, void (*)(eduimenu_s *, eduiitem_s *, u32), char *);
+    eduiitem_s *eduiItemToggleCreate(i32, const void *, i32, i32, void (*)(eduimenu_s *, eduiitem_s *, u32), char *);
+    eduiitem_s *eduiItemTextPickCreate(i32, const void *, void (*)(eduimenu_s *, eduiitem_s *, u32), char *);
+    eduiitem_s *eduiItemCheckCreate(i32, const void *, i32, i32, void (*)(eduimenu_s *, eduiitem_s *, u32), char *);
     void aieditor_cbCancelMainMenu(eduimenu_s *, eduimenu_s *);
     void aieditor_cvSelectEditorMode(eduimenu_s *, eduiitem_s *, u32);
     void aieditor_cbSave(eduimenu_s *, eduiitem_s *, u32);
@@ -31,6 +34,7 @@ extern "C" {
     void cbNearClipAtCursor(eduimenu_s *, eduiitem_s *, u32);
     NUVEC edpath_addoffset;
     f32 default_path_node_radius = .25f;
+    extern char *(*SpecialRouteCharacterNameFn)(u8);
 }
 struct AIPATHCNXTYPE {
     u32 flags;
@@ -41,15 +45,24 @@ static AIPATHCNXTYPE aipathcnxtypes[32];
 static i32 naipathcnxtypes;
 static u32 attr[4] = {0x80000000, 0x80ff0000, 0x80808080, 0x80404040};
 static void DestroyAIPathNode(EDAIPATHNODE_s *, EDAIPATH_s *);
+extern "C" void aieditor_ClearMainMenu(void);
 
-struct EDAIPATH_s;
-struct EDAIPATHNODE_s;
 struct EDAISHAREDPATHNODE_s;
 struct AIPATH_s;
 struct eduimenu_s;
 struct eduiitem_s;
 struct nuvec_s;
 struct nupad_s;
+
+struct EdUiNameInputItem : eduiitem_s {
+    u32 unknown_48;
+    char name[0x40];
+    u8 unknown_08c[0x15a - 0x8c];
+    i16 max_name_length;
+};
+DECOMP_ASSERT(offsetof(EdUiNameInputItem, name) == 0x4c, "editor name input offset");
+DECOMP_ASSERT(offsetof(EdUiNameInputItem, max_name_length) == 0x15a, "editor name input limit offset");
+
 
 static __used__ void ParseAIPathCnxFlag(char *) {
 }
@@ -61,21 +74,111 @@ static __used__ void TestPointPathCheck(nuvec_s *, EDAIPATHNODE_s *, EDAIPATHNOD
 }
 
 static __used__ void pathEditor_cbCreatePath(eduimenu_s *, eduiitem_s *, u32) {
+    EDAIPATH_s *path = (EDAIPATH_s *)NuLinkedListGetHead(&aieditor->free_paths);
+    if (path == nullptr) {
+        return;
+    }
+    NuLinkedListRemove(&aieditor->free_paths, &path->link);
+    NuLinkedListAppend(&aieditor->paths, &path->link);
+    char name[16];
+    i32 number = 0;
+    EDAIPATH_s *existing;
+    do {
+        sprintf(name, "NewPath%d", ++number);
+        existing = (EDAIPATH_s *)NuLinkedListGetHead(&aieditor->paths);
+        while (existing != nullptr && NuStrICmp(name, existing->name) != 0) {
+            existing = (EDAIPATH_s *)NuLinkedListGetNext(&aieditor->paths, &existing->link);
+        }
+    } while (existing != nullptr);
+    strcpy(path->name, name);
+    path->flags &= ~1;
+    aieditor->current_path = path;
+    aieditor_ClearMainMenu();
 }
 
 static __used__ void pathEditor_cbDeletePath(eduimenu_s *, eduiitem_s *, u32) {
 }
 
-static __used__ void pathEditor_cbRenameNode(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void pathEditor_cbRenameNode(eduimenu_s *, eduiitem_s *item, u32) {
+    EDAIPATH_s *path = aieditor->current_path;
+    if (path == nullptr || path->current_node == nullptr) {
+        return;
+    }
+    EdUiNameInputItem *input = static_cast<EdUiNameInputItem *>(item);
+    if (input->name[0] == '\0') {
+        memset(path->current_node->name, 0, sizeof(path->current_node->name));
+        return;
+    }
+    EDAIPATHNODE_s *node = (EDAIPATHNODE_s *)NuLinkedListGetHead(&path->nodes);
+    while (node != nullptr) {
+        if (NuStrICmp(node->name, input->name) == 0) {
+            return;
+        }
+        node = (EDAIPATHNODE_s *)NuLinkedListGetNext(&aieditor->current_path->nodes, &node->link);
+    }
+    strcpy(aieditor->current_path->current_node->name, input->name);
 }
 
-static __used__ void pathEditor_cbRenamePath(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void pathEditor_cbRenamePath(eduimenu_s *, eduiitem_s *item, u32) {
+    EDAIPATH_s *current = aieditor->current_path;
+    EdUiNameInputItem *input = static_cast<EdUiNameInputItem *>(item);
+    if (current == nullptr || input->name[0] == '\0') {
+        return;
+    }
+    EDAIPATH_s *path = (EDAIPATH_s *)NuLinkedListGetHead(&aieditor->paths);
+    while (path != nullptr) {
+        if (NuStrICmp(path->name, input->name) == 0) {
+            return;
+        }
+        path = (EDAIPATH_s *)NuLinkedListGetNext(&aieditor->paths, &path->link);
+    }
+    strcpy(aieditor->current_path->name, input->name);
 }
 
+static __used__ void pathEditor_cbCancelRenamePathMenu(eduimenu_s *, eduimenu_s *);
+static __used__ void pathEditor_cbCancelRenameNodeMenu(eduimenu_s *, eduimenu_s *);
+static __used__ void pathEditor_cbCancelSelectMenu(eduimenu_s *, eduimenu_s *);
+static __used__ void pathEditor_cbSetCurrentPath(eduimenu_s *, eduiitem_s *, u32);
 static __used__ void pathEditor_cbSetShareNode(eduimenu_s *, eduiitem_s *, u32) {
 }
 
-static __used__ void pathEditor_cbShareNodeMenu(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void pathEditor_cbShareNodeMenu(eduimenu_s *parent, eduiitem_s *, u32) {
+    EDAIPATH_s *current = aieditor->current_path;
+    if (current == nullptr || current->current_node == nullptr) {
+        return;
+    }
+    eduimenu_s *menu =
+        eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt, pathEditor_cbCancelSelectMenu, (char *)"Share node with...");
+    if (menu == nullptr) {
+        return;
+    }
+    eduiitem_s *all_paths = eduiItemSelCreate(0, &attr, 0, 1, pathEditor_cbSetShareNode, (char *)"All paths");
+    eduiMenuAddItem(menu, all_paths);
+
+    i32 index = 1;
+    EDAIPATH_s *path = (EDAIPATH_s *)NuLinkedListGetHead(&aieditor->paths);
+    while (path != nullptr) {
+        if (path != aieditor->current_path) {
+            i32 selected = 0;
+            EDAISHAREDPATHNODE_s *shared = aieditor->current_path->current_node->shared_node;
+            if (shared != nullptr) {
+                EDAIPATHNODE_s *node = (EDAIPATHNODE_s *)NuLinkedListGetHead(&path->nodes);
+                while (node != nullptr) {
+                    if (node->shared_node == shared) {
+                        selected = 1;
+                        break;
+                    }
+                    node = (EDAIPATHNODE_s *)NuLinkedListGetNext(&path->nodes, &node->link);
+                }
+            }
+            eduiitem_s *item =
+                eduiItemToggleCreate(index, &attr, selected, index + 1, pathEditor_cbSetShareNode, path->name);
+            eduiMenuAddItem(menu, item);
+            ++index;
+        }
+        path = (EDAIPATH_s *)NuLinkedListGetNext(&aieditor->paths, &path->link);
+    }
+    eduiMenuAttach(parent, menu);
 }
 
 static __used__ void pathEditorCalcRouteIterator(AIPATH_s *, f32 *, u8 *, i32, i32, f32, i32) {
@@ -87,22 +190,121 @@ static __used__ void pathEditor_cbCnxFlagsToggle(eduimenu_s *, eduiitem_s *, u32
 static __used__ void pathEditor_cbDeletePathNode(eduimenu_s *, eduiitem_s *, u32) {
 }
 
-static __used__ void pathEditor_cbRenameNodeMenu(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void pathEditor_cbRenameNodeMenu(eduimenu_s *parent, eduiitem_s *, u32) {
+    EDAIPATH_s *path = aieditor->current_path;
+    if (path == nullptr || path->current_node == nullptr) {
+        return;
+    }
+    eduimenu_s *menu =
+        eduiMenuCreate(0xf0, 0x5a, 0xf0, 0xfa, ed_fnt, pathEditor_cbCancelRenameNodeMenu, (char *)"Rename Node");
+    if (menu == nullptr) {
+        return;
+    }
+    eduiitem_s *item = eduiItemTextPickCreate(0, &attr, pathEditor_cbRenameNode, (char *)"Node Name");
+    eduiMenuAddItem(menu, item);
+    EdUiNameInputItem *input = static_cast<EdUiNameInputItem *>(edui_last_item);
+    strcpy(input->name, aieditor->current_path->current_node->name);
+    input->max_name_length = 15;
+    eduiMenuAttach(parent, menu);
+    menu->x = parent->x + 10;
+    menu->y = parent->y + 40;
 }
 
-static __used__ void pathEditor_cbRenamePathMenu(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void pathEditor_cbRenamePathMenu(eduimenu_s *parent, eduiitem_s *, u32) {
+    EDAIPATH_s *path = aieditor->current_path;
+    if (path == nullptr || (path->flags & 1) != 0) {
+        return;
+    }
+    eduimenu_s *menu =
+        eduiMenuCreate(0xf0, 0x5a, 0xf0, 0xfa, ed_fnt, pathEditor_cbCancelRenamePathMenu, (char *)"Rename Path");
+    if (menu == nullptr) {
+        return;
+    }
+    eduiitem_s *item = eduiItemTextPickCreate(0, &attr, pathEditor_cbRenamePath, (char *)"Path Name");
+    eduiMenuAddItem(menu, item);
+    EdUiNameInputItem *input = static_cast<EdUiNameInputItem *>(edui_last_item);
+    strcpy(input->name, aieditor->current_path->name);
+    input->max_name_length = 15;
+    eduiMenuAttach(parent, menu);
+    menu->x = parent->x + 10;
+    menu->y = parent->y + 40;
 }
 
-static __used__ void pathEditor_cbSelectPathMenu(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void pathEditor_cbSelectPathMenu(eduimenu_s *parent, eduiitem_s *, u32) {
+    eduimenu_s *menu =
+        eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt, pathEditor_cbCancelSelectMenu, (char *)"Select Path");
+    if (menu == nullptr) {
+        return;
+    }
+    i32 index = 0;
+    EDAIPATH_s *path = (EDAIPATH_s *)NuLinkedListGetHead(&aieditor->paths);
+    while (path != nullptr) {
+        eduiitem_s *item = eduiItemSelCreate(index, &attr, 0, 0, pathEditor_cbSetCurrentPath, path->name);
+        eduiMenuAddItem(menu, item);
+        ++index;
+        path = (EDAIPATH_s *)NuLinkedListGetNext(&aieditor->paths, &path->link);
+    }
+    eduiMenuAttach(parent, menu);
 }
 
-static __used__ void pathEditor_cbSetCurrentPath(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void pathEditor_cbSetCurrentPath(eduimenu_s *, eduiitem_s *item, u32) {
+    if (item != nullptr) {
+        EDAIPATH_s *path = (EDAIPATH_s *)NuLinkedListGetHead(&aieditor->paths);
+        i32 index = 0;
+        while (path != nullptr && index < item->data) {
+            path = (EDAIPATH_s *)NuLinkedListGetNext(&aieditor->paths, &path->link);
+            ++index;
+        }
+        if (path != nullptr && item->data >= 0) {
+            aieditor->current_path = path;
+            EDAIPATHNODE_s *nearest = nullptr;
+            f32 best_distance = 3.402823466e38f;
+            EDAIPATHNODE_s *node = (EDAIPATHNODE_s *)NuLinkedListGetHead(&path->nodes);
+            while (node != nullptr) {
+                NUVEC difference;
+                f32 distance = NuVecXZDistSqr(&aieditor->selection_position, &node->position, &difference);
+                if (distance < best_distance) {
+                    f32 height = aieditor->selection_position.y - node->position.y;
+                    f32 upper = NuFmax(0.2f, node->upper_height);
+                    f32 lower = NuFmin(-0.2f, node->lower_height);
+                    if (height <= upper && height >= lower) {
+                        best_distance = distance;
+                        nearest = node;
+                    }
+                }
+                node = (EDAIPATHNODE_s *)NuLinkedListGetNext(&path->nodes, &node->link);
+            }
+            path->other_node = nearest;
+            path->current_node = nearest;
+            if (nearest != nullptr) {
+                edcamSetPos(&nearest->position);
+            }
+        }
+    }
+    aieditor_ClearMainMenu();
 }
 
-static __used__ void pathEditor_cbNodeFlagsToggle(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void pathEditor_cbNodeFlagsToggle(eduimenu_s *, eduiitem_s *item, u32) {
+    EDAIPATHNODE_s *node = aieditor->current_path->current_node;
+    if (node != nullptr) {
+        u32 flags = node->flags;
+        u32 mask = item->data;
+        if ((u8)flags & mask) {
+            flags &= ~mask;
+        } else {
+            flags |= mask;
+        }
+        node->flags = flags;
+        if ((i8)aieditor->current_path->current_node->flags < 0) {
+            node->platform.scene = nullptr;
+            node->platform.special = nullptr;
+            node->platform.display_special = nullptr;
+        }
+    }
 }
 
-static __used__ void pathEditor_cbCancelSelectMenu(eduimenu_s *, eduimenu_s *) {
+static __used__ void pathEditor_cbCancelSelectMenu(eduimenu_s *, eduimenu_s *menu) {
+    eduiMenuDestroy(menu);
 }
 
 static __used__ void pathEditor_cbDisconnectPathNode(eduimenu_s *, eduiitem_s *, u32) {
@@ -112,27 +314,61 @@ static __used__ void pathEditorCalculateDistanceTable(AIPATH_s *, i32, variptr_u
 }
 
 static __used__ void pathEditor_cbCancelDeleteAreaMenu(eduimenu_s *, eduimenu_s *) {
+    aieditor_ClearMainMenu();
 }
 
 static __used__ void pathEditor_cbCancelDeleteNodeMenu(eduimenu_s *, eduimenu_s *) {
+    aieditor_ClearMainMenu();
 }
 
-static __used__ void pathEditor_cbCancelRenameNodeMenu(eduimenu_s *, eduimenu_s *) {
+static __used__ void pathEditor_cbCancelRenameNodeMenu(eduimenu_s *, eduimenu_s *menu) {
+    eduiMenuDestroy(menu);
 }
 
-static __used__ void pathEditor_cbCancelRenamePathMenu(eduimenu_s *, eduimenu_s *) {
+static __used__ void pathEditor_cbCancelRenamePathMenu(eduimenu_s *, eduimenu_s *menu) {
+    eduiMenuDestroy(menu);
 }
 
-static __used__ void pathEditor_cbDrawWallsplinesToggle(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void pathEditor_cbDrawWallsplinesToggle(eduimenu_s *, eduiitem_s *item, u32) {
+    aieditorsettings.draw_wallsplines = item->highlighted;
 }
 
 static __used__ void pathEditor_cbCancelDeleteCreatureMenu(eduimenu_s *, eduimenu_s *) {
+    aieditor_ClearMainMenu();
 }
 
 static __used__ void pathEditor_cbCancelDisconnectNodeMenu(eduimenu_s *, eduimenu_s *) {
+    aieditor_ClearMainMenu();
 }
 
-static __used__ void routeEditor_cbRouteUsers(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void routeEditor_cbCancelRouteUsers(eduimenu_s *, eduimenu_s *);
+static __used__ void routeEditor_cbSetRouteUsers(eduimenu_s *, eduiitem_s *, u32);
+
+static __used__ void routeEditor_cbRouteUsers(eduimenu_s *parent, eduiitem_s *, u32) {
+    if (SpecialRouteCharacterNameFn == nullptr || aieditor->current_path == nullptr ||
+        aieditor->current_path->current_route == nullptr) {
+        return;
+    }
+    eduimenu_s *menu =
+        eduiMenuCreate(0xdc, 0x46, 0xf0, 0xfa, ed_fnt, routeEditor_cbCancelRouteUsers, (char *)"Route Users");
+    if (menu == nullptr) {
+        return;
+    }
+    i32 index = 0;
+    char *name = SpecialRouteCharacterNameFn(0);
+    while (index < 64 && name != nullptr) {
+        i32 selected = (aieditor->current_path->current_route->user_mask >> index) & 1;
+        eduiitem_s *item = eduiItemCheckCreate(index, &attr, selected, index + 1, routeEditor_cbSetRouteUsers, name);
+        eduiMenuAddItem(menu, item);
+        eduiMenuAttach(parent, menu);
+        ++index;
+        name = SpecialRouteCharacterNameFn(index);
+    }
+    if (index == 0 || index == 64) {
+        i32 selected = (aieditor->current_path->current_route->user_mask >> 63) & 1;
+        eduiitem_s *item = eduiItemCheckCreate(63, &attr, selected, 64, routeEditor_cbSetRouteUsers, (char *)"Global");
+        eduiMenuAddItem(menu, item);
+    }
 }
 
 static __used__ void routeEditor_cbCreateRoute(eduimenu_s *, eduiitem_s *, u32) {
@@ -141,19 +377,68 @@ static __used__ void routeEditor_cbCreateRoute(eduimenu_s *, eduiitem_s *, u32) 
 static __used__ void routeEditor_cbDeleteRoute(eduimenu_s *, eduiitem_s *, u32) {
 }
 
-static __used__ void routeEditor_cbRenameRoute(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void routeEditor_cbRenameRoute(eduimenu_s *, eduiitem_s *item, u32) {
+    EDAIPATH_s *path = aieditor->current_path;
+    if (path == nullptr || path->current_route == nullptr) {
+        return;
+    }
+    EdUiNameInputItem *input = static_cast<EdUiNameInputItem *>(item);
+    if (input->name[0] == '\0') {
+        return;
+    }
+    for (i32 index = 0; index < 16; ++index) {
+        if (NuStrICmp(path->routes[index].name, input->name) == 0) {
+            return;
+        }
+    }
+    strcpy(aieditor->current_path->current_route->name, input->name);
 }
 
-static __used__ void routeEditor_cbSetRouteUsers(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void routeEditor_cbCancelRenameRouteMenu(eduimenu_s *, eduimenu_s *);
+
+static __used__ void routeEditor_cbSetRouteUsers(eduimenu_s *, eduiitem_s *item, u32) {
+    if (item == nullptr || aieditor->current_path == nullptr) {
+        return;
+    }
+    EDAIPATHROUTE_s *route = aieditor->current_path->current_route;
+    if (route == nullptr || (u32)item->data >= 64) {
+        return;
+    }
+    if ((route->user_mask >> item->data) & 1) {
+        route->user_mask &= ~(1ULL << item->data);
+        item->highlighted = 0;
+    } else {
+        route->user_mask |= 1ULL << item->data;
+        item->highlighted = 1;
+    }
 }
 
-static __used__ void routeEditor_cbRenameRouteMenu(eduimenu_s *, eduiitem_s *, u32) {
+static __used__ void routeEditor_cbRenameRouteMenu(eduimenu_s *parent, eduiitem_s *, u32) {
+    EDAIPATH_s *path = aieditor->current_path;
+    if (path == nullptr || path->current_route == nullptr) {
+        return;
+    }
+    eduimenu_s *menu =
+        eduiMenuCreate(0xf0, 0x5a, 0xf0, 0xfa, ed_fnt, routeEditor_cbCancelRenameRouteMenu, (char *)"Rename Route");
+    if (menu == nullptr) {
+        return;
+    }
+    eduiitem_s *item = eduiItemTextPickCreate(0, &attr, routeEditor_cbRenameRoute, (char *)"Route Name");
+    eduiMenuAddItem(menu, item);
+    EdUiNameInputItem *input = static_cast<EdUiNameInputItem *>(edui_last_item);
+    strcpy(input->name, aieditor->current_path->current_route->name);
+    input->max_name_length = 15;
+    eduiMenuAttach(parent, menu);
+    menu->x = parent->x + 10;
+    menu->y = parent->y + 40;
 }
 
-static __used__ void routeEditor_cbCancelRouteUsers(eduimenu_s *, eduimenu_s *) {
+static __used__ void routeEditor_cbCancelRouteUsers(eduimenu_s *, eduimenu_s *menu) {
+    eduiMenuDestroy(menu);
 }
 
-static __used__ void routeEditor_cbCancelRenameRouteMenu(eduimenu_s *, eduimenu_s *) {
+static __used__ void routeEditor_cbCancelRenameRouteMenu(eduimenu_s *, eduimenu_s *menu) {
+    eduiMenuDestroy(menu);
 }
 
 extern "C" {
@@ -162,15 +447,60 @@ extern "C" {
     }
 
     void pathEditorDrawPaths(void) {
+        AIEDITOR_RENDER_STATE *state = aieditor;
+        EDAIPATHWALL_s *wall = (EDAIPATHWALL_s *)NuLinkedListGetHead(&state->path_walls);
+        while (wall != nullptr) {
+            wall->flags &= ~u8(1);
+            wall = (EDAIPATHWALL_s *)NuLinkedListGetNext(&state->path_walls, &wall->link);
+        }
+
+        if (aieditorsettings.draw_all_paths) {
+            i32 index = 0;
+            EDAIPATH_s *path = (EDAIPATH_s *)NuLinkedListGetHead(&state->paths);
+            while (path != nullptr) {
+                path->draw_index = index++;
+                path = (EDAIPATH_s *)NuLinkedListGetNext(&state->paths, &path->link);
+            }
+            if (state->current_path != nullptr) {
+                pathEditorDrawPath(state->current_path, state->current_path->draw_index);
+            }
+            path = (EDAIPATH_s *)NuLinkedListGetHead(&state->paths);
+            while (path != nullptr) {
+                if (path != state->current_path) {
+                    pathEditorDrawPath(path, path->draw_index);
+                }
+                path = (EDAIPATH_s *)NuLinkedListGetNext(&state->paths, &path->link);
+            }
+        } else {
+            pathEditorDrawPath(state->current_path, 0);
+        }
     }
 
     void pathEditorSaveData(void) {
     }
 
     void pathEditor_CalcNodeIXs(void) {
+        EDAIPATH_s *path = (EDAIPATH_s *)NuLinkedListGetHead(&aieditor->paths);
+        while (path != nullptr) {
+            i32 index = 0;
+            EDAIPATHNODE_s *node = (EDAIPATHNODE_s *)NuLinkedListGetHead(&path->nodes);
+            while (node != nullptr) {
+                node->index = index++;
+                node = (EDAIPATHNODE_s *)NuLinkedListGetNext(&path->nodes, &node->link);
+            }
+            path = (EDAIPATH_s *)NuLinkedListGetNext(&aieditor->paths, &path->link);
+        }
     }
 
-    void pathEditor_GetPath(void) {
+    EDAIPATH_s *pathEditor_GetPath(const char *name) {
+        EDAIPATH_s *path = (EDAIPATH_s *)NuLinkedListGetHead(&aieditor->paths);
+        while (path != nullptr && name != nullptr) {
+            if (NuStrICmp(name, path->name) == 0) {
+                return path;
+            }
+            path = (EDAIPATH_s *)NuLinkedListGetNext(&aieditor->paths, &path->link);
+        }
+        return aieditor->current_path;
     }
 
     void pathEditor_OnPathCheck(void) {
@@ -180,6 +510,17 @@ extern "C" {
     }
 
     void pathEditor_UpdateNodesOnPlatforms(void) {
+        EDAIPATH_s *path = (EDAIPATH_s *)NuLinkedListGetHead(&aieditor->paths);
+        while (path != nullptr) {
+            EDAIPATHNODE_s *node = (EDAIPATHNODE_s *)NuLinkedListGetHead(&path->nodes);
+            while (node != nullptr) {
+                if (NuSpecialExistsFn(&node->special)) {
+                    NuVecMtxTransform(&node->position, &node->special_position, NuSpecialGetDrawMtx(&node->special));
+                }
+                node = (EDAIPATHNODE_s *)NuLinkedListGetNext(&path->nodes, &node->link);
+            }
+            path = (EDAIPATH_s *)NuLinkedListGetNext(&aieditor->paths, &path->link);
+        }
     }
 
 } // extern "C"

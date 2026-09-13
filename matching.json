@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.070774,
+    "fuzzy_match_percent": 44.5299,
     "total_code": "4722419",
-    "matched_code": "375680",
-    "matched_code_percent": 7.955245,
+    "matched_code": "385657",
+    "matched_code_percent": 8.166513,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4528,
-    "matched_functions_percent": 33.642914,
+    "matched_functions": 4626,
+    "matched_functions_percent": 34.371056,
     "total_units": 1
   },
   "text": {
@@ -14427,7 +14427,7 @@
           "address": 4492128,
           "offset": 3602160,
           "size": 355,
-          "match_percent": 46.340206
+          "match_percent": 90.14433
         },
         {
           "name": "_ZN19MechAutoJumpManager25PreProcessJumpConnectionsEv",
@@ -14435,7 +14435,7 @@
           "address": 4492496,
           "offset": 3602528,
           "size": 369,
-          "match_percent": 4.660194
+          "match_percent": 100.0
         },
         {
           "name": "_ZN19MechAutoJumpManager22ProcessJumpConnectionsEv",
@@ -14443,7 +14443,7 @@
           "address": 4492880,
           "offset": 3602912,
           "size": 469,
-          "match_percent": 3.62069
+          "match_percent": 81.86207
         },
         {
           "name": "_ZN19MechAutoJumpManager7ProcessEv",
@@ -14451,7 +14451,7 @@
           "address": 4493360,
           "offset": 3603392,
           "size": 1863,
-          "match_percent": 0.952381
+          "match_percent": 81.90476
         },
         {
           "name": "_ZN19MechAutoJumpManager6RenderEv",
@@ -14459,7 +14459,7 @@
           "address": 4495232,
           "offset": 3605264,
           "size": 448,
-          "match_percent": 3.559322
+          "match_percent": 94.57627
         },
         {
           "name": "_ZN19MechAutoJumpManager7GetNameEv",
@@ -14616,7 +14616,7 @@
           "address": 4441520,
           "offset": 3551552,
           "size": 240,
-          "match_percent": 11.796296
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchSystemC2Ev",
@@ -14624,7 +14624,7 @@
           "address": 4441520,
           "offset": 3551552,
           "size": 240,
-          "match_percent": 11.796296
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchSystem22AddChangeLayoutButtonsER20NuVirtualTouchDevicei",
@@ -14704,7 +14704,7 @@
           "address": 4444880,
           "offset": 3554912,
           "size": 52,
-          "match_percent": 32.307693
+          "match_percent": 90.76923
         },
         {
           "name": "_ZN20MechInputTouchSystem21ConvertToScreenCoordsEffRfS0_",
@@ -14712,7 +14712,7 @@
           "address": 4445488,
           "offset": 3555520,
           "size": 76,
-          "match_percent": 22.105263
+          "match_percent": 99.89474
         },
         {
           "name": "_ZN20MechInputTouchSystem17ChooseTouchLayoutEb",
@@ -14736,7 +14736,7 @@
           "address": 4446464,
           "offset": 3556496,
           "size": 159,
-          "match_percent": 14.237288
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchSystem20CouldTouchBeLockedByEjP20MechInputTouchButton",
@@ -14744,7 +14744,7 @@
           "address": 4446624,
           "offset": 3556656,
           "size": 174,
-          "match_percent": 14.0625
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchSystem16SetTouchLockedByEjP20MechInputTouchButtonb",
@@ -14752,7 +14752,7 @@
           "address": 4446800,
           "offset": 3556832,
           "size": 610,
-          "match_percent": 2.763158
+          "match_percent": 99.93421
         },
         {
           "name": "_ZN20MechInputTouchSystem14ResetAllOwnersEv",
@@ -14760,7 +14760,7 @@
           "address": 4447424,
           "offset": 3557456,
           "size": 165,
-          "match_percent": 6.363637
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchSystem21ProcessEvenWhenPausedEP16ThingProcessData",
@@ -14832,7 +14832,7 @@
           "address": 4496320,
           "offset": 3606352,
           "size": 128,
-          "match_percent": 10.769231
+          "match_percent": 100.0
         },
         {
           "name": "_Z37MechTouchUITagButton_OnClick_CallbackR18MechTouchUIElementR11TouchHolder",
@@ -14856,7 +14856,7 @@
           "address": 4557440,
           "offset": 3667472,
           "size": 38,
-          "match_percent": 42.0
+          "match_percent": 100.0
         }
       ]
     },
@@ -14982,7 +14982,7 @@
           "address": 4457408,
           "offset": 3567440,
           "size": 256,
-          "match_percent": 21.711538
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchButtonC2Eijffffi",
@@ -14990,7 +14990,7 @@
           "address": 4457408,
           "offset": 3567440,
           "size": 256,
-          "match_percent": 21.711538
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchButtonC1EN19NuTouchInputElement4TYPEEii",
@@ -14998,7 +14998,7 @@
           "address": 4457664,
           "offset": 3567696,
           "size": 208,
-          "match_percent": 27.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchButtonC2EN19NuTouchInputElement4TYPEEii",
@@ -15006,7 +15006,7 @@
           "address": 4457664,
           "offset": 3567696,
           "size": 208,
-          "match_percent": 27.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchButton33FindPossibleTriggeringIndexFromIDEj",
@@ -15014,7 +15014,7 @@
           "address": 4457872,
           "offset": 3567904,
           "size": 142,
-          "match_percent": 10.0
+          "match_percent": 47.666668
         },
         {
           "name": "_ZN20MechInputTouchButton20CouldTouchBeLockedByEj",
@@ -15022,7 +15022,7 @@
           "address": 4458016,
           "offset": 3568048,
           "size": 54,
-          "match_percent": 28.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchButton14SetTouchLockedEjb",
@@ -15030,7 +15030,7 @@
           "address": 4458080,
           "offset": 3568112,
           "size": 104,
-          "match_percent": 16.8
+          "match_percent": 100.0
         },
         {
           "name": "_ZN20MechInputTouchButton16ClearTouchLockedEb",
@@ -15206,7 +15206,7 @@
           "address": 4460416,
           "offset": 3570448,
           "size": 116,
-          "match_percent": 14.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN29MechInputTouchMainDummyButtonC2ER28MechInputTouchMainControllerjNS0_12eButtonTypesE",
@@ -15214,7 +15214,7 @@
           "address": 4460416,
           "offset": 3570448,
           "size": 116,
-          "match_percent": 14.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN28MechInputTouchMainDummyStickC1ER28MechInputTouchMainControllerN19NuTouchInputElement4TYPEE",
@@ -15222,7 +15222,7 @@
           "address": 4460544,
           "offset": 3570576,
           "size": 94,
-          "match_percent": 18.26087
+          "match_percent": 100.0
         },
         {
           "name": "_ZN28MechInputTouchMainDummyStickC2ER28MechInputTouchMainControllerN19NuTouchInputElement4TYPEE",
@@ -15230,7 +15230,71 @@
           "address": 4460544,
           "offset": 3570576,
           "size": 94,
-          "match_percent": 18.26087
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN28MechInputTouchMainDummyStick6RenderEv",
+          "demangled_name": "MechInputTouchMainDummyStick::Render()",
+          "address": 4460720,
+          "offset": 3570752,
+          "size": 9,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN28MechInputTouchMainDummyStick6UpdateEPK16NuInputTouchData",
+          "demangled_name": "MechInputTouchMainDummyStick::Update(NuInputTouchData const*)",
+          "address": 4460736,
+          "offset": 3570768,
+          "size": 9,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZNK28MechInputTouchMainDummyStick9GetStickXEv",
+          "demangled_name": "MechInputTouchMainDummyStick::GetStickX() const",
+          "address": 4460752,
+          "offset": 3570784,
+          "size": 13,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZNK28MechInputTouchMainDummyStick9GetStickYEv",
+          "demangled_name": "MechInputTouchMainDummyStick::GetStickY() const",
+          "address": 4460768,
+          "offset": 3570800,
+          "size": 13,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZNK28MechInputTouchMainDummyStick11GetPlayerIdEv",
+          "demangled_name": "MechInputTouchMainDummyStick::GetPlayerId() const",
+          "address": 4460784,
+          "offset": 3570816,
+          "size": 24,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN28MechInputTouchMainDummyStickD1Ev",
+          "demangled_name": "MechInputTouchMainDummyStick::~MechInputTouchMainDummyStick()",
+          "address": 4460848,
+          "offset": 3570880,
+          "size": 29,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN28MechInputTouchMainDummyStickD2Ev",
+          "demangled_name": "MechInputTouchMainDummyStick::~MechInputTouchMainDummyStick()",
+          "address": 4460848,
+          "offset": 3570880,
+          "size": 29,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN28MechInputTouchMainDummyStickD0Ev",
+          "demangled_name": "MechInputTouchMainDummyStick::~MechInputTouchMainDummyStick()",
+          "address": 4460880,
+          "offset": 3570912,
+          "size": 45,
+          "match_percent": 100.0
         }
       ]
     },
@@ -15245,6 +15309,46 @@
           "address": 4459568,
           "offset": 3569600,
           "size": 16,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN29MechInputTouchMainDummyButton6RenderEv",
+          "demangled_name": "MechInputTouchMainDummyButton::Render()",
+          "address": 4460688,
+          "offset": 3570720,
+          "size": 9,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN29MechInputTouchMainDummyButton6UpdateEPK16NuInputTouchData",
+          "demangled_name": "MechInputTouchMainDummyButton::Update(NuInputTouchData const*)",
+          "address": 4460704,
+          "offset": 3570736,
+          "size": 9,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN29MechInputTouchMainDummyButtonD1Ev",
+          "demangled_name": "MechInputTouchMainDummyButton::~MechInputTouchMainDummyButton()",
+          "address": 4460816,
+          "offset": 3570848,
+          "size": 29,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN29MechInputTouchMainDummyButtonD2Ev",
+          "demangled_name": "MechInputTouchMainDummyButton::~MechInputTouchMainDummyButton()",
+          "address": 4460816,
+          "offset": 3570848,
+          "size": 29,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN29MechInputTouchMainDummyButtonD0Ev",
+          "demangled_name": "MechInputTouchMainDummyButton::~MechInputTouchMainDummyButton()",
+          "address": 4460928,
+          "offset": 3570960,
+          "size": 45,
           "match_percent": 100.0
         }
       ]
@@ -17481,7 +17585,7 @@
           "address": 4565440,
           "offset": 3675472,
           "size": 196,
-          "match_percent": 8.076923
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystemsD1Ev",
@@ -17513,7 +17617,7 @@
           "address": 4571616,
           "offset": 3681648,
           "size": 400,
-          "match_percent": 39.271606
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystemsC2Ev",
@@ -17521,7 +17625,7 @@
           "address": 4571616,
           "offset": 3681648,
           "size": 400,
-          "match_percent": 39.271606
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems8LoadPermEv",
@@ -17537,7 +17641,7 @@
           "address": 4572720,
           "offset": 3682752,
           "size": 153,
-          "match_percent": 77.14286
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems21ProcessOnlyWhenPausedEP16ThingProcessData",
@@ -17553,7 +17657,7 @@
           "address": 4572928,
           "offset": 3682960,
           "size": 429,
-          "match_percent": 18.73
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems10EnterLevelEP11WORLDINFO_s",
@@ -17593,7 +17697,7 @@
           "address": 4577408,
           "offset": 3687440,
           "size": 191,
-          "match_percent": 7.241379
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems15NewMoveToMarkerER19MechObjectInterface",
@@ -17617,7 +17721,7 @@
           "address": 4577968,
           "offset": 3688000,
           "size": 183,
-          "match_percent": 8.75
+          "match_percent": 32.4375
         },
         {
           "name": "_ZN11MechSystems13NewRadarPulseERK5VuVecb",
@@ -17625,7 +17729,7 @@
           "address": 4578160,
           "offset": 3688192,
           "size": 191,
-          "match_percent": 8.235294
+          "match_percent": 71.254906
         },
         {
           "name": "_ZN11MechSystems12NewTagButtonER12GameObject_sR11TouchHolder",
@@ -17633,7 +17737,7 @@
           "address": 4578352,
           "offset": 3688384,
           "size": 263,
-          "match_percent": 5.833334
+          "match_percent": 47.083332
         },
         {
           "name": "_ZN11MechSystems28RenderCurrentPlayerHighlightEv",
@@ -17641,7 +17745,7 @@
           "address": 4578624,
           "offset": 3688656,
           "size": 296,
-          "match_percent": 6.268657
+          "match_percent": 78.07462
         },
         {
           "name": "_ZN11MechSystems23HookUpClickToPressStartEv",
@@ -17649,7 +17753,7 @@
           "address": 4578928,
           "offset": 3688960,
           "size": 59,
-          "match_percent": 28.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems23UnhookClickToPressStartEv",
@@ -17657,7 +17761,7 @@
           "address": 4578992,
           "offset": 3689024,
           "size": 51,
-          "match_percent": 30.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechSystems7GetNameEv",
@@ -17736,7 +17840,7 @@
           "address": 4543744,
           "offset": 3653776,
           "size": 111,
-          "match_percent": 92.875
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechTouchUI13OnDoubleClickER12GameObject_sR11TouchHolder",
@@ -17752,7 +17856,7 @@
           "address": 4543920,
           "offset": 3653952,
           "size": 172,
-          "match_percent": 60.509434
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechTouchUIC1Ev",
@@ -17824,7 +17928,7 @@
           "address": 4544560,
           "offset": 3654592,
           "size": 293,
-          "match_percent": 70.084335
+          "match_percent": 70.14458
         },
         {
           "name": "_ZN11MechTouchUI6OnHoldER12GameObject_sR11TouchHolder",
@@ -17832,7 +17936,7 @@
           "address": 4544864,
           "offset": 3654896,
           "size": 147,
-          "match_percent": 76.2
+          "match_percent": 97.09091
         },
         {
           "name": "_ZN11MechTouchUI6OnDownER12GameObject_sR11TouchHolder",
@@ -17840,7 +17944,7 @@
           "address": 4545024,
           "offset": 3655056,
           "size": 107,
-          "match_percent": 50.81818
+          "match_percent": 100.0
         },
         {
           "name": "_ZN11MechTouchUI7ProcessEf",
@@ -17872,7 +17976,7 @@
           "address": 4546752,
           "offset": 3656784,
           "size": 486,
-          "match_percent": 92.52419
+          "match_percent": 92.564514
         },
         {
           "name": "_ZN20MechTouchUITexButton7ProcessEf",
@@ -17880,7 +17984,7 @@
           "address": 4547952,
           "offset": 3657984,
           "size": 277,
-          "match_percent": 37.876713
+          "match_percent": 41.38356
         },
         {
           "name": "_ZN20MechTouchUITexButtonD1Ev",
@@ -17912,7 +18016,7 @@
           "address": 4548464,
           "offset": 3658496,
           "size": 212,
-          "match_percent": 53.91228
+          "match_percent": 92.89474
         },
         {
           "name": "_ZN20MechTouchUITagButtonD2Ev",
@@ -17920,7 +18024,7 @@
           "address": 4548464,
           "offset": 3658496,
           "size": 212,
-          "match_percent": 53.91228
+          "match_percent": 92.89474
         },
         {
           "name": "_ZN20MechTouchUITagButtonD0Ev",
@@ -17936,7 +18040,7 @@
           "address": 4548752,
           "offset": 3658784,
           "size": 197,
-          "match_percent": 38.837208
+          "match_percent": 95.790695
         },
         {
           "name": "_ZN23MechTouchUIPlayerButtonC2Ev",
@@ -17944,7 +18048,7 @@
           "address": 4548752,
           "offset": 3658784,
           "size": 197,
-          "match_percent": 38.837208
+          "match_percent": 95.790695
         },
         {
           "name": "_ZN23MechTouchUIPlayerButton14TriggerTagNextEv",
@@ -18008,7 +18112,7 @@
           "address": 4554080,
           "offset": 3664112,
           "size": 34,
-          "match_percent": 42.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN24MechTouchUIPartySelectorD2Ev",
@@ -18016,7 +18120,7 @@
           "address": 4554080,
           "offset": 3664112,
           "size": 34,
-          "match_percent": 42.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZN24MechTouchUIPartySelectorC1ER23MechTouchUIPlayerButtonPi",
@@ -18040,7 +18144,7 @@
           "address": 4555008,
           "offset": 3665040,
           "size": 189,
-          "match_percent": 9.130435
+          "match_percent": 99.67391
         },
         {
           "name": "_ZN24MechTouchUIPartySelector8BlendOutEv",
@@ -18072,7 +18176,7 @@
           "address": 4557488,
           "offset": 3667520,
           "size": 205,
-          "match_percent": 37.727272
+          "match_percent": 81.045456
         },
         {
           "name": "_ZN22MechTouchUIPauseButtonC2Ev",
@@ -18080,7 +18184,7 @@
           "address": 4557488,
           "offset": 3667520,
           "size": 205,
-          "match_percent": 37.727272
+          "match_percent": 81.045456
         },
         {
           "name": "_ZN22MechTouchUIPauseButton6RenderEv",
@@ -18128,7 +18232,7 @@
           "address": 4561600,
           "offset": 3671632,
           "size": 654,
-          "match_percent": 16.756521
+          "match_percent": 91.304344
         },
         {
           "name": "_ZN20MechTouchUITagButtonC2ER12GameObject_sR11TouchHolder",
@@ -18136,7 +18240,7 @@
           "address": 4561600,
           "offset": 3671632,
           "size": 654,
-          "match_percent": 16.756521
+          "match_percent": 91.304344
         },
         {
           "name": "_ZN20MechTouchUITagButton7FadeOutEv",
@@ -18144,7 +18248,7 @@
           "address": 4562256,
           "offset": 3672288,
           "size": 156,
-          "match_percent": 16.153847
+          "match_percent": 99.96154
         },
         {
           "name": "_ZN20MechTouchUITagButton7ProcessEf",
@@ -18326,7 +18430,7 @@
           "address": 4010368,
           "offset": 3120400,
           "size": 47,
-          "match_percent": 28.0
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cbSnapHeightToggle",
@@ -18334,7 +18438,7 @@
           "address": 4010416,
           "offset": 3120448,
           "size": 46,
-          "match_percent": 30.0
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cbSolidPathDisplayToggle",
@@ -18342,7 +18446,7 @@
           "address": 4010464,
           "offset": 3120496,
           "size": 43,
-          "match_percent": 32.307693
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cbSolidAntinodeDisplayToggle",
@@ -18350,7 +18454,7 @@
           "address": 4010512,
           "offset": 3120544,
           "size": 43,
-          "match_percent": 32.307693
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cbStopPlatformsToggle",
@@ -18358,7 +18462,7 @@
           "address": 4010560,
           "offset": 3120592,
           "size": 46,
-          "match_percent": 30.0
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cbShowCreaturesToggle",
@@ -18366,7 +18470,7 @@
           "address": 4010608,
           "offset": 3120640,
           "size": 48,
-          "match_percent": 28.0
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cbShowCreaturesSetToggle",
@@ -18374,7 +18478,7 @@
           "address": 4010656,
           "offset": 3120688,
           "size": 48,
-          "match_percent": 28.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZL33aieditor_cbCancelSelectEditorModeP10eduimenu_sS0_",
@@ -18382,7 +18486,7 @@
           "address": 4021088,
           "offset": 3131120,
           "size": 34,
-          "match_percent": 42.0
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cvSelectEditorMode",
@@ -18390,7 +18494,7 @@
           "address": 4024272,
           "offset": 3134304,
           "size": 345,
-          "match_percent": 1.627907
+          "match_percent": 77.15116
         },
         {
           "name": "aieditor_Register",
@@ -18398,7 +18502,7 @@
           "address": 4173664,
           "offset": 3283696,
           "size": 143,
-          "match_percent": 11.351352
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_SetMode",
@@ -18406,7 +18510,7 @@
           "address": 4173808,
           "offset": 3283840,
           "size": 112,
-          "match_percent": 18.26087
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_Enter",
@@ -18414,7 +18518,7 @@
           "address": 4173920,
           "offset": 3283952,
           "size": 166,
-          "match_percent": 9.6
+          "match_percent": 93.48
         },
         {
           "name": "aieditor_Render",
@@ -18430,7 +18534,7 @@
           "address": 4182272,
           "offset": 3292304,
           "size": 62,
-          "match_percent": 32.307693
+          "match_percent": 99.92308
         },
         {
           "name": "aieditor_RegisterPathCnxType",
@@ -18438,7 +18542,7 @@
           "address": 4182336,
           "offset": 3292368,
           "size": 151,
-          "match_percent": 10.0
+          "match_percent": 99.57143
         },
         {
           "name": "aieditor_RegisterDefaultPathCnxTypes",
@@ -18446,7 +18550,7 @@
           "address": 4182496,
           "offset": 3292528,
           "size": 136,
-          "match_percent": 16.8
+          "match_percent": 99.4
         },
         {
           "name": "aieditor_Init",
@@ -18454,7 +18558,7 @@
           "address": 4182640,
           "offset": 3292672,
           "size": 764,
-          "match_percent": 2.427746
+          "match_percent": 97.01734
         },
         {
           "name": "aieditor_Leave",
@@ -18462,7 +18566,7 @@
           "address": 4209424,
           "offset": 3319456,
           "size": 214,
-          "match_percent": 6.666666
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_ClearMainMenu",
@@ -18470,7 +18574,7 @@
           "address": 4211680,
           "offset": 3321712,
           "size": 68,
-          "match_percent": 23.333334
+          "match_percent": 100.0
         },
         {
           "name": "_ZL25aieditor_cbCancelSaveMenuP10eduimenu_sP10eduiitem_sj",
@@ -18478,7 +18582,7 @@
           "address": 4212304,
           "offset": 3322336,
           "size": 27,
-          "match_percent": 35.0
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cbMovePlayer",
@@ -18486,7 +18590,7 @@
           "address": 4212336,
           "offset": 3322368,
           "size": 55,
-          "match_percent": 24.705883
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cbGoToPlayer",
@@ -18494,7 +18598,7 @@
           "address": 4212400,
           "offset": 3322432,
           "size": 63,
-          "match_percent": 22.105263
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_cbCancelMainMenu",
@@ -18502,7 +18606,7 @@
           "address": 4212464,
           "offset": 3322496,
           "size": 27,
-          "match_percent": 35.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZL24aieditor_cbSetEditorModeP10eduimenu_sP10eduiitem_sj",
@@ -18510,7 +18614,7 @@
           "address": 4212496,
           "offset": 3322528,
           "size": 59,
-          "match_percent": 26.25
+          "match_percent": 100.0
         },
         {
           "name": "InitFn_AIEditorMovePlayers",
@@ -18526,7 +18630,7 @@
           "address": 4220432,
           "offset": 3330464,
           "size": 272,
-          "match_percent": 7.368421
+          "match_percent": 100.0
         },
         {
           "name": "aieditor_Save",
@@ -18550,7 +18654,7 @@
           "address": 4229424,
           "offset": 3339456,
           "size": 269,
-          "match_percent": 5.915493
+          "match_percent": 60.633804
         },
         {
           "name": "aieditor_Reset",
@@ -20409,7 +20513,7 @@
           "address": 4009600,
           "offset": 3119632,
           "size": 47,
-          "match_percent": 22.0
+          "match_percent": 100.0
         },
         {
           "name": "_ZL27pathEditor_cbCnxFlagsToggleP10eduimenu_sP10eduiitem_sj",
@@ -20417,7 +20521,7 @@
           "address": 4009648,
           "offset": 3119680,
           "size": 499,
-          "match_percent": 1.746032
+          "match_percent": 3.809524
         },
         {
           "name": "_ZL27routeEditor_cbSetRouteUsersP10eduimenu_sP10eduiitem_sj",
@@ -20425,7 +20529,7 @@
           "address": 4010160,
           "offset": 3120192,
           "size": 200,
-          "match_percent": 3.333333
+          "match_percent": 100.0
         },
         {
           "name": "_ZL27pathEditorCalcRouteIteratorP8AIPATH_sPfPhiifi",
@@ -20433,7 +20537,7 @@
           "address": 4013840,
           "offset": 3123872,
           "size": 538,
-          "match_percent": 2.297297
+          "match_percent": 2.837838
         },
         {
           "name": "_ZL28pathEditor_cbNodeFlagsToggleP10eduimenu_sP10eduiitem_sj",
@@ -20441,7 +20545,7 @@
           "address": 4014768,
           "offset": 3124800,
           "size": 160,
-          "match_percent": 5.5
+          "match_percent": 65.85
         },
         {
           "name": "_ZL23pathEditor_cbRenameNodeP10eduimenu_sP10eduiitem_sj",
@@ -20449,7 +20553,7 @@
           "address": 4015616,
           "offset": 3125648,
           "size": 219,
-          "match_percent": 4.657534
+          "match_percent": 100.0
         },
         {
           "name": "_ZL28pathEditor_DestroySharedNodeP20EDAISHAREDPATHNODE_s",
@@ -20457,7 +20561,7 @@
           "address": 4017008,
           "offset": 3127040,
           "size": 217,
-          "match_percent": 34.761906
+          "match_percent": 95.0
         },
         {
           "name": "_ZL26pathEditor_cbShareNodeMenuP10eduimenu_sP10eduiitem_sj",
@@ -20465,7 +20569,7 @@
           "address": 4019200,
           "offset": 3129232,
           "size": 503,
-          "match_percent": 2.764228
+          "match_percent": 80.94309
         },
         {
           "name": "_ZL27pathEditor_cbSelectPathMenuP10eduimenu_sP10eduiitem_sj",
@@ -20473,7 +20577,7 @@
           "address": 4019712,
           "offset": 3129744,
           "size": 283,
-          "match_percent": 4.722222
+          "match_percent": 99.93056
         },
         {
           "name": "_ZL30routeEditor_cbCancelRouteUsersP10eduimenu_sS0_",
@@ -20481,7 +20585,7 @@
           "address": 4021136,
           "offset": 3131168,
           "size": 34,
-          "match_percent": 33.0
+          "match_percent": 99.9
         },
         {
           "name": "_ZL35routeEditor_cbCancelRenameRouteMenuP10eduimenu_sS0_",
@@ -20489,7 +20593,7 @@
           "address": 4021184,
           "offset": 3131216,
           "size": 34,
-          "match_percent": 33.0
+          "match_percent": 99.9
         },
         {
           "name": "_ZL33pathEditor_cbCancelRenamePathMenuP10eduimenu_sS0_",
@@ -20497,7 +20601,7 @@
           "address": 4021232,
           "offset": 3131264,
           "size": 34,
-          "match_percent": 33.0
+          "match_percent": 99.9
         },
         {
           "name": "_ZL29pathEditor_cbCancelSelectMenuP10eduimenu_sS0_",
@@ -20505,7 +20609,7 @@
           "address": 4021280,
           "offset": 3131312,
           "size": 34,
-          "match_percent": 33.0
+          "match_percent": 99.9
         },
         {
           "name": "_ZL33pathEditor_cbCancelRenameNodeMenuP10eduimenu_sS0_",
@@ -20513,7 +20617,7 @@
           "address": 4021328,
           "offset": 3131360,
           "size": 34,
-          "match_percent": 33.0
+          "match_percent": 99.9
         },
         {
           "name": "_ZL29routeEditor_cbRenameRouteMenuP10eduimenu_sP10eduiitem_sj",
@@ -20521,7 +20625,7 @@
           "address": 4024928,
           "offset": 3134960,
           "size": 300,
-          "match_percent": 3.970588
+          "match_percent": 89.44118
         },
         {
           "name": "_ZL27pathEditor_cbRenameNodeMenuP10eduimenu_sP10eduiitem_sj",
@@ -20529,7 +20633,7 @@
           "address": 4025232,
           "offset": 3135264,
           "size": 303,
-          "match_percent": 3.188406
+          "match_percent": 89.57971
         },
         {
           "name": "_ZL25pathEditor_GetNearestNodeP10EDAIPATH_si",
@@ -20537,7 +20641,7 @@
           "address": 4027056,
           "offset": 3137088,
           "size": 637,
-          "match_percent": 0.0
+          "match_percent": 13.448052
         },
         {
           "name": "_ZL25routeEditor_cbRenameRouteP10eduimenu_sP10eduiitem_sj",
@@ -20545,7 +20649,7 @@
           "address": 4043456,
           "offset": 3153488,
           "size": 597,
-          "match_percent": 2.129032
+          "match_percent": 19.567741
         },
         {
           "name": "_ZL23pathEditor_cbRenamePathP10eduimenu_sP10eduiitem_sj",
@@ -20553,7 +20657,7 @@
           "address": 4044224,
           "offset": 3154256,
           "size": 156,
-          "match_percent": 7.090909
+          "match_percent": 99.72727
         },
         {
           "name": "_ZL24routeEditor_cbRouteUsersP10eduimenu_sP10eduiitem_sj",
@@ -20561,7 +20665,7 @@
           "address": 4045696,
           "offset": 3155728,
           "size": 461,
-          "match_percent": 2.857143
+          "match_percent": 70.38655
         },
         {
           "name": "_ZL27pathEditor_cbRenamePathMenuP10eduimenu_sP10eduiitem_sj",
@@ -20569,7 +20673,7 @@
           "address": 4046160,
           "offset": 3156192,
           "size": 288,
-          "match_percent": 3.235294
+          "match_percent": 80.27941
         },
         {
           "name": "_ZL32pathEditorCalculateDistanceTableP8AIPATH_siP9variptr_uS2_",
@@ -20577,7 +20681,7 @@
           "address": 4087888,
           "offset": 3197920,
           "size": 354,
-          "match_percent": 3.300971
+          "match_percent": 4.07767
         },
         {
           "name": "_ZL18TestPointPathCheckP7nuvec_sP14EDAIPATHNODE_sS2_PfS3_Pif",
@@ -20585,7 +20689,7 @@
           "address": 4126384,
           "offset": 3236416,
           "size": 1477,
-          "match_percent": 1.270968
+          "match_percent": 1.548387
         },
         {
           "name": "_ZL18pathEditorDrawPathP10EDAIPATH_si",
@@ -20593,7 +20697,7 @@
           "address": 4185440,
           "offset": 3295472,
           "size": 5632,
-          "match_percent": 0.387973
+          "match_percent": 0.465567
         },
         {
           "name": "pathEditorDrawPaths",
@@ -20601,7 +20705,7 @@
           "address": 4191072,
           "offset": 3301104,
           "size": 270,
-          "match_percent": 4.470588
+          "match_percent": 50.17647
         },
         {
           "name": "pathEditor_CalcNodeIXs",
@@ -20609,7 +20713,7 @@
           "address": 4191344,
           "offset": 3301376,
           "size": 166,
-          "match_percent": 7.8
+          "match_percent": 100.0
         },
         {
           "name": "pathEditor_UpdateNodesOnPlatforms",
@@ -20617,7 +20721,7 @@
           "address": 4191520,
           "offset": 3301552,
           "size": 222,
-          "match_percent": 5.909091
+          "match_percent": 100.0
         },
         {
           "name": "pathEditor_QuickOnPathCheck",
@@ -20625,7 +20729,7 @@
           "address": 4191744,
           "offset": 3301776,
           "size": 883,
-          "match_percent": 1.511628
+          "match_percent": 1.627907
         },
         {
           "name": "pathEditor_OnPathCheck",
@@ -20633,7 +20737,7 @@
           "address": 4192640,
           "offset": 3302672,
           "size": 2656,
-          "match_percent": 0.556328
+          "match_percent": 0.667594
         },
         {
           "name": "pathEditor_GetPath",
@@ -20641,7 +20745,7 @@
           "address": 4195504,
           "offset": 3305536,
           "size": 139,
-          "match_percent": 7.647059
+          "match_percent": 100.0
         },
         {
           "name": "_Z16pathEditor_Enterv",
@@ -20649,7 +20753,7 @@
           "address": 4195648,
           "offset": 3305680,
           "size": 4694,
-          "match_percent": 0.386139
+          "match_percent": 0.475248
         },
         {
           "name": "pathEditorCreateData",
@@ -20657,7 +20761,7 @@
           "address": 4201504,
           "offset": 3311536,
           "size": 4142,
-          "match_percent": 0.379867
+          "match_percent": 0.39886
         },
         {
           "name": "pathEditorSaveData",
@@ -20665,7 +20769,7 @@
           "address": 4209648,
           "offset": 3319680,
           "size": 2019,
-          "match_percent": 0.650096
+          "match_percent": 0.917782
         },
         {
           "name": "_ZL37pathEditor_cbCancelDeleteCreatureMenuP10eduimenu_sS0_",
@@ -20673,7 +20777,7 @@
           "address": 4212000,
           "offset": 3322032,
           "size": 27,
-          "match_percent": 41.25
+          "match_percent": 100.0
         },
         {
           "name": "_ZL25routeEditor_cbDeleteRouteP10eduimenu_sP10eduiitem_sj",
@@ -20681,7 +20785,7 @@
           "address": 4212560,
           "offset": 3322592,
           "size": 994,
-          "match_percent": 1.231884
+          "match_percent": 1.521739
         },
         {
           "name": "_ZL25routeEditor_cbCreateRouteP10eduimenu_sP10eduiitem_sj",
@@ -20689,7 +20793,7 @@
           "address": 4213568,
           "offset": 3323600,
           "size": 1634,
-          "match_percent": 0.958638
+          "match_percent": 2.189781
         },
         {
           "name": "_ZL25pathEditor_cbSetShareNodeP10eduimenu_sP10eduiitem_sj",
@@ -20697,7 +20801,7 @@
           "address": 4215216,
           "offset": 3325248,
           "size": 1093,
-          "match_percent": 1.201413
+          "match_percent": 3.180212
         },
         {
           "name": "_ZL23pathEditor_cbCreatePathP10eduimenu_sP10eduiitem_sj",
@@ -20705,7 +20809,7 @@
           "address": 4216320,
           "offset": 3326352,
           "size": 291,
-          "match_percent": 4.875
+          "match_percent": 89.6
         },
         {
           "name": "_ZL27pathEditor_cbSetCurrentPathP10eduimenu_sP10eduiitem_sj",
@@ -20713,7 +20817,7 @@
           "address": 4216624,
           "offset": 3326656,
           "size": 530,
-          "match_percent": 2.428571
+          "match_percent": 68.77143
         },
         {
           "name": "_ZL37pathEditor_cbCancelDisconnectNodeMenuP10eduimenu_sS0_",
@@ -20721,7 +20825,7 @@
           "address": 4217168,
           "offset": 3327200,
           "size": 27,
-          "match_percent": 41.25
+          "match_percent": 100.0
         },
         {
           "name": "_ZL33pathEditor_cbCancelDeleteNodeMenuP10eduimenu_sS0_",
@@ -20729,7 +20833,7 @@
           "address": 4217200,
           "offset": 3327232,
           "size": 27,
-          "match_percent": 41.25
+          "match_percent": 100.0
         },
         {
           "name": "_ZL33pathEditor_cbCancelDeleteAreaMenuP10eduimenu_sS0_",
@@ -20737,7 +20841,7 @@
           "address": 4220368,
           "offset": 3330400,
           "size": 27,
-          "match_percent": 41.25
+          "match_percent": 100.0
         },
         {
           "name": "_ZL24pathEditor_PathNodeMovedP14EDAIPATHNODE_s",
@@ -20745,7 +20849,7 @@
           "address": 4232224,
           "offset": 3342256,
           "size": 523,
-          "match_percent": 0.0
+          "match_percent": 92.377625
         },
         {
           "name": "_Z18pathEditor_ProcessP7nupad_s",
@@ -20761,7 +20865,7 @@
           "address": 4243616,
           "offset": 3353648,
           "size": 1559,
-          "match_percent": 0.607735
+          "match_percent": 1.160221
         },
         {
           "name": "_ZL27pathEditor_cbDeletePathNodeP10eduimenu_sP10eduiitem_sj",
@@ -20769,7 +20873,7 @@
           "address": 4245184,
           "offset": 3355216,
           "size": 158,
-          "match_percent": 4.888889
+          "match_percent": 9.333333
         },
         {
           "name": "_ZL23pathEditor_cbDeletePathP10eduimenu_sP10eduiitem_sj",
@@ -20777,7 +20881,7 @@
           "address": 4245648,
           "offset": 3355680,
           "size": 609,
-          "match_percent": 1.447368
+          "match_percent": 2.763158
         },
         {
           "name": "_Z17pathEditor_Renderiiff",
@@ -20785,7 +20889,7 @@
           "address": 4255968,
           "offset": 3366000,
           "size": 2043,
-          "match_percent": 0.762332
+          "match_percent": 0.941704
         }
       ]
     },
@@ -21238,7 +21342,7 @@
           "address": 4055024,
           "offset": 3165056,
           "size": 509,
-          "match_percent": 99.54962
+          "match_percent": 99.51145
         },
         {
           "name": "_ZL6xParamP8nufpar_s",
@@ -21294,7 +21398,7 @@
           "address": 4069984,
           "offset": 3180016,
           "size": 925,
-          "match_percent": 99.79184
+          "match_percent": 99.77143
         },
         {
           "name": "_ZL15xConditionMacroP8nufpar_s",
@@ -40281,7 +40385,7 @@
           "address": 5180752,
           "offset": 4290784,
           "size": 1695,
-          "match_percent": 19.226776
+          "match_percent": 18.882513
         },
         {
           "name": "_Z15CanClimbSurfaceP12GameObject_si",
@@ -40337,7 +40441,7 @@
           "address": 5188688,
           "offset": 4298720,
           "size": 363,
-          "match_percent": 76.48485
+          "match_percent": 75.171715
         },
         {
           "name": "_Z15FindClimbObjectP16CLIMBOBJECTSYS_sP11AIPATHCNX_s",
@@ -40345,7 +40449,7 @@
           "address": 5189056,
           "offset": 4299088,
           "size": 140,
-          "match_percent": 100.0
+          "match_percent": 99.67347
         }
       ]
     },
@@ -43668,7 +43772,7 @@
           "address": 1030912,
           "offset": 140944,
           "size": 245,
-          "match_percent": 90.7875
+          "match_percent": 100.0
         },
         {
           "name": "_Z19DeactivateCharacterPc",
@@ -43935,12 +44039,20 @@
           "match_percent": 50.826088
         },
         {
+          "name": "_Z20CharScenes_LevelLoadP11WORLDINFO_s",
+          "demangled_name": "CharScenes_LevelLoad(WORLDINFO_s*)",
+          "address": 4587392,
+          "offset": 3697424,
+          "size": 332,
+          "match_percent": 73.333336
+        },
+        {
           "name": "_Z19CharScenes_AreaLoadP23APICHARACTERMODELLIST_sP9variptr_uS1_",
           "demangled_name": "CharScenes_AreaLoad(APICHARACTERMODELLIST_s*, variptr_u*, variptr_u)",
           "address": 4587728,
           "offset": 3697760,
           "size": 400,
-          "match_percent": 45.100918
+          "match_percent": 45.14679
         },
         {
           "name": "_Z22CharScene_FindHSpecialP11WORLDINFO_si",
@@ -48167,7 +48279,7 @@
           "address": 1358976,
           "offset": 469008,
           "size": 461,
-          "match_percent": 50.54622
+          "match_percent": 50.87395
         },
         {
           "name": "_ZL20ForcePushed_MoveCodeP12GameObject_s",
@@ -48503,7 +48615,7 @@
           "address": 1450864,
           "offset": 560896,
           "size": 4744,
-          "match_percent": 9.101317
+          "match_percent": 7.375886
         },
         {
           "name": "_Z9ZapTargetP12GameObject_s",
@@ -48631,7 +48743,7 @@
           "address": 1502368,
           "offset": 612400,
           "size": 2140,
-          "match_percent": 51.283466
+          "match_percent": 51.582676
         },
         {
           "name": "_Z14Move_CHARACTERP12GameObject_s",
@@ -48639,7 +48751,7 @@
           "address": 1504512,
           "offset": 614544,
           "size": 2399,
-          "match_percent": 67.094444
+          "match_percent": 66.72963
         },
         {
           "name": "_Z22FindGunshipHoverHeightP12GameObject_s",
@@ -48671,7 +48783,7 @@
           "address": 1510928,
           "offset": 620960,
           "size": 2051,
-          "match_percent": 48.400436
+          "match_percent": 47.72429
         },
         {
           "name": "_Z11Move_WALKERP12GameObject_s",
@@ -49953,7 +50065,7 @@
           "address": 4565376,
           "offset": 3675408,
           "size": 43,
-          "match_percent": 13.4
+          "match_percent": 100.0
         }
       ]
     },
@@ -50786,14 +50898,6 @@
           "match_percent": 27.75926
         },
         {
-          "name": "_Z20CharScenes_LevelLoadP11WORLDINFO_s",
-          "demangled_name": "CharScenes_LevelLoad(WORLDINFO_s*)",
-          "address": 4587392,
-          "offset": 3697424,
-          "size": 332,
-          "match_percent": 73.44086
-        },
-        {
           "name": "_ZL9CS_no_fogP8nufpar_s",
           "demangled_name": "CS_no_fog(nufpar_s*)",
           "address": 4819024,
@@ -50943,7 +51047,7 @@
           "address": 4819744,
           "offset": 3929776,
           "size": 281,
-          "match_percent": 74.402596
+          "match_percent": 74.207794
         },
         {
           "name": "_ZL18CutScene_ConfigureP7CUTINFOPcP9variptr_uS3_",
@@ -50951,7 +51055,7 @@
           "address": 4827040,
           "offset": 3937072,
           "size": 674,
-          "match_percent": 24.38889
+          "match_percent": 35.07143
         },
         {
           "name": "_ZL10CS_farclipP8nufpar_s",
@@ -51151,7 +51255,7 @@
           "address": 4835040,
           "offset": 3945072,
           "size": 2344,
-          "match_percent": 25.340288
+          "match_percent": 24.866774
         }
       ]
     },
@@ -71314,47 +71418,7 @@
           "address": 1150800,
           "offset": 260832,
           "size": 1528,
-          "match_percent": 11.064972
-        },
-        {
-          "name": "_ZL13Shop_GetInputP9SHOPINPUT",
-          "demangled_name": "Shop_GetInput(SHOPINPUT*)",
-          "address": 2366176,
-          "offset": 1476208,
-          "size": 1020,
-          "match_percent": 97.48617
-        },
-        {
-          "name": "_Z8ItemMenuP6MENU_s",
-          "demangled_name": "ItemMenu(MENU_s*)",
-          "address": 2367200,
-          "offset": 1477232,
-          "size": 2237,
-          "match_percent": 24.185745
-        },
-        {
-          "name": "_Z8CodeMenuP6MENU_s",
-          "demangled_name": "CodeMenu(MENU_s*)",
-          "address": 2370128,
-          "offset": 1480160,
-          "size": 3222,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_ZL11SubItemMenuP6MENU_s",
-          "demangled_name": "SubItemMenu(MENU_s*)",
-          "address": 2391568,
-          "offset": 1501600,
-          "size": 2909,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_Z15DrawShopPromptsv",
-          "demangled_name": "DrawShopPrompts()",
-          "address": 2407040,
-          "offset": 1517072,
-          "size": 796,
-          "match_percent": 77.19337
+          "match_percent": 10.99435
         },
         {
           "name": "NewMenu",
@@ -71459,6 +71523,46 @@
           "match_percent": 88.81481
         },
         {
+          "name": "_ZL13Shop_GetInputP9SHOPINPUT",
+          "demangled_name": "Shop_GetInput(SHOPINPUT*)",
+          "address": 2366176,
+          "offset": 1476208,
+          "size": 1020,
+          "match_percent": 97.42688
+        },
+        {
+          "name": "_Z8ItemMenuP6MENU_s",
+          "demangled_name": "ItemMenu(MENU_s*)",
+          "address": 2367200,
+          "offset": 1477232,
+          "size": 2237,
+          "match_percent": 21.818575
+        },
+        {
+          "name": "_Z12DrawCodeMenuv",
+          "demangled_name": "DrawCodeMenu()",
+          "address": 2369808,
+          "offset": 1479840,
+          "size": 315,
+          "match_percent": 99.84746
+        },
+        {
+          "name": "_Z8CodeMenuP6MENU_s",
+          "demangled_name": "CodeMenu(MENU_s*)",
+          "address": 2370128,
+          "offset": 1480160,
+          "size": 3222,
+          "match_percent": 0.0
+        },
+        {
+          "name": "_ZL18Shop_DrawCharacterP10shopitem_sP7nuvec_sffttt.part.0",
+          "demangled_name": "Shop_DrawCharacter(shopitem_s*, nuvec_s*, float, float, unsigned short, unsigned short, unsigned short) [clone .part.0]",
+          "address": 2377120,
+          "offset": 1487152,
+          "size": 1328,
+          "match_percent": 92.32404
+        },
+        {
           "name": "_Z15Shop_UpdateHintP6HINT_s",
           "demangled_name": "Shop_UpdateHint(HINT_s*)",
           "address": 2378448,
@@ -71467,12 +71571,20 @@
           "match_percent": 62.10692
         },
         {
+          "name": "_Z16LoadShelfSplinesv",
+          "demangled_name": "LoadShelfSplines()",
+          "address": 2379024,
+          "offset": 1489056,
+          "size": 884,
+          "match_percent": 99.849556
+        },
+        {
           "name": "_Z8InitShopP11WORLDINFO_s",
           "demangled_name": "InitShop(WORLDINFO_s*)",
           "address": 2381584,
           "offset": 1491616,
           "size": 4613,
-          "match_percent": 76.07629
+          "match_percent": 76.09007
         },
         {
           "name": "_Z17GetShopCamLookPosP7nuvec_s",
@@ -71496,7 +71608,7 @@
           "address": 2386352,
           "offset": 1496384,
           "size": 347,
-          "match_percent": 99.85227
+          "match_percent": 99.90909
         },
         {
           "name": "_Z14SelectShopItemP10shopitem_si",
@@ -71504,7 +71616,7 @@
           "address": 2386704,
           "offset": 1496736,
           "size": 1337,
-          "match_percent": 58.520145
+          "match_percent": 58.575092
         },
         {
           "name": "_Z17MoveSubItemsRightPiP7nuvec_si",
@@ -71531,12 +71643,20 @@
           "match_percent": 92.65753
         },
         {
+          "name": "_ZL11SubItemMenuP6MENU_s",
+          "demangled_name": "SubItemMenu(MENU_s*)",
+          "address": 2391568,
+          "offset": 1501600,
+          "size": 2909,
+          "match_percent": 0.0
+        },
+        {
           "name": "_Z10DoShopMenuP6MENU_s",
           "demangled_name": "DoShopMenu(MENU_s*)",
           "address": 2394480,
           "offset": 1504512,
           "size": 354,
-          "match_percent": 72.42254
+          "match_percent": 72.56338
         },
         {
           "name": "_Z10UpdateShopP6MENU_s",
@@ -71545,6 +71665,54 @@
           "offset": 1504880,
           "size": 599,
           "match_percent": 74.43636
+        },
+        {
+          "name": "_Z14DrawCodeMenu3Dv",
+          "demangled_name": "DrawCodeMenu3D()",
+          "address": 2395696,
+          "offset": 1505728,
+          "size": 2573,
+          "match_percent": 93.36056
+        },
+        {
+          "name": "_Z12DrawTopShelfi",
+          "demangled_name": "DrawTopShelf(int)",
+          "address": 2398704,
+          "offset": 1508736,
+          "size": 2082,
+          "match_percent": 0.0
+        },
+        {
+          "name": "_Z12DrawSubItemsv",
+          "demangled_name": "DrawSubItems()",
+          "address": 2400800,
+          "offset": 1510832,
+          "size": 6077,
+          "match_percent": 25.313599
+        },
+        {
+          "name": "_Z10DrawShop3DP11WORLDINFO_s",
+          "demangled_name": "DrawShop3D(WORLDINFO_s*)",
+          "address": 2406912,
+          "offset": 1516944,
+          "size": 76,
+          "match_percent": 99.95
+        },
+        {
+          "name": "_Z13DrawShopPanelv",
+          "demangled_name": "DrawShopPanel()",
+          "address": 2406992,
+          "offset": 1517024,
+          "size": 46,
+          "match_percent": 98.933334
+        },
+        {
+          "name": "_Z15DrawShopPromptsv",
+          "demangled_name": "DrawShopPrompts()",
+          "address": 2407040,
+          "offset": 1517072,
+          "size": 796,
+          "match_percent": 77.19337
         },
         {
           "name": "_Z25Shop_CollectAllCharactersi",
@@ -74420,7 +74588,7 @@
           "address": 1148576,
           "offset": 258608,
           "size": 1716,
-          "match_percent": 4.385246
+          "match_percent": 4.303279
         },
         {
           "name": "_Z13DrawSaveSlotsP6MENU_sf",
@@ -74476,7 +74644,7 @@
           "address": 1306096,
           "offset": 416128,
           "size": 6194,
-          "match_percent": 39.585438
+          "match_percent": 39.128155
         },
         {
           "name": "_Z14DrawBonusScorefiifPi",
@@ -74540,7 +74708,7 @@
           "address": 1316752,
           "offset": 426784,
           "size": 12845,
-          "match_percent": 44.08518
+          "match_percent": 44.078915
         },
         {
           "name": "_Z19DrawForceGlowSpriteP7nuvec_sfifP12GameObject_s",
@@ -74671,14 +74839,6 @@
           "match_percent": 99.958336
         },
         {
-          "name": "_Z12DrawCodeMenuv",
-          "demangled_name": "DrawCodeMenu()",
-          "address": 2369808,
-          "offset": 1479840,
-          "size": 315,
-          "match_percent": 99.84746
-        },
-        {
           "name": "_Z17DrawSubItemMenu2Dv",
           "demangled_name": "DrawSubItemMenu2D()",
           "address": 2373360,
@@ -74693,14 +74853,6 @@
           "offset": 1505488,
           "size": 230,
           "match_percent": 85.08197
-        },
-        {
-          "name": "_Z14DrawCodeMenu3Dv",
-          "demangled_name": "DrawCodeMenu3D()",
-          "address": 2395696,
-          "offset": 1505728,
-          "size": 2573,
-          "match_percent": 93.36056
         },
         {
           "name": "_Z12DrawQuestionP7nuvec_sff",
@@ -74719,44 +74871,12 @@
           "match_percent": 100.0
         },
         {
-          "name": "_Z12DrawTopShelfi",
-          "demangled_name": "DrawTopShelf(int)",
-          "address": 2398704,
-          "offset": 1508736,
-          "size": 2082,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_Z12DrawSubItemsv",
-          "demangled_name": "DrawSubItems()",
-          "address": 2400800,
-          "offset": 1510832,
-          "size": 6077,
-          "match_percent": 25.313599
-        },
-        {
           "name": "_Z17DrawSubItemMenu3Dv",
           "demangled_name": "DrawSubItemMenu3D()",
           "address": 2406880,
           "offset": 1516912,
           "size": 27,
           "match_percent": 100.0
-        },
-        {
-          "name": "_Z10DrawShop3DP11WORLDINFO_s",
-          "demangled_name": "DrawShop3D(WORLDINFO_s*)",
-          "address": 2406912,
-          "offset": 1516944,
-          "size": 76,
-          "match_percent": 99.95
-        },
-        {
-          "name": "_Z13DrawShopPanelv",
-          "demangled_name": "DrawShopPanel()",
-          "address": 2406992,
-          "offset": 1517024,
-          "size": 46,
-          "match_percent": 98.933334
         },
         {
           "name": "_Z14DrawStatusTextPctfffji",
@@ -74972,7 +75092,7 @@
           "address": 3531648,
           "offset": 2641680,
           "size": 2908,
-          "match_percent": 85.143555
+          "match_percent": 84.69005
         },
         {
           "name": "edbitsDrawTorus",
@@ -75052,7 +75172,7 @@
           "address": 4166848,
           "offset": 3276880,
           "size": 700,
-          "match_percent": 87.572464
+          "match_percent": 87.46377
         },
         {
           "name": "LocaledbitsDrawCircleXY",
@@ -75220,7 +75340,7 @@
           "address": 4589216,
           "offset": 3699248,
           "size": 989,
-          "match_percent": 87.71707
+          "match_percent": 87.86341
         },
         {
           "name": "_Z21BackDrop_ResetColoursv",
@@ -78453,14 +78573,6 @@
           "offset": 1439072,
           "size": 3057,
           "match_percent": 0.8
-        },
-        {
-          "name": "_Z16LoadShelfSplinesv",
-          "demangled_name": "LoadShelfSplines()",
-          "address": 2379024,
-          "offset": 1489056,
-          "size": 884,
-          "match_percent": 99.78319
         },
         {
           "name": "_Z8setpointf",
@@ -93899,7 +94011,7 @@
           "address": 2557816,
           "offset": 1667848,
           "size": 47,
-          "match_percent": 28.0
+          "match_percent": 65.46667
         },
         {
           "name": "_Z15NuDebugMsgPrintPc",
@@ -95190,7 +95302,7 @@
           "address": 2819184,
           "offset": 1929216,
           "size": 455,
-          "match_percent": 92.84259
+          "match_percent": 92.51852
         },
         {
           "name": "_ZN20NuSpeedBlurFilterGen6renderEv",
@@ -95382,7 +95494,7 @@
           "address": 3078288,
           "offset": 2188320,
           "size": 4659,
-          "match_percent": 48.809017
+          "match_percent": 48.571766
         },
         {
           "name": "_ZN14NuDynamicLight13resetGeometryEv",
@@ -95390,7 +95502,7 @@
           "address": 3083024,
           "offset": 2193056,
           "size": 156,
-          "match_percent": 99.625
+          "match_percent": 94.625
         },
         {
           "name": "_ZN19NuDeferredFilterGen8resetAllEv",
@@ -95422,7 +95534,7 @@
           "address": 3084176,
           "offset": 2194208,
           "size": 182,
-          "match_percent": 100.0
+          "match_percent": 99.18519
         },
         {
           "name": "_ZN14NuDynamicLightC2Ev",
@@ -95430,7 +95542,7 @@
           "address": 3084176,
           "offset": 2194208,
           "size": 182,
-          "match_percent": 100.0
+          "match_percent": 99.18519
         },
         {
           "name": "_ZN14NuDynamicLight6createEv",
@@ -95446,7 +95558,7 @@
           "address": 3099968,
           "offset": 2210000,
           "size": 1877,
-          "match_percent": 35.8041
+          "match_percent": 35.28018
         },
         {
           "name": "_ZN15NuPostFilterGenD1Ev",
@@ -95996,7 +96108,7 @@
           "address": 930736,
           "offset": 40768,
           "size": 12,
-          "match_percent": 62.5
+          "match_percent": 100.0
         },
         {
           "name": "NuIOS_GetDeviceLanguage",
@@ -96044,7 +96156,7 @@
           "address": 2409888,
           "offset": 1519920,
           "size": 121,
-          "match_percent": 15.555555
+          "match_percent": 99.81481
         },
         {
           "name": "NuDatGetFileInfo",
@@ -96524,7 +96636,7 @@
           "address": 2754903,
           "offset": 1864935,
           "size": 215,
-          "match_percent": 5.753425
+          "match_percent": 50.027397
         },
         {
           "name": "NuHGobjPOIMtxFromIX",
@@ -96540,7 +96652,7 @@
           "address": 2755134,
           "offset": 1865166,
           "size": 121,
-          "match_percent": 14.0
+          "match_percent": 36.1
         },
         {
           "name": "NuHGobjGetPOI",
@@ -96612,7 +96724,7 @@
           "address": 2762304,
           "offset": 1872336,
           "size": 34,
-          "match_percent": 46.666668
+          "match_percent": 100.0
         },
         {
           "name": "NuFramebufferEnableGuards",
@@ -96860,7 +96972,7 @@
           "address": 2831776,
           "offset": 1941808,
           "size": 121,
-          "match_percent": 17.5
+          "match_percent": 100.0
         },
         {
           "name": "NuDynamicLightSetEnabled",
@@ -96868,7 +96980,7 @@
           "address": 2831936,
           "offset": 1941968,
           "size": 105,
-          "match_percent": 15.0
+          "match_percent": 69.46429
         },
         {
           "name": "NuDynamicLightGetActiveRenderSetCount",
@@ -96884,7 +96996,7 @@
           "address": 2832064,
           "offset": 1942096,
           "size": 39,
-          "match_percent": 46.666668
+          "match_percent": 100.0
         },
         {
           "name": "NuDynamicLightEndCapture",
@@ -96900,7 +97012,7 @@
           "address": 2832128,
           "offset": 1942160,
           "size": 225,
-          "match_percent": 9.333333
+          "match_percent": 90.977776
         },
         {
           "name": "NuDynamicLightGetDList",
@@ -96932,7 +97044,7 @@
           "address": 2832464,
           "offset": 1942496,
           "size": 245,
-          "match_percent": 7.118644
+          "match_percent": 99.9661
         },
         {
           "name": "NuDynamicLightGetParameterf",
@@ -96940,7 +97052,7 @@
           "address": 2832720,
           "offset": 1942752,
           "size": 195,
-          "match_percent": 14.754098
+          "match_percent": 99.803276
         },
         {
           "name": "NuDynamicLightSetParameteri",
@@ -97004,7 +97116,7 @@
           "address": 2834256,
           "offset": 1944288,
           "size": 155,
-          "match_percent": 11.351352
+          "match_percent": 62.91892
         },
         {
           "name": "NuDynamicLightTestShadowExtrusions",
@@ -97012,7 +97124,7 @@
           "address": 2834416,
           "offset": 1944448,
           "size": 144,
-          "match_percent": 13.125
+          "match_percent": 100.0
         },
         {
           "name": "NuDynamicLightSetupCustomCameraFrustum",
@@ -97404,7 +97516,7 @@
           "address": 2918160,
           "offset": 2028192,
           "size": 70,
-          "match_percent": 69.22222
+          "match_percent": 90.92593
         },
         {
           "name": "NuSpecialGetMtx",
@@ -97420,7 +97532,7 @@
           "address": 2918448,
           "offset": 2028480,
           "size": 39,
-          "match_percent": 46.666668
+          "match_percent": 100.0
         },
         {
           "name": "NuSpecialVertexOffsets",
@@ -97428,7 +97540,7 @@
           "address": 2918496,
           "offset": 2028528,
           "size": 36,
-          "match_percent": 46.666668
+          "match_percent": 100.0
         },
         {
           "name": "NuSpecialConstAlpha",
@@ -97436,7 +97548,7 @@
           "address": 2918800,
           "offset": 2028832,
           "size": 87,
-          "match_percent": 23.88889
+          "match_percent": 100.0
         },
         {
           "name": "NuSpecialConstTint",
@@ -97444,7 +97556,7 @@
           "address": 2918896,
           "offset": 2028928,
           "size": 107,
-          "match_percent": 13.125
+          "match_percent": 74.28125
         },
         {
           "name": "NuSpecialSetRenderPlane",
@@ -97500,7 +97612,7 @@
           "address": 2920576,
           "offset": 2030608,
           "size": 136,
-          "match_percent": 12.352942
+          "match_percent": 100.0
         },
         {
           "name": "NuSpecialSetBounds",
@@ -97516,7 +97628,7 @@
           "address": 2920880,
           "offset": 2030912,
           "size": 110,
-          "match_percent": 78.21875
+          "match_percent": 100.0
         },
         {
           "name": "NuSpecialGetOriginRadius",
@@ -97540,7 +97652,7 @@
           "address": 2921360,
           "offset": 2031392,
           "size": 150,
-          "match_percent": 9.743589
+          "match_percent": 100.0
         },
         {
           "name": "NuSpecialCompare",
@@ -97564,7 +97676,7 @@
           "address": 2922016,
           "offset": 2032048,
           "size": 39,
-          "match_percent": 55.727272
+          "match_percent": 100.0
         },
         {
           "name": "NuSpecialAddShadowLight",
@@ -97708,7 +97820,7 @@
           "address": 2924320,
           "offset": 2034352,
           "size": 125,
-          "match_percent": 9.130435
+          "match_percent": 100.0
         },
         {
           "name": "NuQFntPrintLenV",
@@ -97716,7 +97828,7 @@
           "address": 2926112,
           "offset": 2036144,
           "size": 107,
-          "match_percent": 21.0
+          "match_percent": 100.0
         },
         {
           "name": "NuQFntWrite",
@@ -97740,7 +97852,7 @@
           "address": 2927920,
           "offset": 2037952,
           "size": 51,
-          "match_percent": 32.307693
+          "match_percent": 100.0
         },
         {
           "name": "NuQFntSetScale2d",
@@ -97748,7 +97860,7 @@
           "address": 2927984,
           "offset": 2038016,
           "size": 75,
-          "match_percent": 24.705883
+          "match_percent": 100.0
         },
         {
           "name": "NuQFntSetPointSize",
@@ -97756,7 +97868,7 @@
           "address": 2928064,
           "offset": 2038096,
           "size": 231,
-          "match_percent": 7.636363
+          "match_percent": 99.76363
         },
         {
           "name": "NuQFntSetColour2d",
@@ -98068,7 +98180,7 @@
           "address": 2949152,
           "offset": 2059184,
           "size": 99,
-          "match_percent": 100.0
+          "match_percent": 99.375
         },
         {
           "name": "NuDepthOfFieldEffect",
@@ -98076,7 +98188,7 @@
           "address": 2949264,
           "offset": 2059296,
           "size": 112,
-          "match_percent": 88.77778
+          "match_percent": 98.94444
         },
         {
           "name": "NuDepthOfFieldEffect1",
@@ -98140,7 +98252,7 @@
           "address": 2950480,
           "offset": 2060512,
           "size": 76,
-          "match_percent": 14.047619
+          "match_percent": 100.0
         },
         {
           "name": "NuLightSpeedBlurOldCameraPos",
@@ -98204,7 +98316,7 @@
           "address": 2962816,
           "offset": 2072848,
           "size": 560,
-          "match_percent": 99.41509
+          "match_percent": 99.5566
         },
         {
           "name": "NuCameraGetClippingMtx",
@@ -98596,7 +98708,7 @@
           "address": 2990976,
           "offset": 2101008,
           "size": 72,
-          "match_percent": 22.105263
+          "match_percent": 100.0
         },
         {
           "name": "NuHGobjPOIMtx",
@@ -98756,7 +98868,7 @@
           "address": 3043520,
           "offset": 2153552,
           "size": 311,
-          "match_percent": 19.39726
+          "match_percent": 26.246574
         },
         {
           "name": "NuLgtLaserDraw",
@@ -98972,7 +99084,7 @@
           "address": 3084784,
           "offset": 2194816,
           "size": 64,
-          "match_percent": 20.869566
+          "match_percent": 100.0
         },
         {
           "name": "NuTimeBarInit",
@@ -98980,7 +99092,7 @@
           "address": 3088880,
           "offset": 2198912,
           "size": 42,
-          "match_percent": 42.0
+          "match_percent": 100.0
         },
         {
           "name": "NuOcclusionManagerInit",
@@ -98996,7 +99108,7 @@
           "address": 3093312,
           "offset": 2203344,
           "size": 3273,
-          "match_percent": 17.259115
+          "match_percent": 16.78125
         },
         {
           "name": "NuDynamicLightAddShadowCasterScene",
@@ -99012,7 +99124,7 @@
           "address": 3101904,
           "offset": 2211936,
           "size": 164,
-          "match_percent": 9.767442
+          "match_percent": 99.37209
         },
         {
           "name": "NuSpecialDrawSmoothSkinDwa",
@@ -99020,7 +99132,7 @@
           "address": 3102080,
           "offset": 2212112,
           "size": 81,
-          "match_percent": 91.666664
+          "match_percent": 100.0
         },
         {
           "name": "NuSpecialDrawSmoothSkin",
@@ -99028,7 +99140,7 @@
           "address": 3102176,
           "offset": 2212208,
           "size": 81,
-          "match_percent": 18.26087
+          "match_percent": 100.0
         },
         {
           "name": "NuSpecialDrawAt",
@@ -99044,7 +99156,7 @@
           "address": 3102368,
           "offset": 2212400,
           "size": 1122,
-          "match_percent": 53.9702
+          "match_percent": 54.89404
         },
         {
           "name": "NuQFntPrint3DU",
@@ -99052,7 +99164,7 @@
           "address": 3114112,
           "offset": 2224144,
           "size": 59,
-          "match_percent": 28.0
+          "match_percent": 100.0
         },
         {
           "name": "NuQFntPrint2dU",
@@ -99076,7 +99188,7 @@
           "address": 3114752,
           "offset": 2224784,
           "size": 266,
-          "match_percent": 7.924528
+          "match_percent": 31.018867
         },
         {
           "name": "NuTimeBarSetRenderHorizontal",
@@ -99100,7 +99212,7 @@
           "address": 3118704,
           "offset": 2228736,
           "size": 107,
-          "match_percent": 21.0
+          "match_percent": 100.0
         },
         {
           "name": "NuQFntPrint3DW",
@@ -99108,7 +99220,7 @@
           "address": 3118912,
           "offset": 2228944,
           "size": 59,
-          "match_percent": 28.0
+          "match_percent": 100.0
         },
         {
           "name": "NuQFntPrint2dW",
@@ -99116,7 +99228,7 @@
           "address": 3118976,
           "offset": 2229008,
           "size": 59,
-          "match_percent": 28.0
+          "match_percent": 100.0
         },
         {
           "name": "NuQFntCreate",
@@ -99132,7 +99244,7 @@
           "address": 3127184,
           "offset": 2237216,
           "size": 135,
-          "match_percent": 73.948715
+          "match_percent": 89.871796
         },
         {
           "name": "NuWindUnload",
@@ -99156,7 +99268,7 @@
           "address": 3128208,
           "offset": 2238240,
           "size": 90,
-          "match_percent": 17.5
+          "match_percent": 100.0
         },
         {
           "name": "NuGSceneSetCrossFade",
@@ -99348,7 +99460,7 @@
           "address": 3240336,
           "offset": 2350368,
           "size": 53,
-          "match_percent": 32.307693
+          "match_percent": 100.0
         },
         {
           "name": "NuIOS_DeallocateSystemFramebuffers",
@@ -99356,7 +99468,7 @@
           "address": 3240592,
           "offset": 2350624,
           "size": 291,
-          "match_percent": 6.268657
+          "match_percent": 99.32836
         },
         {
           "name": "NuKeyToAscii",
@@ -116876,7 +116988,7 @@
       "address": 1646672,
       "offset": 756704,
       "size": 202,
-      "match_percent": 4.821429,
+      "match_percent": 7.5,
       "candidate_units": [
         "editor/edpath.cpp.o",
         "gameapi/ai/aisys/aisys.cpp.o"
@@ -116957,7 +117069,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -116985,7 +117096,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117046,7 +117156,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -117074,7 +117183,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117135,7 +117243,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -117163,7 +117270,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117235,7 +117341,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -117263,7 +117368,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117314,7 +117418,6 @@
       "size": 48,
       "match_percent": 99.92308,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/ai/gameai_sockpar.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "legoapi/ai/core/ai_sys.cpp.o",
@@ -117371,7 +117474,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -117399,7 +117501,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117471,7 +117572,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -117499,7 +117599,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117571,7 +117670,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -117599,7 +117697,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117671,7 +117768,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -117699,7 +117795,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117771,7 +117866,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -117799,7 +117893,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117871,7 +117964,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -117899,7 +117991,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -117951,6 +118042,7 @@
       "match_percent": 100.0,
       "candidate_units": [
         "MechInputTouch/MechInputTouchButton.cpp.o",
+        "MechInputTouch/MechInputTouchButton_stubs.cpp.o",
         "MechInputTouch/MechInputTouchMainController.cpp.o",
         "nu2api/nucore/nupad_interface.cpp.o"
       ]
@@ -117964,6 +118056,7 @@
       "match_percent": 100.0,
       "candidate_units": [
         "MechInputTouch/MechInputTouchButton.cpp.o",
+        "MechInputTouch/MechInputTouchButton_stubs.cpp.o",
         "MechInputTouch/MechInputTouchMainController.cpp.o",
         "nu2api/nucore/nupad_interface.cpp.o"
       ]
@@ -117977,6 +118070,7 @@
       "match_percent": 100.0,
       "candidate_units": [
         "MechInputTouch/MechInputTouchButton.cpp.o",
+        "MechInputTouch/MechInputTouchButton_stubs.cpp.o",
         "MechInputTouch/MechInputTouchGestureBasedController.cpp.o",
         "MechInputTouch/MechInputTouchMainController.cpp.o",
         "nu2api/nucore/nupad_interface.cpp.o"
@@ -117991,6 +118085,7 @@
       "match_percent": 100.0,
       "candidate_units": [
         "MechInputTouch/MechInputTouchButton.cpp.o",
+        "MechInputTouch/MechInputTouchButton_stubs.cpp.o",
         "MechInputTouch/MechInputTouchGestureBasedController.cpp.o",
         "MechInputTouch/MechInputTouchMainController.cpp.o",
         "nu2api/nucore/nupad_interface.cpp.o"
@@ -118005,6 +118100,7 @@
       "match_percent": 100.0,
       "candidate_units": [
         "MechInputTouch/MechInputTouchButton.cpp.o",
+        "MechInputTouch/MechInputTouchButton_stubs.cpp.o",
         "MechInputTouch/MechInputTouchGestureBasedController.cpp.o",
         "MechInputTouch/MechInputTouchMainController.cpp.o",
         "nu2api/nucore/nupad_interface.cpp.o"
@@ -118019,6 +118115,7 @@
       "match_percent": 100.0,
       "candidate_units": [
         "MechInputTouch/MechInputTouchButton.cpp.o",
+        "MechInputTouch/MechInputTouchButton_stubs.cpp.o",
         "MechInputTouch/MechInputTouchGestureBasedController.cpp.o",
         "MechInputTouch/MechInputTouchMainController.cpp.o",
         "nu2api/nucore/nupad_interface.cpp.o"
@@ -118033,6 +118130,7 @@
       "match_percent": 100.0,
       "candidate_units": [
         "MechInputTouch/MechInputTouchButton.cpp.o",
+        "MechInputTouch/MechInputTouchButton_stubs.cpp.o",
         "MechInputTouch/MechInputTouchMainController.cpp.o",
         "nu2api/nucore/nupad_interface.cpp.o"
       ]
@@ -118046,6 +118144,7 @@
       "match_percent": 100.0,
       "candidate_units": [
         "MechInputTouch/MechInputTouchButton.cpp.o",
+        "MechInputTouch/MechInputTouchButton_stubs.cpp.o",
         "MechInputTouch/MechInputTouchMainController.cpp.o",
         "nu2api/nucore/nupad_interface.cpp.o"
       ]
@@ -118059,6 +118158,7 @@
       "match_percent": 100.0,
       "candidate_units": [
         "MechInputTouch/MechInputTouchButton.cpp.o",
+        "MechInputTouch/MechInputTouchButton_stubs.cpp.o",
         "MechInputTouch/MechInputTouchMainController.cpp.o",
         "nu2api/nucore/nupad_interface.cpp.o"
       ]
@@ -118083,7 +118183,6 @@
       "size": 48,
       "match_percent": 99.92308,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/ai/gameai_sockpar.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "legoapi/ai/core/ai_sys.cpp.o",
@@ -118119,7 +118218,6 @@
       "size": 120,
       "match_percent": 99.84375,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/ai/gameai_sockpar.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "legoapi/ai/core/ai_sys.cpp.o",
@@ -118176,7 +118274,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -118204,7 +118301,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118276,7 +118372,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -118304,7 +118399,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118376,7 +118470,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -118404,7 +118497,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118521,7 +118613,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -118549,7 +118640,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118632,7 +118722,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -118660,7 +118749,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118734,7 +118822,6 @@
       "size": 50,
       "match_percent": 100.0,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/edtools/edrtlall.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "globals.cpp.o",
@@ -118854,7 +118941,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -118882,7 +118968,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -118955,7 +119040,6 @@
       "size": 50,
       "match_percent": 100.0,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/edtools/edrtlall.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "globals.cpp.o",
@@ -119030,7 +119114,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -119058,7 +119141,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119120,7 +119202,6 @@
       "size": 50,
       "match_percent": 100.0,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/edtools/edrtlall.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "globals.cpp.o",
@@ -119207,7 +119288,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -119235,7 +119315,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119307,7 +119386,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -119335,7 +119413,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119407,7 +119484,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -119435,7 +119511,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119507,7 +119582,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -119535,7 +119609,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119608,7 +119681,6 @@
       "size": 50,
       "match_percent": 100.0,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/edtools/edrtlall.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "globals.cpp.o",
@@ -119661,7 +119733,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -119689,7 +119760,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119761,7 +119831,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -119789,7 +119858,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119872,7 +119940,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -119900,7 +119967,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -119972,7 +120038,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -120000,7 +120065,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120108,7 +120172,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -120136,7 +120199,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120208,7 +120270,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -120236,7 +120297,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120287,7 +120347,6 @@
       "size": 48,
       "match_percent": 99.92308,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/ai/gameai_sockpar.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "legoapi/ai/core/ai_sys.cpp.o",
@@ -120344,7 +120403,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -120372,7 +120430,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120444,7 +120501,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -120472,7 +120528,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120544,7 +120599,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -120572,7 +120626,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120644,7 +120697,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -120672,7 +120724,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120807,7 +120858,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -120835,7 +120885,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -120907,7 +120956,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -120935,7 +120983,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -121007,7 +121054,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -121035,7 +121081,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -121366,7 +121411,6 @@
       "size": 48,
       "match_percent": 99.92308,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/ai/gameai_sockpar.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "legoapi/ai/core/ai_sys.cpp.o",
@@ -121456,7 +121500,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -121484,7 +121527,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -121535,7 +121577,6 @@
       "size": 48,
       "match_percent": 99.92308,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/ai/gameai_sockpar.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "legoapi/ai/core/ai_sys.cpp.o",
@@ -121571,7 +121612,6 @@
       "size": 120,
       "match_percent": 99.84375,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/ai/gameai_sockpar.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "legoapi/ai/core/ai_sys.cpp.o",
@@ -121688,7 +121728,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -121716,7 +121755,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -121767,7 +121805,6 @@
       "size": 48,
       "match_percent": 99.92308,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/ai/gameai_sockpar.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "legoapi/ai/core/ai_sys.cpp.o",
@@ -121803,7 +121840,6 @@
       "size": 120,
       "match_percent": 99.84375,
       "candidate_units": [
-        "editor/edpath.cpp.o",
         "gameapi/ai/gameai_sockpar.cpp.o",
         "gamelib/nuwind/nuwind_groups.cpp.o",
         "legoapi/ai/core/ai_sys.cpp.o",
@@ -121895,7 +121931,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -121923,7 +121958,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -122366,7 +122400,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -122394,7 +122427,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -122466,7 +122498,6 @@
         "MechInputTouch/MechInputTouchVirtualConsoleController.cpp.o",
         "MechInputTouch/MechJumpAutopilotAddon.cpp.o",
         "MechInputTouch/MechObjectInterface.cpp.o",
-        "editor/edpath.cpp.o",
         "editor/edtoolsall.cpp.o",
         "gameapi/edtools/edanimall.cpp.o",
         "gameapi/edtools/edanimcallbacks.cpp.o",
@@ -122494,7 +122525,6 @@
         "legoapi/characters/motion/gameanim_modes.cpp.o",
         "legoapi/core/config/config.cpp.o",
         "legoapi/core/config/saveload.cpp.o",
-        "legoapi/core/input/input.cpp.o",
         "legoapi/core/startup/startup.cpp.o",
         "legoapi/core/startup/virtual.cpp.o",
         "legoapi/gizmo/gizmos/gizmos_lever.cpp.o",
@@ -123836,14 +123866,6 @@
       "match_percent": 0.0
     },
     {
-      "name": "_ZL18Shop_DrawCharacterP10shopitem_sP7nuvec_sffttt.part.0",
-      "demangled_name": "Shop_DrawCharacter(shopitem_s*, nuvec_s*, float, float, unsigned short, unsigned short, unsigned short) [clone .part.0]",
-      "address": 2377120,
-      "offset": 1487152,
-      "size": 1328,
-      "match_percent": 0.0
-    },
-    {
       "name": "_ZL18TakeOver_SetActionP12GameObject_sS0_.isra.0",
       "demangled_name": "TakeOver_SetAction(GameObject_s*, GameObject_s*) [clone .isra.0]",
       "address": 2413232,
@@ -124889,110 +124911,6 @@
       "address": 4460656,
       "offset": 3570688,
       "size": 12,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN29MechInputTouchMainDummyButton6RenderEv",
-      "demangled_name": "MechInputTouchMainDummyButton::Render()",
-      "address": 4460688,
-      "offset": 3570720,
-      "size": 9,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN29MechInputTouchMainDummyButton6UpdateEPK16NuInputTouchData",
-      "demangled_name": "MechInputTouchMainDummyButton::Update(NuInputTouchData const*)",
-      "address": 4460704,
-      "offset": 3570736,
-      "size": 9,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN28MechInputTouchMainDummyStick6RenderEv",
-      "demangled_name": "MechInputTouchMainDummyStick::Render()",
-      "address": 4460720,
-      "offset": 3570752,
-      "size": 9,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN28MechInputTouchMainDummyStick6UpdateEPK16NuInputTouchData",
-      "demangled_name": "MechInputTouchMainDummyStick::Update(NuInputTouchData const*)",
-      "address": 4460736,
-      "offset": 3570768,
-      "size": 9,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZNK28MechInputTouchMainDummyStick9GetStickXEv",
-      "demangled_name": "MechInputTouchMainDummyStick::GetStickX() const",
-      "address": 4460752,
-      "offset": 3570784,
-      "size": 13,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZNK28MechInputTouchMainDummyStick9GetStickYEv",
-      "demangled_name": "MechInputTouchMainDummyStick::GetStickY() const",
-      "address": 4460768,
-      "offset": 3570800,
-      "size": 13,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZNK28MechInputTouchMainDummyStick11GetPlayerIdEv",
-      "demangled_name": "MechInputTouchMainDummyStick::GetPlayerId() const",
-      "address": 4460784,
-      "offset": 3570816,
-      "size": 24,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN29MechInputTouchMainDummyButtonD1Ev",
-      "demangled_name": "MechInputTouchMainDummyButton::~MechInputTouchMainDummyButton()",
-      "address": 4460816,
-      "offset": 3570848,
-      "size": 29,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN29MechInputTouchMainDummyButtonD2Ev",
-      "demangled_name": "MechInputTouchMainDummyButton::~MechInputTouchMainDummyButton()",
-      "address": 4460816,
-      "offset": 3570848,
-      "size": 29,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN28MechInputTouchMainDummyStickD1Ev",
-      "demangled_name": "MechInputTouchMainDummyStick::~MechInputTouchMainDummyStick()",
-      "address": 4460848,
-      "offset": 3570880,
-      "size": 29,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN28MechInputTouchMainDummyStickD2Ev",
-      "demangled_name": "MechInputTouchMainDummyStick::~MechInputTouchMainDummyStick()",
-      "address": 4460848,
-      "offset": 3570880,
-      "size": 29,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN28MechInputTouchMainDummyStickD0Ev",
-      "demangled_name": "MechInputTouchMainDummyStick::~MechInputTouchMainDummyStick()",
-      "address": 4460880,
-      "offset": 3570912,
-      "size": 45,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_ZN29MechInputTouchMainDummyButtonD0Ev",
-      "demangled_name": "MechInputTouchMainDummyButton::~MechInputTouchMainDummyButton()",
-      "address": 4460928,
-      "offset": 3570960,
-      "size": 45,
       "match_percent": 0.0
     },
     {
@@ -129895,8 +129813,8 @@
   "summary": {
     "bazel_units": 523,
     "functions": 13454,
-    "assigned_functions": 12300,
+    "assigned_functions": 12314,
     "ambiguous_functions": 235,
-    "unassigned_functions": 919
+    "unassigned_functions": 905
   }
 }

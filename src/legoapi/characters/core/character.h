@@ -105,8 +105,6 @@ struct CHARSCENE_s {
 
 DECOMP_ASSERT(sizeof(CHARSCENE_s) == 0x10, "CHARSCENE_s size");
 
-extern __attribute__((visibility("hidden"))) CHARSCENE_s *CharScene_Area;
-
 struct GAMECHARACTERLAYER_s {
     char name[0x18];
     i16 mask_bit;
