@@ -1291,3 +1291,87 @@ run exposed this mismatch for `nurain_android.c` in Linux target/native lint;
 `.c` units. This is a tooling language correction, not a source-level match
 override. Target, native, and WASM clang-tidy have passed locally with the
 change.
+
+### Android material state and thread unit
+
+The embedded `numtl_android.cpp` source path in `NuIOSMtlInit` anchors the
+original material run around `0x29bf60`–`0x29c9b0`. The current mixed
+`nuiosdl_gl.cpp` had held that initializer, four file-local shader programs,
+its shader-source arrays, cull state, render-state setter, material callback,
+and refraction locals alongside unrelated geometry callbacks at `0x293xxx`.
+Those material definitions now live together in the existing `-O2`
+`numtl_android.cpp` unit; the geometry callbacks stay in their former unit.
+The duplicated distortion-texture ID is now one original file-local object
+shared by initialization and the callback. Real shader and texture headers
+carry the cross-unit declarations, without changing the shader/refraction
+locals to external linkage. `NuIOS_SetVertexFormat` becomes exact and
+`NuIOS_SetCullMode` rises from 0% to 99.85%; `NuIOSMtlInit` reaches 81.04%,
+`NuMtlSetRenderStatesPS` 34.02%, `NuIOSDLMtlCallback` 13.37%, and the named
+material initializer 32.04%. The nearby exact geometry callbacks do not
+regress. `NuIOSDLReflectionCallback` remains a separate empty stub pending
+its own evidence-backed reconstruction.
+
+The original `bgproc_android.cpp` initializer constructs another six local
+`VuVec` objects before its thread-state storage. Restoring the shared vector
+definitions in that correctly named unit raises its initializer from 40.27%
+to 98.27%, without changing its runtime bodies or their scores.
+
+The same original unit owns `bgPostRequestV`, previously implemented in
+startup's `main.cpp`. Its direct access to `cur_pi`, `procinfo_pool`,
+`g_bgCritSec`, and `events` makes their original file-local linkage possible
+again. The symbol table confirms those four objects are local to
+`bgproc_android.cpp`, while the public request functions remain declared in
+`bgproc.h`. This ownership correction raises `bgThreadMain` from 64.31% to
+95.29%, `bgPostRequestV` from 64.91% to 71.73%, `bgPostRequest` from 63.52%
+to 72.36%, `bgProcInit` from 93.31% to 99.89%, `bgGetProcActive` from 93.71%
+to 99.88%, and the initializer from 98.27% to 99.49%. The semaphore
+destructor helper also becomes exact. No function regresses.
+
+The original `nuthread.c` run is explicitly bounded by `VuVecSet` at
+`0x271154` and `_GLOBAL__sub_I_nuthread.c` at `0x27167d`. The legacy thread
+functions and their critical-section/thread tables move from the mixed
+`nuthread.cpp` to that original `.c` name, compiled as C++ as its mangled
+helpers and vector constructor require. Its global thread-specific key,
+six local vectors, critical-section tables, and legacy-thread tables now
+follow the original adjacent `.bss` order; the named initializer is exact.
+The thirteen existing exact thread bodies remain exact. Three nearby class
+methods at `0x0efc30`, `0x0efdb0`, and `0x0f0d70` move from the remaining
+`nuthread.cpp` placeholders to their original `NuThread_android.cpp` class
+unit: `SetDebugName` forwards to the base setter, `Resume` clears suspension,
+and `GetDebugName` returns the stored name. All three become exact, and the
+existing exact class bodies stay exact. The far-away `nu_current_thread_id`
+stays in `nuthread.cpp` pending stronger ownership evidence. The lint aspect
+also parses this third C++-compiled `.c` unit in its actual language.
+
+Before the varargs move, the combined target measurement was 44.9455%,
+eleven improved functions, five newly exact functions, and no regressions
+against the preceding commit.
+An `-O2` whole-unit trial for `NuThread_android.cpp` improved `NuThreadSleep`
+but lowered the near-exact constructor and overall match; its established
+`-O3` setting was restored, and the full report returned to the same baseline.
+
+### Original glutils.c texture helpers
+
+The original `glutils.c` initializer follows `CreateSubtractiveTexture` and
+`CreateAlphaBlendTexture`, with a local `VuVecSet` and six vector objects in
+the same symbol block. Those helpers had been separated into the unrelated
+`surfaces.cpp` unit; `CreateSubtractiveTexture` was an empty void stub despite
+the original returning a material pointer. They now live in a real
+`glutils.c` C++-compiled unit with a shared export header. The bitmap loader
+result has its own descriptor type with a pixel allocation pointer at
+offset `0x10`; plain `NUTEX` descriptors remain 12 bytes. That distinction
+preserves the existing debris-glass initializer while permitting the
+original bitmap cleanup in `CreateSubtractiveTexture`.
+
+The immediately preceding `NuPs2VideoScreenDump` is *not* assigned to this
+unit merely by address adjacency. It retains its 95.21% match under `-O3`
+but drops to 0% under a whole-unit `-O0` trial, whereas the two texture
+helpers rise to 99.95% and 93.35%, and the named initializer becomes exact.
+There is no evidence of an original per-function optimization pragma, so
+the video dump stays in its existing `-O3` source pending stronger ownership
+evidence. The `glutils.c` texture unit uses `-O0` and has no matching
+attributes or pragmas.
+
+Across the material, thread, background-process, and texture-helper units,
+the target report rises from the preceding commit's 44.9237% to 44.9592%:
+20 functions improve, seven become exact, and none regress.

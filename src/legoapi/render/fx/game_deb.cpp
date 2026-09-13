@@ -2,6 +2,7 @@
 #include "legoapi/legoapi_types.h"
 #include "legoapi/render/fx.h"
 #include "nu2api/nu3d/nutex.h"
+#include "nu2api/nu3d/glutils.h"
 #include "nu2api/nu3d/numtl.h"
 #include "nu2api/nucore/nustring.h"
 #include "nu2api/nucore/common.h"
@@ -19,7 +20,6 @@ struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
 
-NUMTL *CreateAlphaBlendTexture(VARIPTR *, VARIPTR, char *, i32, i32, i32, i32);
 NUMTL *CreateCopyMat(NUMTL *, i32, i32, i32, i32);
 
 uv1deb *GenDebDummy(debkeydatatype_s *, debinftype *, float) {

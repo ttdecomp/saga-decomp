@@ -7,7 +7,7 @@
 struct numtl_s;
 struct nunativetex_s;
 
-typedef u32 NuVertexFormatPS;
+struct NuVertexFormatPS;
 
 struct NuFaceOnTransformPacket {
     NUMTX world;
@@ -39,7 +39,10 @@ extern u32 g_alphaFunc;
 extern i32 g_alphaTestEnabled;
 extern u32 g_lastAlphaRef;
 extern u32 g_lastAlphaBlend;
-extern i32 g_DebrisGlassDistortTID;
+extern i32 g_renderingReflection;
+extern "C" f32 g_renderContext_viewProj[16];
+extern "C" f32 g_renderContext_view[16];
+void NuIOS_CopyBackbufferToTexture(nunativetex_s *tex, bool depth);
 
 void NuIOS_SetCullMode(i32 mode);
 extern "C" void NuMtlSetRenderStatesPS(numtl_s *mtl);

@@ -21,6 +21,14 @@ typedef struct nutex_s {
     i32 height;
 } NUTEX;
 
+// Bitmap loader results carry a separate allocation at offset 0x10. Plain
+// NUTEX descriptors (such as render targets) contain only the first 12 bytes.
+typedef struct nutexbitmap_s {
+    NUTEX texture;
+    u32 unknown_0c;
+    void *pixels;
+} NUTEXBITMAP;
+
 struct nutexmanager_s;
 
 extern nutexmanager_s *g_texman;
@@ -143,6 +151,7 @@ i32 NuTexGetReqSize(i32 tex_id, i32 level);
 
 i32 NuTexReserve(i32 size);
 void NuTexUnReserve();
+NUTEXBITMAP *NuTexReadBitmap(char *name);
 
 i32 NuDDSGetTextureDescription(const char *dds_data, NUTEXFORMAT &out_format, i32 &out_width, i32 &out_height,
                                i32 &out_depth, i32 &out_mip_count, bool &out_is_cube_map, bool *out_has_four_cc);

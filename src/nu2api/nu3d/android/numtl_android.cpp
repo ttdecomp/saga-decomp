@@ -6,6 +6,15 @@
 #include "nu2api/nu3d/numtl.h"
 #include "nu2api/nu3d/nurndr.h"
 #include "nu2api/nu3d/nutex.h"
+#include <GLES2/gl2.h>
+#include "legoapi/legoapi_types.h"
+#include "nu2api/nu3d/android/nuiosdl_gl.h"
+#include "nu2api/nu3d/android/nutex_ios_ex.h"
+#include "nu2api/nu3d/android/nutex_android.h"
+#include "nu2api/nu3d/nushader.h"
+#include "nu2api/nu3d/nushader_plain.h"
+#include "nu2api/nu3d/nurndrstat.h"
+#include "nu2api/nucore/nuapi.h"
 
 u8 DebrisGlassIOS_Tex[] = {
     0x50, 0x56, 0x52, 0x03, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -97,4 +106,326 @@ void NuMtlCreatePS(NUMTL *mtl, i32 is_3d) {
 
 void NuMtlSetShaderDescPS(NUMTL *mtl, NUSHADERMTLDESC *desc) {
     mtl->shader_desc = *desc;
+}
+
+// Material display-list backend (original numtl_android.cpp, 0x29bf60..).
+extern "C" {
+    NUSHADERPROGRAM *g_ps3default_2d_t0xc0;
+}
+static inline i32 NuApiFrameCount() { return nuapi.frame_count; }
+static inline usize ptrToUsize(const void *p) { return reinterpret_cast<usize>(p); }
+
+// Shader programmes cached per TU (original file-statics at 0x99b440..).
+static NUSHADERPROGRAM *g_faceonProgram = nullptr;      // _ZL15g_faceonProgram
+static NUSHADERPROGRAM *g_faceonDecalProgram = nullptr; // _ZL20g_faceonDecalProgram
+static NUSHADERPROGRAM *g_debrisProgram = nullptr;      // _ZL15g_debrisProgram
+static NUSHADERPROGRAM *g_debrisGlassProgram = nullptr;
+
+#include "nuios_shader_sources.inc"
+
+// Refraction texture used by glass debris — lazily allocated.
+static i32 NuIOSDLMtlCallback_refractionRT = 0;                 // @0x99b480
+static NUNATIVETEX NuIOSDLMtlCallback_nativeRefractionTex = {}; // @0x99b4a0
+static i32 NuIOSDLMtlCallback_lastFrameCount = -1;
+
+
+// ---------------------------------------------------------------------------
+// Material-variant helpers — raw offsets from the original binary.
+//
+// The header's NUMTL/NUSHADERMTLDESC layout has drifted from the shipped
+// binary, so the variant selectors are still addressed by absolute byte
+// offset with the original address in the comment.  Named accessors keep
+// call-sites readable while preserving the exact bytes the original tested.
+// ---------------------------------------------------------------------------
+
+static inline u8 MaterialVariantFlags(const numtl_s *mtl) {
+    // Original: *(u8*)((u8*)mtl + 0x1F2) bits 0x10 = debris, 0x20 = face-on.
+    return *(const u8 *)((const u8 *)mtl + 0x1F2);
+}
+
+static inline char FaceOnDecalSelector(const numtl_s *mtl) {
+    // Original: *(char*)((u8*)mtl + 0x268) — maps to shader_desc.unknown_1b4
+    // (use mtl->shader_desc.unknown_1b4 when the struct is fully typed).
+    return *(const char *)((const u8 *)mtl + 0x268);
+}
+
+static inline char DebrisGlassSelector(const numtl_s *mtl) {
+    // Original: *(char*)((u8*)mtl + 0x99) == -0x69 => glass debris path.
+    return *(const char *)((const u8 *)mtl + 0x99);
+}
+
+static constexpr char kGlassDebrisMarker = (char)-0x69; // 0x97
+
+
+// original 0x29c110 — mirrors GL cull state, flipping front/back when the
+// reflection pass is active.
+void NuIOS_SetCullMode(i32 mode) {
+    static i32 s_prevCullMode = 0;                         // @0x628c50
+    static i32 s_prevReflection = 0;                       // @0x628c60
+    static const u32 kGlCullFace[2] = {GL_BACK, GL_FRONT}; // @0x57bcec
+
+    if (mode == s_prevCullMode && s_prevReflection == g_renderingReflection) {
+        return;
+    }
+    s_prevReflection = g_renderingReflection;
+
+    // Mode 2 = double-sided: disable culling entirely.
+    if (mode == 2) {
+        glDisable(GL_CULL_FACE);
+        s_prevCullMode = 2;
+        return;
+    }
+
+    if (s_prevCullMode == 2) {
+        glEnable(GL_CULL_FACE);
+    }
+
+    // Reflection XORs the winding, so the back/front choice is toggled.
+    u32 idx = (u32)(mode + g_renderingReflection) & 1;
+    glCullFace(kGlCullFace[idx]);
+    s_prevCullMode = (i32)idx;
+}
+
+// Blend / alpha-test translation — original 0x29c1c0.
+enum : u32 {
+    kBlendOpaque = 0,
+    kBlendAlpha = 1,        // srcA * src + (1-srcA) * dst
+    kBlendAdd = 2,          // srcA * src + dst
+    kBlendMax = 3,          // GL_MAX per channel (glow)
+    kBlendAlphaTest10 = 10, // opaque + alpha-test (0x43 ref, func GEQUAL)
+};
+
+extern "C" void NuMtlSetRenderStatesPS(numtl_s *mtl) {
+    u8 alpha_ref_byte = mtl->attribs.alpha_ref;
+    bool isDebris = (mtl->shader_desc.vtx_desc.flags & 0x100000) != 0;
+
+    if (!isDebris) {
+        u32 alphaSel = (u32)(mtl->attribs.alpha_test & 7); // (bytes[0x42]>>4)&7
+        if (alphaSel > 1) {
+            if (alphaSel == 5) {
+                g_alphaFunc = 5; // GEQUAL
+                g_alphaTestEnabled = 1;
+                g_alphaRef = alpha_ref_byte;
+            } else {
+                g_alphaFunc = 6; // GREATER
+                g_alphaTestEnabled = 1;
+                g_alphaRef = 0;
+            }
+        } else if (g_alphaTestEnabled != 0) {
+            g_alphaTestEnabled = 0;
+        }
+    } else {
+        // Debris materials force a minimal alpha-test.
+        g_alphaFunc = 6;
+        g_alphaTestEnabled = 1;
+        g_alphaRef = 2;
+    }
+
+    // ---- blend mode ----
+    u32 blend = mtl->attribs.alpha_mode & 0xf; // bytes[0x40] & 0xf
+    switch (blend) {
+        case kBlendOpaque:
+            glDisable(GL_BLEND);
+            break;
+        case kBlendAlpha:
+            glEnable(GL_BLEND);
+            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+        case kBlendAdd:
+            glEnable(GL_BLEND);
+            glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_SRC_ALPHA, GL_ONE);
+            break;
+        case kBlendMax:
+            glEnable(GL_BLEND);
+            // 0x800b is GL_MAX on desktop GL; GLES2 exposes it via EXT.
+            glBlendEquationSeparate((GLenum)0x800b, GL_FUNC_ADD);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE);
+            break;
+        case kBlendAlphaTest10:
+            glDisable(GL_BLEND);
+            g_alphaTestEnabled = 1;
+            g_alphaFunc = 5;
+            g_alphaRef = alpha_ref_byte;
+            break;
+        default:
+            break;
+    }
+
+    g_lastAlphaBlend = blend;
+    g_lastAlphaRef = alpha_ref_byte;
+
+    NuIOS_SetCullMode(mtl->attribs.cull_mode);
+}
+
+
+// original 0x29c070
+extern "C" void NuIOS_SetVertexFormat(usize fmt) {
+    g_boundVertexFormat = fmt;
+}
+
+// Helpers for the debris constant block (original walks the programme's
+// i16 param table: pairs of {semantic, loc|class}).
+namespace {
+    constexpr i16 kParamViewProj = 0;        // semantic 0
+    constexpr i16 kParamView = 0x0c;         // semantic 12
+    constexpr i16 kParamKonstColourA = 0x30; // semantic 48
+    constexpr i16 kParamTerminator = (i16)-0x8000;
+
+} // namespace
+
+// original 0x29bf60, 265 bytes — the four special-material programs are built from
+// shader strings compiled into libTTapp.so rather than from scene resources.
+extern "C" void NuIOSMtlInit(void) {
+    g_packetToShaderStateMappings[0].mask.semantics[0] = 0;
+    g_packetToShaderStateMappings[0].mask.semantics[1] = 0x0fe00000;
+    g_packetToShaderStateMappings[0].mask.semantics[2] = 0x00806800;
+    g_packetToShaderStateMappings[0].mask.semantics[3] = 0;
+    g_packetToShaderStateMappings[1].mask.semantics[0] = 0;
+    g_packetToShaderStateMappings[1].mask.semantics[1] = 0x60000000;
+    g_packetToShaderStateMappings[1].mask.semantics[2] = 0x00400600;
+    g_packetToShaderStateMappings[1].mask.semantics[3] = 0;
+    BeginCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nu3d/android/numtl_android.cpp", 0x1d0);
+    g_ps3default_2d_t0xc0 = nullptr;
+    g_faceonProgram = NuShaderProgramCreateIOS(reinterpret_cast<const char *>(FaceOn_vx),
+                                               reinterpret_cast<const char *>(FaceOn_Hi_px));
+    g_faceonDecalProgram = NuShaderProgramCreateIOS(reinterpret_cast<const char *>(FaceOn_vx),
+                                                    reinterpret_cast<const char *>(FaceOn_Hi_px));
+    g_debrisProgram =
+        NuShaderProgramCreateIOS(reinterpret_cast<const char *>(debris_vx), reinterpret_cast<const char *>(debris_px));
+    g_debrisGlassProgram = NuShaderProgramCreateIOS(reinterpret_cast<const char *>(debris_vx),
+                                                    reinterpret_cast<const char *>(debris_glass_px));
+    EndCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nu3d/android/numtl_android.cpp", 0x1f3);
+}
+
+
+// original 0x29c480 — per-material display-list callback.  Selects the GL
+// programme, vertex format, and textures for the three material families:
+//
+//   * standard   (variantFlags & 0x10 == 0, & 0x20 == 0) — shader-manager
+//     programme keyed by mtl->shader_desc.shader_id.
+//   * face-on    (0x20 != 0) — billboard programmes g_faceonProgram /
+//     g_faceonDecalProgram, driven by shader_desc.unknown_1b4.
+//   * debris     (0x10 != 0) — g_debrisProgram or g_debrisGlassProgram;
+//     glass additionally copies the backbuffer into refractionRT and binds
+//     the distortion map at stage 1.
+//
+void NuIOSDLMtlCallback(void *arg) {
+    auto *mtl = (numtl_s *)arg;
+
+    g_boundMaterial = mtl;
+    NUSHADEROBJECT *shaderId = NuShaderManagerGetShaderById(mtl->shader_desc.shader_id);
+    g_LastMtl = mtl;
+    g_renderContext_materialInUse = mtl;
+    NuIOS_SetVertexFormat(ptrToUsize(mtl->vertex_decl));
+
+    u8 variantFlags = MaterialVariantFlags(mtl);
+
+    const bool isDebris = (variantFlags & 0x10) != 0;
+    const bool isFaceOn = (variantFlags & 0x20) != 0;
+
+    if (!isDebris) {
+        if (!isFaceOn) {
+            // ---- Standard material ----
+            if (shaderId != 0) {
+                g_boundShader = 0;
+                glUseProgram(0);
+                g_currentShaderProgram = nullptr;
+                NuShaderManagerBindShader(shaderId);
+                // BindShader may clobber the format; restore it.
+                NuIOS_SetVertexFormat(ptrToUsize(mtl->vertex_decl));
+            }
+        } else {
+            // ---- Face-on / billboard ----
+            NuShaderManagerBindShader(0);
+            g_boundVertexFormat = ptrToUsize(g_nuFaceOnVertexFormat);
+
+            char decalSel = FaceOnDecalSelector(mtl);
+            NUSHADERPROGRAM *program = (decalSel == '\0') ? g_faceonProgram : g_faceonDecalProgram;
+
+            g_boundShader = program != nullptr ? program->program : 0;
+            glUseProgram(g_boundShader);
+            g_currentShaderProgram = program;
+
+            NUNATIVETEX *tex = NuTexGetNative(mtl->tex_id);
+            if (tex != nullptr) {
+                NuTexSetTextureWithStagePS(tex, 0);
+            }
+        }
+    } else {
+        // ---- Debris ----
+        if (DebrisGlassSelector(mtl) == kGlassDebrisMarker) {
+            if (NuIOSDLMtlCallback_refractionRT == 0) {
+                NuIOSDLMtlCallback_refractionRT = NuTexGenTexture(&NuIOSDLMtlCallback_nativeRefractionTex);
+                memset(&NuIOSDLMtlCallback_nativeRefractionTex, 0, 8);
+            }
+            if (NuApiFrameCount() != NuIOSDLMtlCallback_lastFrameCount) {
+                NuIOS_CopyBackbufferToTexture(&NuIOSDLMtlCallback_nativeRefractionTex, true);
+                NuIOSDLMtlCallback_lastFrameCount = NuApiFrameCount();
+            }
+        }
+
+        NUSHADERPROGRAM *program =
+            DebrisGlassSelector(mtl) == kGlassDebrisMarker ? g_debrisGlassProgram : g_debrisProgram;
+
+        g_boundVertexFormat = ptrToUsize(g_nuDebrisVertexFormat);
+        NuShaderManagerBindShader(0);
+
+        g_boundShader = program != nullptr ? program->program : 0;
+        glUseProgram(g_boundShader);
+        g_currentShaderProgram = program;
+
+        for (i32 index = 0; index < program->parameter_count; ++index) {
+            const NUSHADERPROGRAMPARAMETER *parameter = &program->parameters[index];
+            if (parameter->register_index == static_cast<u16>(kParamViewProj)) {
+                const u32 location = parameter->location_and_setter & 0x0fff;
+                const u32 setter = parameter->location_and_setter >> 12;
+                g_glConstantSetterTable[setter](location, 4, g_renderContext_viewProj);
+                break;
+            }
+        }
+        for (i32 index = 0; index < program->parameter_count; ++index) {
+            const NUSHADERPROGRAMPARAMETER *parameter = &program->parameters[index];
+            if (parameter->register_index == static_cast<u16>(kParamView)) {
+                const u32 location = parameter->location_and_setter & 0x0fff;
+                const u32 setter = parameter->location_and_setter >> 12;
+                g_glConstantSetterTable[setter](location, 4, g_renderContext_view);
+                break;
+            }
+        }
+        for (i32 index = 0; index < program->parameter_count; ++index) {
+            const NUSHADERPROGRAMPARAMETER *parameter = &program->parameters[index];
+            if (parameter->register_index == static_cast<u16>(kParamKonstColourA)) {
+                const u32 location = parameter->location_and_setter & 0x0fff;
+                const u32 setter = parameter->location_and_setter >> 12;
+                g_glConstantSetterTable[setter](location, 1, nu2api::g_shaderUniforms[72].data.values);
+                break;
+            }
+        }
+        for (i32 index = 0; index < program->parameter_count; ++index) {
+            const NUSHADERPROGRAMPARAMETER *parameter = &program->parameters[index];
+            if (parameter->register_index == static_cast<u16>(kParamTerminator)) {
+                const u32 location = parameter->location_and_setter & 0x0fff;
+                const u32 setter = parameter->location_and_setter >> 12;
+                g_glConstantSetterTable[setter](location, 1, nu2api::g_shaderUniforms[71].data.values);
+                break;
+            }
+        }
+
+        if (DebrisGlassSelector(mtl) == kGlassDebrisMarker) {
+            glActiveTexture(GL_TEXTURE0);
+            g_currentTexUnit = 0;
+            glBindTexture(GL_TEXTURE_2D, NuIOSDLMtlCallback_nativeRefractionTex.platform.gl_tex);
+            NUNATIVETEX *distort = NuTexGetNative(g_DebrisGlassDistortTID);
+            NuTexSetTextureWithStagePS(distort, 1);
+        } else {
+            NUNATIVETEX *tex = NuTexGetNative(mtl->tex_id);
+            NuTexSetTextureWithStagePS(tex, 0);
+        }
+    }
+
+    NuRenderContextSetZFunc(mtl->attribs.z_mode);
+    g_renderingReflection = 0;
+    NuMtlSetRenderStatesPS(mtl);
 }

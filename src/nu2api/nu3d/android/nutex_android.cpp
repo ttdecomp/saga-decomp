@@ -180,8 +180,8 @@ i32 NuTexReserve(i32 size) {
 void NuTexUnReserve() {
 }
 
-i32 NuTexReadBitmap(char *) {
-    return 0;
+NUTEXBITMAP *NuTexReadBitmap(char *) {
+    return NULL;
 }
 
 void NuTexAssignAddr(i32, i32) {

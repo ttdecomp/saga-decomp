@@ -12,7 +12,7 @@ from pathlib import Path
 BAZEL_OPTION_RE = re.compile(
     r"^\s*build:target\s+--per_file_copt=(.+)@([^\s]+)\s*$"
 )
-ALLOWED_OPTIONS = {"-O1", "-O2", "-O3", "-fPIE", "-fno-ipa-sra"}
+ALLOWED_OPTIONS = {"-O0", "-O1", "-O2", "-O3", "-fPIE", "-fno-ipa-sra"}
 
 
 def main() -> int:

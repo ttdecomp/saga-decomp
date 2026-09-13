@@ -12,6 +12,8 @@ build --per_file_copt=^src/nu2api/nu3d/android/nurain_android\.c$@-x,c++,-std=gn
 # The original Android time unit likewise used a .c filename with C++
 # linkage for its clock helper functions.
 build --per_file_copt=^src/nu2api/nucore/android/nutime_android\.c$@-x,c++,-std=gnu++11
+# The original nuthread.c also uses C++ linkage and VuVec constructors.
+build --per_file_copt=^src/nu2api/nucore/android/nuthread\.c$@-x,c++,-std=gnu++11
 # Editor path callbacks in the original use optimized frameless PIC call sequences.
 build:target --per_file_copt=^src/editor/edpath\.cpp$@-O2
 # Recovered Android entry points; -O2 and -O3 emit the same measured bodies.
@@ -237,6 +239,9 @@ build:target --per_file_copt=^src/legoapi/render/light/faders\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/render/fx/parts\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/render/light/shadow\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/render/light/surfaces\.cpp$@-O3
+build --per_file_copt=^src/nu2api/nu3d/glutils\.c$@-x,c++,-std=gnu++11
+build:target --per_file_copt=^src/nu2api/nu3d/glutils\.c$@-O0
+build:target --per_file_copt=^src/nu2api/nucore/nuvideo_dump\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/render/fx/parts_control\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/render/fx/particles\.cpp$@-O3
 build:target --per_file_copt=^src/nu2api/nu3d/NuRenderDevice\.cpp$@-O2
@@ -364,7 +369,6 @@ build:target --per_file_copt=^src/nu2api/nu3d/nudlist\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nucore/nu2api_nucore_misc\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nucore/nugcutscene_anim\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nucore/nuonline_android\.cpp$@-O3
-build:target --per_file_copt=^src/nu2api/nucore/nuvideo_dump\.cpp$@-O3
 build:target --per_file_copt=^src/nu2api/nucore/pending_stubs\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nusound/nusound_effect\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nusound/nusound_handle\.cpp$@-O2
