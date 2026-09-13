@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.625084,
+    "fuzzy_match_percent": 44.631233,
     "total_code": "4722419",
-    "matched_code": "386603",
-    "matched_code_percent": 8.186546,
+    "matched_code": "386740",
+    "matched_code_percent": 8.189447,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4631,
-    "matched_functions_percent": 34.408203,
+    "matched_functions": 4632,
+    "matched_functions_percent": 34.415634,
     "total_units": 1
   },
   "text": {
@@ -39875,6 +39875,14 @@
           "match_percent": 9.772727
         },
         {
+          "name": "_Z30GizmoBlowup_TransformDraw_GameP13GIZMOBLOWUP_s",
+          "demangled_name": "GizmoBlowup_TransformDraw_Game(GIZMOBLOWUP_s*)",
+          "address": 1960752,
+          "offset": 1070784,
+          "size": 110,
+          "match_percent": 78.42308
+        },
+        {
           "name": "_Z22DerotateMovementVectorv",
           "demangled_name": "DerotateMovementVector()",
           "address": 3632128,
@@ -40554,6 +40562,22 @@
           "match_percent": 8.421053
         },
         {
+          "name": "_ZL26BigJump_JumpAction_DefaultP12GameObject_s",
+          "demangled_name": "BigJump_JumpAction_Default(GameObject_s*)",
+          "address": 5165952,
+          "offset": 4275984,
+          "size": 142,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL26BigJump_LandAction_DefaultP12GameObject_s",
+          "demangled_name": "BigJump_LandAction_Default(GameObject_s*)",
+          "address": 5166096,
+          "offset": 4276128,
+          "size": 158,
+          "match_percent": 99.86
+        },
+        {
           "name": "_Z9StartJumpP12GameObject_si",
           "demangled_name": "StartJump(GameObject_s*, int)",
           "address": 5166256,
@@ -40567,7 +40591,7 @@
           "address": 5166560,
           "offset": 4276592,
           "size": 162,
-          "match_percent": 96.925
+          "match_percent": 96.55
         },
         {
           "name": "_Z14StartEndOfJumpP12GameObject_s",
@@ -40583,7 +40607,7 @@
           "address": 5166848,
           "offset": 4276880,
           "size": 1077,
-          "match_percent": 45.932434
+          "match_percent": 46.067566
         },
         {
           "name": "_Z11BigJumpCodeP12GameObject_s",
@@ -40607,7 +40631,7 @@
           "address": 5170544,
           "offset": 4280576,
           "size": 528,
-          "match_percent": 65.58778
+          "match_percent": 65.54962
         }
       ]
     },
@@ -46529,14 +46553,6 @@
           "offset": 3697168,
           "size": 146,
           "match_percent": 75.53846
-        },
-        {
-          "name": "_Z8PlayAnimP12nuinstanim_sPffi",
-          "demangled_name": "PlayAnim(nuinstanim_s*, float*, float, int)",
-          "address": 4958688,
-          "offset": 4068720,
-          "size": 166,
-          "match_percent": 98.16216
         }
       ]
     },
@@ -48463,7 +48479,7 @@
           "address": 1409472,
           "offset": 519504,
           "size": 1500,
-          "match_percent": 30.198795
+          "match_percent": 30.243977
         },
         {
           "name": "_ZL9BlockCodeP12GameObject_siiii",
@@ -49018,36 +49034,12 @@
           "match_percent": 11.125541
         },
         {
-          "name": "_Z12UpdateMidPosP13GIZMOBLOWUP_s",
-          "demangled_name": "UpdateMidPos(GIZMOBLOWUP_s*)",
-          "address": 4956144,
-          "offset": 4066176,
-          "size": 929,
-          "match_percent": 56.691544
-        },
-        {
           "name": "_Z15SetObjOnSurfaceP12GameObject_si",
           "demangled_name": "SetObjOnSurface(GameObject_s*, int)",
           "address": 5121136,
           "offset": 4231168,
           "size": 303,
           "match_percent": 49.03125
-        },
-        {
-          "name": "_ZL26BigJump_JumpAction_DefaultP12GameObject_s",
-          "demangled_name": "BigJump_JumpAction_Default(GameObject_s*)",
-          "address": 5165952,
-          "offset": 4275984,
-          "size": 142,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL26BigJump_LandAction_DefaultP12GameObject_s",
-          "demangled_name": "BigJump_LandAction_Default(GameObject_s*)",
-          "address": 5166096,
-          "offset": 4276128,
-          "size": 158,
-          "match_percent": 99.86
         },
         {
           "name": "_Z14FindSlamOriginP12GameObject_sP7nuvec_sS2_",
@@ -49063,7 +49055,7 @@
           "address": 5171072,
           "offset": 4281104,
           "size": 308,
-          "match_percent": 87.181816
+          "match_percent": 86.954544
         },
         {
           "name": "_Z10Slam_StartP12GameObject_sf",
@@ -54302,14 +54294,6 @@
           "offset": 4026080,
           "size": 182,
           "match_percent": 94.46667
-        },
-        {
-          "name": "_Z25GizmoBlowupResetNameTablev",
-          "demangled_name": "GizmoBlowupResetNameTable()",
-          "address": 4975472,
-          "offset": 4085504,
-          "size": 61,
-          "match_percent": 99.933334
         }
       ]
     },
@@ -55895,14 +55879,6 @@
           "match_percent": 68.13333
         },
         {
-          "name": "_Z30GizmoBlowup_TransformDraw_GameP13GIZMOBLOWUP_s",
-          "demangled_name": "GizmoBlowup_TransformDraw_Game(GIZMOBLOWUP_s*)",
-          "address": 1960752,
-          "offset": 1070784,
-          "size": 110,
-          "match_percent": 78.42308
-        },
-        {
           "name": "_ZL19Blowup_GetMaxGizmosPv",
           "demangled_name": "Blowup_GetMaxGizmos(void*)",
           "address": 4945216,
@@ -55972,7 +55948,7 @@
           "address": 4946016,
           "offset": 4056048,
           "size": 137,
-          "match_percent": 99.67391
+          "match_percent": 100.0
         },
         {
           "name": "_ZL15Blowup_ActivateP7GIZMO_si",
@@ -55988,7 +55964,7 @@
           "address": 4946512,
           "offset": 4056544,
           "size": 171,
-          "match_percent": 99.565216
+          "match_percent": 99.23913
         },
         {
           "name": "_ZL27Blowup_AllocateProgressDataP9variptr_uS0_",
@@ -56004,7 +55980,7 @@
           "address": 4946752,
           "offset": 4056784,
           "size": 142,
-          "match_percent": 87.93023
+          "match_percent": 87.5814
         },
         {
           "name": "_ZL20Blowup_StoreProgressPvS_S_",
@@ -56183,12 +56159,28 @@
           "match_percent": 66.4595
         },
         {
+          "name": "_Z12UpdateMidPosP13GIZMOBLOWUP_s",
+          "demangled_name": "UpdateMidPos(GIZMOBLOWUP_s*)",
+          "address": 4956144,
+          "offset": 4066176,
+          "size": 929,
+          "match_percent": 87.75124
+        },
+        {
           "name": "_Z22GizmoBlowupEarlyUpdatePvS_f",
           "demangled_name": "GizmoBlowupEarlyUpdate(void*, void*, float)",
           "address": 4957088,
           "offset": 4067120,
           "size": 1588,
           "match_percent": 29.43314
+        },
+        {
+          "name": "_Z8PlayAnimP12nuinstanim_sPffi",
+          "demangled_name": "PlayAnim(nuinstanim_s*, float*, float, int)",
+          "address": 4958688,
+          "offset": 4068720,
+          "size": 166,
+          "match_percent": 98.16216
         },
         {
           "name": "_Z24GizmoBlowupTypeNameBlankPc",
@@ -56324,7 +56316,7 @@
           "address": 4970640,
           "offset": 4080672,
           "size": 1469,
-          "match_percent": 38.54896
+          "match_percent": 38.623146
         },
         {
           "name": "_Z21GizmoBlowup_HitBlowupP12GameObject_sP13GIZMOBLOWUP_siP6BOLT_sP7nuvec_sPhji",
@@ -56397,6 +56389,14 @@
           "offset": 4085264,
           "size": 228,
           "match_percent": 100.0
+        },
+        {
+          "name": "_Z25GizmoBlowupResetNameTablev",
+          "demangled_name": "GizmoBlowupResetNameTable()",
+          "address": 4975472,
+          "offset": 4085504,
+          "size": 61,
+          "match_percent": 99.933334
         },
         {
           "name": "_Z25GizmoBlowupGetNameTableIdPc",

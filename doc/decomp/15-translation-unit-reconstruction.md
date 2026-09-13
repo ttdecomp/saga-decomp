@@ -382,7 +382,7 @@ cross-TU declarations instead of scattered local `extern` declarations.
   rises 44.599873% to 44.620518%: `GizmoBlowup_Opponent` improves 11.72% to
   55.18%, `GizmoBlowup_Hit` 11.50% to 38.59%, and `GizmoBlowup_Target` 79.83%
   to 88.99%; nothing regresses and all exact bodies remain exact. Target
-  build, four checks, symbol coverage, and 120-frame Map smoke pass. The
+  build, four checks, symbol coverage, and 120-frame Map smoke pass.
   A subsequent measured merge moves all seven wrapper functions into the
   original-named `gizmoblowups.cpp` owner at `-O3` and removes the redundant
   source. All three exact wrapper bodies and the 93-byte initializer score
@@ -405,11 +405,47 @@ cross-TU declarations instead of scattered local `extern` declarations.
   4.7 restores that object-local sequence without affecting function scores.
   `CheckLostDataFn` belongs to a separate original data block next to
   `Game_CompletionSave`; moving it to the current globals owner is score
-  neutral. The registration-local `addtype` still follows the name table in
-  the current object's `.bss`, whereas the original has it before the table;
-  that local-data/source-order question remains open. This measured series
-  leaves fuzzy matching at 44.625084% and 4,631 exact functions, with target
-  build, four checks, symbol coverage, and 120-frame Map smoke passing.
+  neutral. At this stage the registration-local `addtype` still followed the
+  name table in the current object's `.bss`, unlike the original.
+  Placing `NewBlowup_RegisterGizmo` directly after `GizmoBlowups_TotalScore`,
+  their original text order, puts the registration-local `addtype` before the
+  name table and count in the current `.bss`, as in the original. This gains
+  one exact body (`GizmoBlowupLateUpdate`, 99.67% to 100%) but slightly lowers
+  two other bodies and aggregate fuzzy matching (44.625084% to 44.625072%);
+  the initializer remains 99.35%. This is a measured ownership/data-order
+  step, not evidence that the BlowUp TU is fully reconstructed. The
+  out-of-run `GizmoBlowup_TransformDraw_Game` at `0x001deb30` follows
+  `Transform_TargettedByObj` at `0x001dea90` in the original, before the
+  next `Ledges_*` run. It now lives beside that function in the `-O3`
+  `transform.cpp` owner, with a shared API header instead of ad-hoc external
+  declarations. Its 78.423% body and whole-binary matching are unchanged;
+  target build, four checks, zero missing symbols, and 120-frame Map smoke
+  pass. This measured series leaves fuzzy matching at 44.625072% and 4,632
+  exact functions.
+  `GizmoBlowupResetNameTable` at `0x004beb70` is immediately before the
+  name-table lookup in the original BlowUp run. It was in `gizmo_sys.cpp`
+  with a second, unused-by-lookup 1024-byte table and count, so level loading
+  reset different storage from the lookup. Moving Reset into the BlowUp owner
+  and removing the duplicate gives the reset and lookup one file-local table.
+  Resetting the table before its count naturally retains the original code
+  sequence while placing the table before the count in the owner's `.bss`,
+  following the registration-local `addtype`. No function score changes; target
+  and WASM builds, four checks, zero missing symbols, and 120-frame Map smoke
+  pass. `GizmoBlowupCreateStuff` and `SetGizmoBlowUpTarget` remain out-of-run;
+  their neighbors require a broader TU investigation before moving them.
+  Two more ordinary functions in the original BlowUp text interval were
+  stranded outside its owner. `UpdateMidPos` at `0x004b9ff0` was in default
+  `-O0` `move.cpp`, whereas its original neighbors and the BlowUp owner are
+  `-O3`. Moving its unchanged body and putting the exported declaration in
+  the BlowUp header raises that function from 56.69% to 87.75% and the whole
+  binary from 44.6251% to 44.6312%, with no exact loss. Its antinode call
+  now uses a header from the antinode owner instead of a linker-only local
+  prototype. `PlayAnim` at `0x004ba9e0` also lies between `UpdateMidPos` and
+  the BlowUp early-update run; moving its unchanged body from `animation.cpp`
+  to the same owner leaves its 98.16% score and all other scores unchanged.
+  These are ownership corrections, not proof that the BlowUp TU is complete.
+  Target and WASM builds, four checks, zero missing symbols, and 120-frame
+  Map smoke pass after both moves.
 - Original `gizmopickups.cpp` has a 41-function text run from `0x004bedb0`
   to the next turret owner at `0x004c28a0`. Its local block includes
   `GizmoPickups_CollideList`, registration-local `addtype`, and file-local
@@ -476,3 +512,19 @@ cross-TU declarations instead of scattered local `extern` declarations.
   definitions in a different order from the original, so their remaining
   address/layout difference is not considered solved. Target build and
   120-frame Map smoke pass.
+- Original `jumping.cpp` places file-local `BigJump_JumpAction_Default` at
+  `0x004ed380` immediately before `BigJump_LandAction_Default` at
+  `0x004ed410`, then continues with the ordinary jumping functions. Both
+  defaults are in its `_GLOBAL__sub_I_jumping.cpp` local-symbol block. The
+  initialized `BigJump_LandActionFn` and `BigJump_JumpActionFn` pointers are
+  adjacent in original `.data` at `0x00668c9c` and `0x00668ca0`. Those four
+  definitions were stranded in `characters/motion/move.cpp`, despite the
+  consumers and the original-named owner already being in
+  `actions/movement/jumping.cpp`. Moving them together preserves local
+  linkage, the original relative function and pointer order, and the
+  existing public pointer declarations in `characters/motion.h`. Both files
+  use the same default optimization. The exact jump callback remains exact;
+  the land callback remains 99.86%, and no exact function is lost. Four
+  neighboring functions shift slightly in fuzzy score, with virtually no
+  whole-binary change. Target and WASM builds, four checks, zero missing
+  symbols, and 120-frame Map smoke pass.

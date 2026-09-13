@@ -7,6 +7,7 @@
 #include "globals.h"
 #include "gamelib/util/gamelib_util_types.h"
 #include "gameapi/edtools/edfile.h"
+#include "legoapi/ai/game/gameantinode.h"
 #include "legoapi/characters/core/character.h"
 #include "legoapi/characters/motion.h"
 #include "legoapi/characters/motion/gameanim.h"
@@ -32,6 +33,7 @@
 #include "nu2api/nucore/nuanim3.h"
 #include "nu2api/numath/numtx.h"
 #include "nu2api/numath/nuvec.h"
+#include "nu2api/numath/nufloat.h"
 #include "nu2api/numath/nutrig.h"
 #include "nu2api/numath/nurand.h"
 #include "legoapi/core/input/qrand.h"
@@ -43,8 +45,6 @@ struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
 
-static char gizmoblowupnametable[32][32];
-static i32 gizmoblowupnametable_numids;
 i32 GizmoBlowup_HitMultiplier = 1;
 void (*GameBlowUpBlownUpFn)(GIZMOBLOWUP_s *) = NULL;
 u32 EXBLOWUPFLAGS = 0;
@@ -688,6 +688,68 @@ u32 GizmoBlowups_TotalScore(void *context) {
     }
     return total;
 }
+static i32 Blowup_GetMaxGizmos(void *world_ptr);
+static void Blowup_AddGizmos(GIZMOSYS *gizmo_sys, i32 type_id, void *world_ptr, void *);
+void GizmoBlowupEarlyUpdate(void *world_ptr, void *, float);
+void GizmoBlowupLateUpdate(void *world_ptr, void *, float);
+void GizmoBlowupBurstDraw(void *world_ptr, void *, float);
+static char *Blowup_GetGizmoName(GIZMO *gizmo);
+static i32 Blowup_GetOutput(GIZMO *gizmo, i32 output_index, i32);
+static char *Blowup_GetOutputName(GIZMO *gizmo, i32 output_index);
+static i32 Blowup_GetNumOutputs(GIZMO *gizmo);
+static void Blowup_Activate(GIZMO *gizmo, i32 enabled);
+static void Blowup_SetVisibility(GIZMO *gizmo, i32 visible);
+i32 Blowup_GetVisibility(GIZMO *gizmo);
+static NUVEC *GizmoBlowup_GetPos(GIZMO *gizmo);
+static void *Blowup_AllocateProgressData(VARIPTR *buffer, VARIPTR *buffer_end);
+static void Blowup_ClearProgress(void *, void *progress_ptr);
+static void Blowup_StoreProgress(void *world_ptr, void *, void *progress_ptr);
+static void Blowups_Reset(void *world_ptr, void *, void *progress_ptr);
+void *gizmoblowup_reservebuffers(void *world_ptr);
+i32 gizmoblowup_Load(void *world_ptr, void *);
+
+ADDGIZMOTYPE *NewBlowup_RegisterGizmo(i32 type_id) {
+    static ADDGIZMOTYPE addtype;
+
+    addtype = Default_ADDGIZMOTYPE;
+    addtype.name = "blowup";
+    addtype.prefix = "";
+    addtype.fns.unknown1 = 0x100;
+    addtype.fns.early_update_fn = GizmoBlowupEarlyUpdate;
+    addtype.fns.panel_draw_fn = NULL;
+    addtype.fns.get_visibility_fn = Blowup_GetVisibility;
+    addtype.fns.get_max_gizmos_fn = Blowup_GetMaxGizmos;
+    addtype.fns.get_pos_fn = GizmoBlowup_GetPos;
+    addtype.fns.using_special_fn = NULL;
+    addtype.fns.add_gizmos_fn = Blowup_AddGizmos;
+    addtype.fns.bolt_hit_plat_fn = NULL;
+    addtype.fns.get_best_bolt_target_fn = NULL;
+    addtype.fns.late_update_fn = GizmoBlowupLateUpdate;
+    addtype.fns.bolt_hit_fn = NULL;
+    addtype.fns.draw_fn = GizmoBlowupBurstDraw;
+    addtype.fns.get_gizmo_name_fn = Blowup_GetGizmoName;
+    addtype.fns.get_output_fn = Blowup_GetOutput;
+    addtype.fns.get_output_name_fn = Blowup_GetOutputName;
+    addtype.fns.get_num_outputs_fn = Blowup_GetNumOutputs;
+    addtype.fns.activate_fn = Blowup_Activate;
+    addtype.fns.activate_rev_fn = NULL;
+    addtype.fns.set_visibility_fn = Blowup_SetVisibility;
+    addtype.fns.allocate_progress_data_fn = Blowup_AllocateProgressData;
+    addtype.fns.clear_progress_fn = Blowup_ClearProgress;
+    addtype.fns.store_progress_fn = Blowup_StoreProgress;
+    addtype.fns.reset_fn = Blowups_Reset;
+    addtype.fns.reserve_buffer_space_fn = gizmoblowup_reservebuffers;
+    addtype.fns.load_fn = gizmoblowup_Load;
+    addtype.fns.post_load_fn = NULL;
+    addtype.fns.add_level_sfx_fn = NULL;
+    blowup_gizmotype_id = type_id;
+
+    return &addtype;
+}
+
+static i32 gizmoblowupnametable_numids;
+static char gizmoblowupnametable[32][32];
+
 
 i32 GizmoBlowupTypeNameBlank(char *name) {
     for (u32 offset = 0; offset < 0x20; offset += sizeof(i32)) {
@@ -774,6 +836,11 @@ void GizmoBlowupGenDecalMatrix(GIZMOBLOWUP_s *blowup, numtx_s *matrix, i32 alter
     position.y = blowup->position.y + blowup->field_0x78;
     position.z = blowup->position.z + blowup->field_0x7c;
     NuMtxTranslate(matrix, &position);
+}
+
+void GizmoBlowupResetNameTable(void) {
+    memset(gizmoblowupnametable, 0, sizeof(gizmoblowupnametable));
+    gizmoblowupnametable_numids = 0;
 }
 
 i32 GizmoBlowupGetNameTableId(char *name) {
@@ -923,17 +990,6 @@ f32 GizmoBlowup_SetAutoSetReflectY(GIZMOBLOWUP_s *blowup, nuvec_s *position) {
     return 0.0f;
 }
 
-extern void Transform_DrawTarget(NUVEC *position, f32 scale, f32 opacity);
-extern i32 Transform_TargettedByObj(void *object);
-
-void GizmoBlowup_TransformDraw_Game(GIZMOBLOWUP_s *blowup) {
-    if (Transform_TargettedByObj(blowup) != 0) {
-        return;
-    }
-
-    Transform_DrawTarget(&blowup->mid_position, 1.4f * blowup->target_scale, 0.4f);
-}
-
 u32 RemapAllTypeFlagsToBlowupFlags(u32 flags) {
     u32 result = 0;
     for (i32 bit = 0; bit < 32; ++bit) {
@@ -1044,6 +1100,58 @@ static void Blowup_AddGizmos(GIZMOSYS *gizmo_sys, i32 type_id, void *world_ptr, 
             AddGizmo(gizmo_sys, type_id, NULL, blowup);
         }
     }
+}
+
+void UpdateMidPos(GIZMOBLOWUP_s *blowup) {
+    if ((blowup->draw_flags & 0x1000) != 0) {
+        blowup->mid_position = blowup->position;
+        if (blowup->anti_node != NULL) {
+            blowup->state_flags &= ~1;
+            return;
+        }
+    }
+    nuhspecial_s *special = blowup->override_special;
+    if (special == NULL || !NuSpecialExistsFn(special)) {
+        special = &blowup->type->animated_special;
+    }
+    NUVEC minimum;
+    NUVEC maximum;
+    NuSpecialGetBounds(special, &minimum, &maximum);
+    NUVEC corners[8] = {
+        {minimum.x, minimum.y, minimum.z}, {maximum.x, minimum.y, minimum.z}, {maximum.x, minimum.y, maximum.z},
+        {minimum.x, minimum.y, maximum.z}, {minimum.x, maximum.y, minimum.z}, {maximum.x, maximum.y, minimum.z},
+        {maximum.x, maximum.y, maximum.z}, {minimum.x, maximum.y, maximum.z},
+    };
+    NuVecMtxTransformVU0(&minimum, &minimum, &blowup->transform);
+    NuVecMtxTransformVU0(&maximum, &maximum, &blowup->transform);
+    for (i32 i = 0; i < 8; ++i) {
+        NuVecMtxTransformVU0(&corners[i], &corners[i], &blowup->transform);
+    }
+    if ((blowup->draw_flags & 0x1000) == 0) {
+        blowup->mid_position.x = (maximum.x - minimum.x) * 0.5f + minimum.x;
+        blowup->mid_position.y = (maximum.y - minimum.y) * 0.5f + minimum.y;
+        blowup->mid_position.z = (maximum.z - minimum.z) * 0.5f + minimum.z;
+    }
+    if (blowup->anti_node == NULL && (blowup->visibility_flags & 0x40) != 0) {
+        blowup->anti_node = GameAntinode_RegisterAntiNodeUsingData(
+            WORLD->game_antinode_sys, &blowup->mid_position, blowup->field_0xf4 + blowup->field_0xf2,
+            &blowup->type->anti_node_data, 0.0f, blowup->draw_flags & 0x4000);
+    }
+    if ((blowup->draw_flags & 0x1000) == 0) {
+        f32 x = maximum.x - blowup->mid_position.x;
+        f32 y = maximum.y - blowup->mid_position.y;
+        f32 z = maximum.z - blowup->mid_position.z;
+        blowup->target_scale = NuFsqrt(x * x + y * y + z * z);
+    }
+    blowup->state_flags &= ~1;
+}
+
+void PlayAnim(nuinstanim_s *animation, float *playback, float speed, i32 backwards) {
+    animation->flags = static_cast<NUINSTANIM_FLAGS>(animation->flags | NUINSTANIM_FLAG_PLAYING);
+    if (speed >= 0.0f) {
+        *playback = SeekLinearF(*playback, backwards == 0 ? -1.0f : 1.0f, speed);
+    }
+    animation->tfactor = *playback * animation->fparam1;
 }
 
 void GizmoBlowupEarlyUpdate(void *world_ptr, void *, float) {
@@ -1755,46 +1863,6 @@ i32 gizmoblowup_Load(void *world_ptr, void *) {
     }
     return 1;
 }
-
-ADDGIZMOTYPE *NewBlowup_RegisterGizmo(i32 type_id) {
-    static ADDGIZMOTYPE addtype;
-
-    addtype = Default_ADDGIZMOTYPE;
-    addtype.name = "blowup";
-    addtype.prefix = "";
-    addtype.fns.unknown1 = 0x100;
-    addtype.fns.early_update_fn = GizmoBlowupEarlyUpdate;
-    addtype.fns.panel_draw_fn = NULL;
-    addtype.fns.get_visibility_fn = Blowup_GetVisibility;
-    addtype.fns.get_max_gizmos_fn = Blowup_GetMaxGizmos;
-    addtype.fns.get_pos_fn = GizmoBlowup_GetPos;
-    addtype.fns.using_special_fn = NULL;
-    addtype.fns.add_gizmos_fn = Blowup_AddGizmos;
-    addtype.fns.bolt_hit_plat_fn = NULL;
-    addtype.fns.get_best_bolt_target_fn = NULL;
-    addtype.fns.late_update_fn = GizmoBlowupLateUpdate;
-    addtype.fns.bolt_hit_fn = NULL;
-    addtype.fns.draw_fn = GizmoBlowupBurstDraw;
-    addtype.fns.get_gizmo_name_fn = Blowup_GetGizmoName;
-    addtype.fns.get_output_fn = Blowup_GetOutput;
-    addtype.fns.get_output_name_fn = Blowup_GetOutputName;
-    addtype.fns.get_num_outputs_fn = Blowup_GetNumOutputs;
-    addtype.fns.activate_fn = Blowup_Activate;
-    addtype.fns.activate_rev_fn = NULL;
-    addtype.fns.set_visibility_fn = Blowup_SetVisibility;
-    addtype.fns.allocate_progress_data_fn = Blowup_AllocateProgressData;
-    addtype.fns.clear_progress_fn = Blowup_ClearProgress;
-    addtype.fns.store_progress_fn = Blowup_StoreProgress;
-    addtype.fns.reset_fn = Blowups_Reset;
-    addtype.fns.reserve_buffer_space_fn = gizmoblowup_reservebuffers;
-    addtype.fns.load_fn = gizmoblowup_Load;
-    addtype.fns.post_load_fn = NULL;
-    addtype.fns.add_level_sfx_fn = NULL;
-    blowup_gizmotype_id = type_id;
-
-    return &addtype;
-}
-
 
 bool SphereSphereOverlap(NUVEC *, f32, NUVEC *, f32);
 

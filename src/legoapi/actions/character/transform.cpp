@@ -1,3 +1,5 @@
+#include "legoapi/actions/character/transform.h"
+
 #include "nu2api/numath/nuquat.h"
 #include "decomp.h"
 #include "globals.h"
@@ -266,6 +268,14 @@ void DerotateMovementVector() {
 
 i32 Transform_TargettedByObj(void *) {
     return 0;
+}
+
+void GizmoBlowup_TransformDraw_Game(GIZMOBLOWUP_s *blowup) {
+    if (Transform_TargettedByObj(blowup) != 0) {
+        return;
+    }
+
+    Transform_DrawTarget(&blowup->mid_position, 1.4f * blowup->target_scale, 0.4f);
 }
 
 void InterpolateRotationMatrix(numtx_s *, numtx_s *, numtx_s *, float) {

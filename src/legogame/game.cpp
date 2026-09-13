@@ -7,6 +7,7 @@
 #include "legoapi/characters/motion.h"
 #include "legoapi/gizmos/object/gizbuildits.h"
 #include "legoapi/gizmo/object/gizmoblowups.h"
+#include "legoapi/actions/character/transform.h"
 
 #include <string.h>
 
@@ -272,7 +273,6 @@ void Levers_InitTerrain(WORLDINFO_s *world);
 void GizPanel_InitTerrain(WORLDINFO_s *world);
 void HatMachines_InitTerrain(WORLDINFO_s *world);
 void GizmoBlowupsFinalSetup(WORLDINFO_s *world);
-void GizmoBlowup_TransformDraw_Game(GIZMOBLOWUP_s *blowup);
 void InitClimbObjectSys(WORLDINFO_s *world);
 void GizmoPushBlockInitAndReset(WORLDINFO_s *world, void *progress);
 extern NUFPCOMJMP LevelConfigKeywords_BeforeLoad[];

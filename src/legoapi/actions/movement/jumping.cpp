@@ -131,6 +131,46 @@ void GameCam_Judder(GAMECAMERA_s *, f32, i32, NUVEC *);
 void NewRumbleAllPlayers(f32, f32, i32, i32);
 EXPLOSION *AddExplosion(NUVEC *, f32, f32, GameObject_s *, i32, i32);
 
+static i32 BigJump_JumpAction_Default(GameObject_s *object) {
+    if (object->field_0x7aa == 0) {
+        if (LEGOACT_COMBOJUMP != -1 && object->apiobj.character_model->model_data_b[LEGOACT_COMBOJUMP] != NULL)
+            return LEGOACT_COMBOJUMP;
+        if (LEGOACT_JUMP2 != -1 && object->apiobj.character_model->model_data_b[LEGOACT_JUMP2] != NULL)
+            return LEGOACT_JUMP2;
+    } else if (object->field_0x7aa == 4) {
+        if (LEGOACT_FLIP != -1 && object->apiobj.character_model->model_data_b[LEGOACT_FLIP] != NULL)
+            return LEGOACT_FLIP;
+    }
+    return LEGOACT_JUMP;
+}
+i32 (*BigJump_JumpActionFn)(GameObject_s *) = BigJump_JumpAction_Default;
+
+static i32 BigJump_LandAction_Default(GameObject_s *object) {
+    switch (object->field_0x7aa) {
+        case 0:
+            if (LEGOACT_COMBOLAND != -1 && object->apiobj.character_model->model_data_b[LEGOACT_COMBOLAND] != NULL)
+                return LEGOACT_COMBOLAND;
+            break;
+        case 2:
+        case 3:
+            if (LEGOACT_LAND3 != -1 && object->apiobj.character_model->model_data_b[LEGOACT_LAND3] != NULL)
+                return LEGOACT_LAND3;
+            break;
+        case 4:
+            if (LEGOACT_FLIPLAND != -1 && object->apiobj.character_model->model_data_b[LEGOACT_FLIPLAND] != NULL)
+                return LEGOACT_FLIPLAND;
+            return LEGOACT_LAND;
+        case 1:
+            return LEGOACT_LAND;
+        default:
+            return LEGOACT_LAND;
+    }
+    if (LEGOACT_LAND2 != -1 && object->apiobj.character_model->model_data_b[LEGOACT_LAND2] != NULL)
+        return LEGOACT_LAND2;
+    return LEGOACT_LAND;
+}
+i32 (*BigJump_LandActionFn)(GameObject_s *) = BigJump_LandAction_Default;
+
 void BigJumpCode(GameObject_s *object) {
     if (LEGOCONTEXT_BIGJUMP == -1 || object->character_context != LEGOCONTEXT_BIGJUMP)
         return;
@@ -252,7 +292,6 @@ i32 UseFallAnim(GameObject_s *object) {
 
 i32 LEGOCONTEXT_BIGJUMP = -1;
 i16 LEGOACT_COMBOJUMP = -1;
-extern i32 (*BigJump_JumpActionFn)(GameObject_s *);
 extern i16 id_YODA;
 void Player_ClearContext(GameObject_s *, i32);
 void Player_ResetContexts(PLAYERPACKET_s *);

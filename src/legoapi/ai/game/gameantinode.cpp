@@ -1,3 +1,4 @@
+#include "legoapi/ai/game/gameantinode.h"
 #include "legoapi/legoapi_types.h"
 #include "decomp.h"
 #include "globals.h"

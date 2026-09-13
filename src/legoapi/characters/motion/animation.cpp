@@ -148,11 +148,3 @@ void EvaluateJointOrientationMtx(nugscn_s *scene, i32 joint_index, numtx_s *matr
     matrix->m32 = -matrix->m32;
     NuMtxTransposeR(matrix, matrix);
 }
-
-void PlayAnim(nuinstanim_s *animation, float *playback, float speed, i32 backwards) {
-    animation->flags = static_cast<NUINSTANIM_FLAGS>(animation->flags | NUINSTANIM_FLAG_PLAYING);
-    if (speed >= 0.0f) {
-        *playback = SeekLinearF(*playback, backwards == 0 ? -1.0f : 1.0f, speed);
-    }
-    animation->tfactor = *playback * animation->fparam1;
-}

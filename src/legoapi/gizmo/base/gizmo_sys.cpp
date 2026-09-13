@@ -99,13 +99,6 @@ void LoadGizmoSys(GIZMOSYS_s *gizmo_sys, void *world, char *config_file) {
         gizmo_sys->flags &= ~GIZMOSYS_FLAG_LOADING;
     }
 }
-static u32 gizmoblowupnametable[256];
-static i32 gizmoblowupnametable_numids;
-
-void GizmoBlowupResetNameTable(void) {
-    gizmoblowupnametable_numids = 0;
-    memset(gizmoblowupnametable, 0, sizeof(gizmoblowupnametable));
-}
 void Hub_LoadAndFixUpMiniKits(WORLDINFO *world, VARIPTR *buf, VARIPTR *buf_end) {
     (void)world;
     (void)buf;

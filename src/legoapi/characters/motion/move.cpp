@@ -4818,47 +4818,6 @@ static __used__ void AtatPart_Stop(PART_s *) {
 static __used__ void AtatPart_Update(PART_s *) {
 }
 
-extern i16 LEGOACT_COMBOJUMP;
-static i32 BigJump_JumpAction_Default(GameObject_s *object) {
-    if (object->field_0x7aa == 0) {
-        if (LEGOACT_COMBOJUMP != -1 && object->apiobj.character_model->model_data_b[LEGOACT_COMBOJUMP] != NULL)
-            return LEGOACT_COMBOJUMP;
-        if (LEGOACT_JUMP2 != -1 && object->apiobj.character_model->model_data_b[LEGOACT_JUMP2] != NULL)
-            return LEGOACT_JUMP2;
-    } else if (object->field_0x7aa == 4) {
-        if (LEGOACT_FLIP != -1 && object->apiobj.character_model->model_data_b[LEGOACT_FLIP] != NULL)
-            return LEGOACT_FLIP;
-    }
-    return LEGOACT_JUMP;
-}
-i32 (*BigJump_JumpActionFn)(GameObject_s *) = BigJump_JumpAction_Default;
-
-static i32 BigJump_LandAction_Default(GameObject_s *object) {
-    switch (object->field_0x7aa) {
-        case 0:
-            if (LEGOACT_COMBOLAND != -1 && object->apiobj.character_model->model_data_b[LEGOACT_COMBOLAND] != NULL)
-                return LEGOACT_COMBOLAND;
-            break;
-        case 2:
-        case 3:
-            if (LEGOACT_LAND3 != -1 && object->apiobj.character_model->model_data_b[LEGOACT_LAND3] != NULL)
-                return LEGOACT_LAND3;
-            break;
-        case 4:
-            if (LEGOACT_FLIPLAND != -1 && object->apiobj.character_model->model_data_b[LEGOACT_FLIPLAND] != NULL)
-                return LEGOACT_FLIPLAND;
-            return LEGOACT_LAND;
-        case 1:
-            return LEGOACT_LAND;
-        default:
-            return LEGOACT_LAND;
-    }
-    if (LEGOACT_LAND2 != -1 && object->apiobj.character_model->model_data_b[LEGOACT_LAND2] != NULL)
-        return LEGOACT_LAND2;
-    return LEGOACT_LAND;
-}
-i32 (*BigJump_LandActionFn)(GameObject_s *) = BigJump_LandAction_Default;
-
 i32 show_autojump_hint;
 
 i32 Slam_Start(GameObject_s *object, f32 speed) {
@@ -5413,53 +5372,6 @@ void StartFlatten(GameObject_s *source, GameObject_s *target) {
     data = static_cast<GAMECHARACTERDATA *>(target->apiobj.character_data->field11_0x24);
     GameAudio_PlaySfxById(data->sfx_hurt, &target->apiobj.collision_position, 0, 0);
     NewBuzz(target->pad_gamepad->pad, 0.1f, 0);
-}
-
-GAMEANTINODE_s *GameAntinode_RegisterAntiNodeUsingData(GAMEANTINODESYS_s *, NUVEC *, u16, GAMEANTINODEDATA_s *, f32,
-                                                       i32);
-
-void UpdateMidPos(GIZMOBLOWUP_s *blowup) {
-    if ((blowup->draw_flags & 0x1000) != 0) {
-        blowup->mid_position = blowup->position;
-        if (blowup->anti_node != NULL) {
-            blowup->state_flags &= ~1;
-            return;
-        }
-    }
-    nuhspecial_s *special = blowup->override_special;
-    if (special == NULL || !NuSpecialExistsFn(special)) {
-        special = &blowup->type->animated_special;
-    }
-    NUVEC minimum;
-    NUVEC maximum;
-    NuSpecialGetBounds(special, &minimum, &maximum);
-    NUVEC corners[8] = {
-        {minimum.x, minimum.y, minimum.z}, {maximum.x, minimum.y, minimum.z}, {maximum.x, minimum.y, maximum.z},
-        {minimum.x, minimum.y, maximum.z}, {minimum.x, maximum.y, minimum.z}, {maximum.x, maximum.y, minimum.z},
-        {maximum.x, maximum.y, maximum.z}, {minimum.x, maximum.y, maximum.z},
-    };
-    NuVecMtxTransformVU0(&minimum, &minimum, &blowup->transform);
-    NuVecMtxTransformVU0(&maximum, &maximum, &blowup->transform);
-    for (i32 i = 0; i < 8; ++i) {
-        NuVecMtxTransformVU0(&corners[i], &corners[i], &blowup->transform);
-    }
-    if ((blowup->draw_flags & 0x1000) == 0) {
-        blowup->mid_position.x = (maximum.x - minimum.x) * 0.5f + minimum.x;
-        blowup->mid_position.y = (maximum.y - minimum.y) * 0.5f + minimum.y;
-        blowup->mid_position.z = (maximum.z - minimum.z) * 0.5f + minimum.z;
-    }
-    if (blowup->anti_node == NULL && (blowup->visibility_flags & 0x40) != 0) {
-        blowup->anti_node = GameAntinode_RegisterAntiNodeUsingData(
-            WORLD->game_antinode_sys, &blowup->mid_position, blowup->field_0xf4 + blowup->field_0xf2,
-            &blowup->type->anti_node_data, 0.0f, blowup->draw_flags & 0x4000);
-    }
-    if ((blowup->draw_flags & 0x1000) == 0) {
-        f32 x = maximum.x - blowup->mid_position.x;
-        f32 y = maximum.y - blowup->mid_position.y;
-        f32 z = maximum.z - blowup->mid_position.z;
-        blowup->target_scale = NuFsqrt(x * x + y * y + z * z);
-    }
-    blowup->state_flags &= ~1;
 }
 
 void Hang_MoveCode(GameObject_s *) {
