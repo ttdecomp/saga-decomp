@@ -121,6 +121,18 @@ i32 GizTimer_Load(void *world_info, void *) {
     return 0;
 }
 
+GIZMO *createGizTimer(void *, float time, i32 random_time, char *name) {
+    WORLDINFO *world = WorldInfo_CurrentlyLoading();
+    if (world == NULL || world->giz_timers == NULL || world->giz_timers_count == world->current_level->max_giz_timers)
+        return NULL;
+    GIZTIMER *timer = &world->giz_timers[world->giz_timers_count];
+    timer->start_time = time;
+    timer->random_time = random_time;
+    NuStrNCpy(timer->name, name, sizeof(timer->name));
+    ++world->giz_timers_count;
+    return AddGizmo(world->gizmo_sys, giztimer_gizmotype_id, NULL, timer);
+}
+
 ADDGIZMOTYPE *GizTimer_RegisterGizmo(i32 type_id) {
     static ADDGIZMOTYPE addtype;
 

@@ -5,6 +5,7 @@
 #include "legoapi/core/config/cheat.h"
 #include "legogame/game.h"
 #include "legoapi/characters/motion.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 
 #include <string.h>
 
@@ -32,7 +33,6 @@ extern "C" {
 }
 void ResetShadowMapRenderingFn(void);
 void EnableShadowMapRenderingFn(void);
-extern i32 (*GizBuildIt_CanStartBuildingFn)(GIZBUILDIT_s *, GameObject_s *);
 extern BOLTTYPE_s GlobalBoltType[44];
 void AlertSurroundingCreatures(GameObject_s *, NUVEC *);
 void Bolt_Debris_LSW(BOLT_s *, NUVEC *, i32, NUVEC *, i32);
@@ -48,7 +48,6 @@ static BOLTSYS BoltSys_LSW = {GlobalBoltType,
                               GetShootDirection_LSW,
                               Bolt_HitPart_LSW,
                               Bolt_AlternateFire_LSW};
-extern void (*GizBuildIt_FinishFn)(GIZBUILDIT_s *);
 extern i16 tALLEXTRASUNLOCKED;
 extern i32 LEGOCONTEXT_BUCK;
 extern i16 LEGOACT_BUCK;
@@ -73,7 +72,6 @@ static f32 Hint_AlphaTarget() {
     return 1.0f;
 }
 
-extern i32 (*GizBuildit_AutoBuildPosFn)(void *, NUVEC *, NUVEC *, u16 *);
 static i32 GizBuildit_AutoBuildPos_Game(void *context, NUVEC *position, NUVEC *result, u16 *angle) {
     WORLDINFO_s *world = static_cast<WORLDINFO_s *>(context);
     if (world == NULL)

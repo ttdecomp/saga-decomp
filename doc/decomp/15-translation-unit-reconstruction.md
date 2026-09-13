@@ -307,3 +307,52 @@ cross-TU declarations instead of scattered local `extern` declarations.
   44.5722%. Target and WASM builds, symbol coverage, checks, and 120-frame Map
   smoke pass. The remaining small Load/Reset body-score declines need ordinary
   source-level investigation.
+- Original `gizrandom.cpp` has one short text run containing the callback set,
+  `createGizRandom`, and `GizRandom_RegisterGizmo`, plus the registration-local
+  static and one initializer. `createGizRandom` was stranded in a default
+  `-O0` file with unrelated random functions, while the callback owner is
+  `-O3`. Moving only that function into the callback owner and dropping unused
+  heavy includes from the residual file leaves one initializer instead of
+  two. `createGizRandom` improves from 13.96% to 99.98%; whole-binary fuzzy
+  matching rises 44.5722% to 44.5783%, with no regressed or lost exact
+  functions. The sole remaining initializer scores 99.35%.
+- Original `gizbuildit.cpp` has one long text run across three current `-O3`
+  files, with `CalcAveragePosAndRad` between BuildIt functions in that run.
+  That function was in default `-O0` `misc/utilities.cpp`; moving it to the
+  BuildIt owner and declaring it in the BuildIt header changed no function
+  scores. The three source bodies were then consolidated in the singular
+  `gizmo/object/gizbuildit.cpp` owner at `-O3`, leaving one 281-byte
+  `_GLOBAL__sub_I_gizbuildit.cpp` at 99.40% rather than three separate
+  initializers. `LEGOCONTEXT_BUILDIT` remains in a minimal separate file:
+  its original word is in the `LEGOCONTEXT_*` data table, not BuildIt's own
+  adjacent gizmo-ID/debounce/wobble-height data. Across the merge, fuzzy
+  matching moves 44.5784% to 44.5785%, six functions improve and two decline
+  slightly (`ReleaseBuildIt` 99.66% to 99.19%, `SetToStart` 59.63% to
+  59.54%); no exact function is lost. Target build, four checks, and 120-frame
+  Map smoke pass. The context-table owner and body-codegen differences remain
+  to be reconstructed.
+- Original `gizspecial.cpp` combines the callback run, `createGizSpecial`,
+  `GizSpecial_GetName`, and `GizSpecial_FindByName`. Moving those three
+  functions from the unrelated-helper file into the `-O3` owner and replacing
+  its guessed prefix pointer with the original five-byte `qaz_` array makes
+  `createGizSpecial` exact (99.80% to 100%). The first measured move raises
+  whole-binary fuzzy matching 44.5783% to 44.5784%, improves three functions,
+  and loses no exacts. Narrowing the residual file's includes removes its
+  duplicate initializer; the original has one. The empty `FindByName` body is
+  still unresolved and requires real implementation, not a TU-layout trick.
+- Original `giztimers.cpp` has one contiguous callback-to-registration run,
+  including `createGizTimer` immediately after Load. Moving that already-exact
+  creator from the separate `gizmo/object/giztimers.cpp` file into the `-O3`
+  trigger owner, then renaming that owner to the original plural basename,
+  preserves its exact match and restores the sole 93-byte initializer to
+  99.35%. Whole-binary fuzzy matching is neutral across the complete move and
+  rename; the temporary 0% initializer after the move confirms why the
+  basename correction must be measured as part of the same unit.
+- Original `nuvertexformat_android.cpp` has one large
+  `NuGetVertexDeclaration` body and a file-local vertex-format pool/count.
+  Its current default `-O0` body has a frame/local layout unlike the original
+  optimized, stack-aligned descriptor loop. A controlled per-TU comparison
+  raises this function from 9.62% at `-O0` to 23.00% at `-O2` and 36.79% at
+  `-O3`; no other function score changes. The `-O3` setting is retained,
+  raising whole-binary fuzzy matching from 44.5785% to 44.5985%. The
+  remaining body mismatch must be addressed through real source/layout work.

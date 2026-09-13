@@ -12,7 +12,7 @@
 
 i32 gizspecial_gizmotype_id = -1;
 
-static char *gizSpec_prefix = "Spec_";
+static char gizSpec_prefix[] = "qaz_";
 
 static const i32 GIZSPECIAL_PROGRESS_WORD_COUNT = 8;
 
@@ -262,6 +262,38 @@ void *GizSpecial_ReserveBuffer(void *world_ptr) {
     }
 
     return world->giz_special_sys;
+}
+
+GIZMO *createGizSpecial(void *, char *name) {
+    WORLDINFO *world = WorldInfo_CurrentlyLoading();
+    if (world == NULL || name == NULL)
+        return NULL;
+    nuhspecial_s scene_special;
+    char gizmo_name[32];
+    NuSpecialFind(world->current_gscn, &scene_special, name, 0);
+    NuStrCpy(gizmo_name, gizSpec_prefix);
+    NuStrNCat(gizmo_name, name, 32 - NuStrLen(gizSpec_prefix));
+    if (!NuSpecialExistsFn(&scene_special))
+        return NULL;
+    GIZMO *gizmo = GizmoFindByName(world->gizmo_sys, gizspecial_gizmotype_id, gizmo_name);
+    if (gizmo != NULL)
+        return gizmo;
+    GIZSPECIALSYS_s *system = world->giz_special_sys;
+    if (system->count >= world->current_level->max_giz_specials)
+        return NULL;
+    GIZSPECIAL_s *special = &system->specials[system->count];
+    GameAnimSet_AddObject(special->anim_set, &scene_special, 1.0f, 1000000000.0f, 0);
+    ++world->giz_special_sys->count;
+    NuStrCpy(special->name, gizSpec_prefix);
+    NuStrNCat(special->name, name, 32 - NuStrLen(gizSpec_prefix));
+    return AddGizmo(world->gizmo_sys, gizspecial_gizmotype_id, NULL, special);
+}
+
+char *GizSpecial_GetName(GIZSPECIAL_s *special) {
+    return special->name;
+}
+
+void GizSpecial_FindByName(char *, WORLDINFO_s *) {
 }
 
 ADDGIZMOTYPE *GizSpecial_RegisterGizmo(i32 type_id) {

@@ -13,6 +13,11 @@ extern float DIEAIRJUMPSPEED;
 
 // Character motion / animation / camera helpers (module legoapi/characters).
 void Move_BEAST(GameObject_s *object);
+void GameCam_Blend(GAMECAMERA_s *camera, f32 duration, f32 curve, i32 mode);
+void GameCam_Judder(GAMECAMERA_s *camera, f32 amount, i32 axis, NUVEC *source);
+void SetHeadTarget(GameObject_s *object, NUVEC *position, i8 priority, f32 time, f32 minimum_delay, f32 maximum_delay);
+void PushAway(NUVEC *position, f32 radius, NUVEC *minimum, NUVEC *maximum, GameObject_s *object,
+              GameObject_s *excluded, f32 strength, u32 flags);
 i32 SetObjTarget(GameObject_s *object, GameObject_s *target);
 i32 SetPartTarget(GameObject_s *object, PART_s *target);
 PART_s *TargetPart(GameObject_s *, NUVEC *, NUVEC *, f32, f32, i32, i32);

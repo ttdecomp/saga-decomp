@@ -152,12 +152,10 @@ build:target --per_file_copt=^src/legoapi/world/levels/hub\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/world/levels/lego_city\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/world/levels/episode\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_teleport\.cpp$@-O2
-build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_gizbuildits\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_gizactions\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_gizmopickups\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_spinner\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/object/gizbuildit\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmo/object/giztimers\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/object/gizminicut\.cpp$@-O2
 # Turret lookup and hint traversal use the same optimized leaf/loop forms as
 # the surrounding generated gizmo translation units.
@@ -182,7 +180,6 @@ build:target --per_file_copt=^src/legoapi/gizmos/traps/attractos\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/door/door\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/fx/edgizshadowmachine\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/traps/gizbombgen\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmos/object/gizbuildits\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/object/gizmoblowups\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/object/gizmopickups\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/traps/gizforce\.cpp$@-O3
@@ -194,7 +191,7 @@ build:target --per_file_copt=^src/legoapi/gizmos/transport/gizportal\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/trigger/gizrandom\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/trigger/gizspecial\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/object/gizspecial\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmos/trigger/giztimer\.cpp$@-O3
+build:target --per_file_copt=^src/legoapi/gizmos/trigger/giztimers\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/traps/giztorpmachine\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/traps/gizturret\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/transport/grapples\.cpp$@-O3
@@ -395,3 +392,7 @@ build:target --per_file_copt=^src/gameapi/edtools/edui\.c$@-O3
 
 # Traffic animation parsing and runtime loops use the optimized Android code shape.
 build:target --per_file_copt=^src/legoapi/items/objects/traffic\.cpp$@-O3
+
+# The original vertex declaration cache uses an optimized, stack-aligned
+# descriptor loop; its provisional default -O0 build does not reproduce it.
+build:target --per_file_copt=^src/nu2api/nu3d/android/nuvertexformat_android\.cpp$@-O3

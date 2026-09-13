@@ -40,6 +40,8 @@ i32 NoPad(i32 port, i32 require_game_input);
 void PadOutPause(i32 port, struct WORLDINFO_s *world);
 void NewRumble(nupad_s *pad, f32 strength, i32 mode);
 void NewBuzz(nupad_s *pad, f32 duration, i32 mode);
+void NewBuzzFrames(nupad_s *pad, i32 frames, i32 mode);
+void NewRumbleAllPlayers(f32 strength, f32 duration, i32 frames, i32 player_index);
 
 extern "C" i32 Controller_IsConnected();
 extern "C" bool TestForController();
