@@ -4992,8 +4992,6 @@ extern "C" {
     void NuGCutSetCutAudioStream(i32 stream) {
         NuGCutAudioStream = stream;
     }
-    void NuGSceneSetCrossFade(void) {
-    }
     void NuGHGRelocate(void) {
     }
 

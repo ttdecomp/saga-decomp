@@ -659,3 +659,48 @@ reverted. Its own 42.33% score did not change, two unrelated functions lost
 tiny fractions of a point, and the mixed-family address run did not supply
 independent TU evidence. The render owner stays in place pending stronger
 evidence or body reconstruction.
+
+### Android graphics-scene platform unit
+
+The original `nugscn_android.c` has a contiguous ordinary-text run from
+`NuIOSBindVAO` at `0x002fd760` through `NuGSceneProcessCrossFade` at
+`0x002fefbd`. Its local-symbol block contains the file-static
+`NuIOSBindVAO`, `UploadDataToGLBuffer`, and `PreWarmGeomsAndBakeVAOs`; the
+upload and fixup bodies also embed the full original Android source path in
+their critical-section calls. These independent clues make the platform TU
+owner substantially more certain than name affinity alone. The `.c` suffix
+does not imply that the reconstructed file should be compiled as C: several
+symbols in the run have C++ linkage.
+
+The unchanged bind/upload/prewarm/fixup bodies were moved out of the render
+catch-all into `android/nugscn_android.cpp`. `NuGScnReadTexturesPS`,
+`NuGScnCreatePS`, and `NuGScnDestroyPS` moved from the generic `nugscn.cpp`
+owner; `NuGScnRndr3` came from render, and `NuGScnFixupTIDsPS` and
+`NuGScnRestoreTIDsPS` from `nurndr_plain.cpp`. The file's definition order
+now follows their original address order, including the two existing small
+platform stubs. Declarations needed by other units are in the Android scene,
+scene, and iOS display-list owner headers, rather than new source-local
+link-time `extern` declarations. `NuReadGraphicsData` remains in render: its
+original local block belongs to the preceding `nu3d_includes.cpp` unit.
+
+The measured whole-binary fuzzy match rises from 44.6322% to 44.6873%
+(about +0.0551 percentage points), with three additional exact functions and none
+lost. `NuIOSBindVAO` and `NuGScnRndr3` become exact; upload, texture-ID,
+prewarm, and fixup routines make large non-exact gains. Five unrelated render
+or hub functions move down by at most 0.20 percentage points; these small
+layout-sensitive changes are recorded, not treated as evidence that the
+platform ownership is wrong. Reordering the two existing platform stubs to
+their original positions changes no function score.
+
+This is still an incomplete reconstruction. `NuGSceneSetCrossFade` was moved
+unchanged from `nucore_plain.cpp` into the evidenced Android owner, immediately
+before its two crossfade neighbors. It has no call sites in the original
+executable or current tree. Its original 24-byte body accesses the second and
+third stack arguments, but the current stub has an incorrect no-argument
+signature. The exact source types and semantics cannot be established from
+those instructions alone; no dummy argument code is added for score. The
+owner move lowers this unfinished stub from 46.67% to 31.11%, reducing the
+whole-binary fuzzy score by about 0.0001 percentage points without losing an
+exact match. `NuGScnDestroyPS` is likewise an empty body versus a
+substantial original function. Ownership gains for these symbols should not
+be mistaken for body matching.
