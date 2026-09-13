@@ -17,7 +17,6 @@
 // `render_buffer` toggle drive the per-frame visibility updates.
 
 #include "nu2api/nu3d/nudlist.h"
-#include "nu2api/nu3d/android/nuptl_android.h"
 
 #include "decomp.h"
 #include "nu2api/nu3d/nutex.h"
@@ -100,80 +99,6 @@ extern "C" void NuDisplayListCaptureEnd(void) {
 // Dispatch tables
 // ──────────────────────────────────────────────────────────────────────────────
 
-void NuIOSDLMtlCallback(void *);
-void NuIOSDLGeomCallback(void *);
-void NuIOSDLTransformCallback(void *);
-void NuIOSDLTransformParamsCallback(void *);
-void NuIOSDLFaceOnCallback(void *);
-void NuIOSDLFaceOnTransformCallback(void *);
-void NuIOSDLGeom2DCallback(void *);
-void NuIOSDLLightsCallback(void *);
-void NuIOSDLSkinMtxCallback(void *);
-void NuIOSDLCameraCallback(void *);
-void NuIOSDLKonstCallback(void *);
-void NuIOSDLFogCallback(void *);
-void NuIOSDLVertexGroupsCallback(void *);
-void NuIOSDLVertexOffsetsCallback(void *);
-void NuIOSDLReflectionCallback(void *);
-void NuIOSDLLightmapOld(void *);
-void NuIOSDLLightmapOffsetOld(void *);
-void NuIOSDLLightmap(void *);
-void NuIOSDLDeferredMtlCallback(void *);
-void NuIOSDLDeferredTransformCallback(void *);
-void NuIOSDLDeferredTransformParamsCallback(void *);
-
-// Primary table — __ItemFnTable @0x625ae0 (sparse, indexed by absolute type).
-nudl_handler_fn g_nudl_dispatch_table[0x100] = {nullptr};
-static nudl_handler_fn s_shadow_table_storage[0x100] = {nullptr};
-static const nudl_handler_fn *s_shadow_table = s_shadow_table_storage;
-
-struct NudlTableInit {
-    NudlTableInit() {
-        auto *t = g_nudl_dispatch_table;
-        auto *s = s_shadow_table_storage;
-        t[0x80] = NuIOSDLMtlCallback;
-        t[0x82] = NuIOSDLGeomCallback;
-        t[0x83] = NuIOSDLTransformCallback;
-        t[0x8b] = NuIOSDLGeomCallback;
-        t[0x8c] = NuIOSDLTransformParamsCallback;
-        t[0x8f] = NuIOSDLFaceOnCallback;
-        t[0x90] = NuIOSDLFaceOnTransformCallback;
-        t[0x93] = NuIOSDLGeom2DCallback;
-        t[0x94] = NuIOSDLLightsCallback;
-        t[0x98] = NuIOSDLGeomCallback;
-        t[0x99] = NuIOSDLSkinMtxCallback;
-        t[0x9a] = NuIOSDLCameraCallback;
-        t[0xa5] = NuIOSDLKonstCallback;
-        t[0xa6] = NuIOSDLFogCallback;
-        t[0xa7] = NuIOSDLDebrisCallback;
-        t[0xa9] = NuIOSDLVertexGroupsCallback;
-        t[0xaa] = NuIOSDLVertexOffsetsCallback;
-        t[0xab] = NuIOSDLReflectionCallback;
-        t[0xae] = NuIOSDLLightmapOld;
-        t[0xaf] = NuIOSDLLightmapOffsetOld;
-        t[0xb0] = NuIOSDLLightmap;
-
-        s[0x80] = NuIOSDLDeferredMtlCallback;
-        s[0x82] = NuIOSDLGeomCallback;
-        s[0x83] = NuIOSDLDeferredTransformCallback;
-        s[0x8b] = NuIOSDLGeomCallback;
-        s[0x8c] = NuIOSDLDeferredTransformParamsCallback;
-        s[0x98] = NuIOSDLGeomCallback;
-        s[0x99] = NuIOSDLSkinMtxCallback;
-        s[0xa9] = NuIOSDLVertexGroupsCallback;
-        s[0xaa] = NuIOSDLVertexOffsetsCallback;
-    }
-};
-static NudlTableInit s_nudl_table_init;
-
-// CurrentItemTable @0x625c84 — points at entry for type 0x80.
-static const nudl_handler_fn *s_current_table = nullptr;
-struct NudlCurrentTableInit {
-    NudlCurrentTableInit() {
-        s_current_table = &g_nudl_dispatch_table[0x80];
-    }
-};
-static NudlCurrentTableInit s_nudl_current_init;
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Item helpers
@@ -194,11 +119,6 @@ static nudisplaylistitem_s *AddCallItem(nudisplaylist_s *list, u8 type, void *ne
     item->next = next;
     list->items = reinterpret_cast<nudisplaylistitem_s *>(reinterpret_cast<u8 *>(list->items) + kItemSize);
     return reinterpret_cast<nudisplaylistitem_s *>(reinterpret_cast<u8 *>(list->items) - kItemSize);
-}
-
-extern "C" void NuDisplayListResetBuffer(void) {
-    display_list_buffer = reinterpret_cast<VARIPTR *>(&rndrstream_free);
-    display_list_buffer_end = reinterpret_cast<VARIPTR *>(rndrstream_end.addr);
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -223,27 +143,6 @@ extern "C" void NuDisplayListExecute(nudisplaylistitem_s *item, const nudl_handl
         }
         item = static_cast<nudisplaylistitem_s *>(item->next);
     }
-}
-
-extern "C" void NuDisplayListDrawItems(nudisplaylistitem_s *items) {
-    NuDisplayListExecute(items, s_current_table);
-}
-
-extern "C" void NuDisplayListSetItemTable(i32 which) {
-    if (which == 0) {
-        s_current_table = &g_nudl_dispatch_table[0x80];
-    } else if (which == 1) {
-        s_current_table = &s_shadow_table[0x80];
-    }
-}
-
-extern "C" void DisplayListSetAlphaPS(nudisplaylistitem_s *prev_item, nudisplaylistitem_s *item, f32 alpha) {
-    if (alpha < 0.0f)
-        alpha = 0.0f;
-    if (alpha > 1.0f)
-        alpha = 1.0f;
-    *reinterpret_cast<f32 *>(reinterpret_cast<u8 *>(prev_item->next) + 0x3c) = alpha;
-    (void)item; // second param kept for original signature parity
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -1315,7 +1214,6 @@ void NuDisplayListEndScene(void) {
 
 extern "C" void *DisplayListCreateFaceonTransformPS(VARIPTR *, NUMTX *, NUMTL *, void *);
 extern "C" void *DisplayListCreateGeomTransformPS(VARIPTR *, NUMTX *, NUMTL *, void *, void *);
-extern "C" void *NuDisplayListPrepareFaceonPS(VARIPTR *, void *, NUMTX *);
 
 extern "C" void NuDisplayListBurstRndrSpecial(nuhspecial_s *handle, u32 count, NUMTX *matrices, i32 clip) {
     u16 visible[1024];

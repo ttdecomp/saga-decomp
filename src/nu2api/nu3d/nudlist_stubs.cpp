@@ -1,8 +1,5 @@
 #include "nu2api/nu3d/nudlist.h"
 
-extern "C" void NuDisplayListCheckBuffer(void) {
-}
-
 extern "C" void DisplayListSwapBuffersPS(void) {
 }
 

@@ -13,10 +13,7 @@
 //   2. Primitive drawing helpers that call the immediate-mode API in
 //      android/nuprim_android.c, including quad expansion there.
 //
-//   3. Frame present   — NuRndrSwapScreen / NuRndrSwapScreenEx.  Flushes
-//      debris, swaps the display-list and stream buffers, kicks the render
-//      thread, then paces the game thread until the application status
-//      leaves the "running" state (or the host render fence completes).
+//   3. Frame present   — moved to the original android/nurndr_android.c TU.
 //
 // All other entry points from the original TU are retained as link stubs
 // until their subsystems are transcribed.  Their signatures are not yet
@@ -80,8 +77,6 @@ extern "C" {
 
 // Swap/present pacing flags (original BSS).
 volatile bool g_isBlockedInSwapScreen = false;
-extern i32 rndr_blend_shape_deformer_wt_cnt;
-extern i32 rndr_blend_shape_deformer_wt_ptrs_cnt;
 
 // ---------------------------------------------------------------------------
 // Immediate-mode 2D stream state
@@ -108,18 +103,6 @@ extern "C" {
     VARIPTR *NuDisplayListLinkItems(nudisplaylist_s *list, i32 count);
 }
 
-void NuDebrisRendererFlushBuffers(void);
-
-extern "C" {
-    void NuRndrSwapStreamBuffers(void);
-    void NuRenderThreadPrepareRender(void);
-    void NuRenderThreadStartRender(void);
-    void NuShaderManagerBindShader(NUSHADEROBJECT *shader);
-    void NuDisplayListCheckBuffer(void);
-    void NuDisplayListResetBuffer(void);
-    void NuRenderThreadLock(void);
-    void NuRenderThreadUnlock(void);
-}
 
 // ---------------------------------------------------------------------------
 // Immediate-mode 2D API
@@ -197,51 +180,6 @@ extern "C" void NuRndrEndScene(void) {
 
 extern "C" void NuRndrEndSceneEx(i32) {
     NuRndrEndScene();
-}
-
-// ---------------------------------------------------------------------------
-// Frame present / swap
-// ---------------------------------------------------------------------------
-
-// Original 0x2967db — swap display-list and stream buffers, kick the render
-// thread, then pace the game thread until the app leaves the running state.
-extern "C" SAGA_HOST_WEAK i32 NuRndrSwapScreen(i32 /*mode*/) {
-    NuRenderThreadLock();
-    rndr_blend_shape_deformer_wt_cnt = 0x3f00;
-    rndr_blend_shape_deformer_wt_ptrs_cnt = 0x800;
-    NuRenderThreadPrepareRender();
-    NuShaderManagerBindShader(0);
-    NuDebrisRendererFlushBuffers();
-    NuDisplayListSwapBuffersEndFrame();
-    NuRndrSwapStreamBuffers();
-    NuDisplayListSwapBuffersBeginFrame();
-    NuDisplayListCheckBuffer();
-    NuDisplayListResetBuffer();
-    NuRenderThreadUnlock();
-    NuRenderThreadStartRender();
-
-    // Status 1 suspends presentation until the lifecycle makes the app active.
-    // On Android this is released by the activity lifecycle
-    // (nativeSetSurface / nativeOnPause flip NUAPPLICATIONSTATUS).
-    for (;;) {
-        NuApplicationState *state = NuCore::GetApplicationState();
-        if (state->GetStatus() != 1) {
-            break;
-        }
-        g_isBlockedInSwapScreen = 1;
-        NuThreadSleep(1);
-    }
-    g_isBlockedInSwapScreen = 0;
-
-    return 1;
-}
-
-// Original 0x296888
-extern "C" i32 NuRndrSwapScreenEx(i32 mode, void (*callback)(void)) {
-    if (callback != nullptr) {
-        callback();
-    }
-    return NuRndrSwapScreen(mode);
 }
 
 // ---------------------------------------------------------------------------

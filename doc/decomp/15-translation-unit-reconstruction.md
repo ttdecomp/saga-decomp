@@ -1588,6 +1588,60 @@ reconstruction. Target/WASM/native builds, all three lint modes, all
 four repository checks, 13,425/13,425 symbol coverage, and a rebuilt
 120-frame Map/Cantina smoke pass on this source.
 
+The next low-scoring contiguous run in that owner is
+`NuDisplayListLinkItem` at `0x29ad12`, `NuDisplayListLinkItemVP` at
+`0x29ad5b`, and `NuDisplayListLinkItems` at `0x29ae31`. Their old
+`nucore_plain.cpp` `-O3` definitions wrote item IDs directly and used
+a differently named local setter; the original unoptimized Android TU
+calls its own static CALL/NEXT/SetNext helpers and `GetBuffer`. Moving
+the three together preserves that real call graph. The existing
+`nudlist.h` static `GetBuffer` emits the required per-TU copy naturally;
+no duplicate definition or forced emission is needed.
+
+All three now match exactly: 16.26%, 8.64%, and 32.13% respectively
+become 100%. The isolated whole-binary score rises 45.0953% to
+45.1028%, with exactly three improvements, three new exact matches,
+and no regressions. Target/WASM/native builds, three lint modes, four
+checks, and 13,425/13,425 symbol coverage pass. The rebuilt Cantina
+smoke hit the documented original trig UBSan failure on its first
+attempt, then passed 120 frames on its second; the flake remains
+visible rather than suppressed.
+
+`DisplayListSetAlphaPS` at `0x29b8c0` is another body in the same
+original Android TU. Its original 92-byte code clamps alpha to [0, 1]
+with ordered comparisons, leaving NaN unchanged, and stores it in the
+previous item's matrix `m33`. Moving the source-level operation from
+`nudlist.cpp` to this `-O0` owner raises the body score from 13.04% to
+99.85%; the remaining four objdiff differences are constant GOT
+displacements. The isolated whole-binary score rises 45.1028% to
+45.1045% with no other changed function scores. Target/WASM/native
+builds, three lint modes, four checks, complete symbol coverage, and a
+rebuilt 120-healthy-frame Map smoke pass.
+
+The next lower-scoring body, `NuDisplayListPrepareFaceonPS` at
+`0x29b797`, is a 19-byte original function that returns its face-on
+argument after assigning it to a stack local. Moving the natural
+source-level operation to the same `-O0` TU raises its score from
+1.75% to 99.25%, with one remaining load-address instruction
+difference. An otherwise unused local solely to match that instruction
+was not added. The whole-binary score rises 45.1045% to 45.1049%, with
+no other score changes. A real `nudlist.h` declaration replaces the
+source-local declaration; target/WASM/native builds, all lint modes,
+four checks, full symbol coverage, and the rebuilt 120-frame Map smoke
+pass.
+
+The same original display-list block has a local
+`NuDisplayListResetBuffer` at `0x29aa49`, called by its
+`NuDisplayListInit` at `0x29ab93`; a distinct local copy at `0x295fa9`
+is called by `NuRndrSwapScreen` at `0x2967db` in original
+`nurndr_android.c`. There is no original
+exported ResetBuffer symbol. Today one public definition in
+`nudlist.cpp` serves both displaced callers. Restoring this boundary
+requires moving each caller with its own naturally emitted local copy
+before deleting that public definition; an exported alias would only
+hide the incorrect call graph. This is a later two-TU unit, not folded
+into the already-exact link triplet.
+
 ### Primitive Android begin cluster
 
 The next original local block identifies `nuprim_android.c`. Its text run
@@ -1645,3 +1699,104 @@ then hit the previously documented original trig-table UBSan failure;
 the third reached 120 healthy frames. This is a flaky smoke result,
 not a clean pass. The original behavior is deliberately preserved for
 matching, as requested by the user; no sanitizer suppression was added.
+
+The original display-list bootstrap has its own local `NuDisplayListResetBuffer`
+at `0x29aa49`; `NuDisplayListInit` at `0x29ab93` calls that copy directly.
+The separate renderer copy at `0x295fa9` remains to be reconstructed with
+`NuRndrSwapScreen`. Moving the initializer from `nucore_plain.cpp` into the
+original O0 `nudlist_android.c` restores this ownership without an alias or
+forced symbol. The original `NuInitHardware` call passes the stream end by
+value, so `NuDisplayListInit` now takes `VARIPTR` rather than a pointer to it;
+the initializer uses the recovered manager fields and a real header
+declaration. The existing global reset helper stays temporarily for the
+renderer caller until that second TU is moved.
+
+Against `/tmp/nudlist_faceon_final.json`, the staged report rises from
+45.104927% to 45.106697% fuzzy matching. `NuDisplayListInit` rises from
+49.565216% to an exact 100% at the original 90-byte size; the only other
+whole-report change is a negligible improvement in `NuInitHardware`, with no
+function regressions. Target/WASM/native builds, all three lint modes, four
+repository checks, and 13,425/13,425 original text-symbol coverage pass.
+The rebuilt 120-frame Map/Cantina fixture smoke passed on this attempt; the
+previously documented original movement/trig sanitizer flake remains possible.
+
+The renderer owns a second, separate local `NuDisplayListResetBuffer` at
+`0x295fa9`, followed by a local empty `NuDisplayListCheckBuffer` at
+`0x295fd7`. Original `NuRndrSwapScreen` calls both directly, while its
+`NuRndrSwapScreenEx` wrapper immediately follows it. These two exported
+functions and their private helpers now live together in the original O0
+`nurndr_android.c` unit; its real C++ dependencies require compiling the
+`.c`-named file as C++ while keeping the existing C ABI on its exports.
+After the move, the temporary global reset implementation and separate
+host-only check stub were removed. The build has exactly two local reset
+copies and no global reset, matching the original symbol boundary. The
+existing host weak behavior of `NuRndrSwapScreen` was retained; no new
+attribute, alias, or forced-emission helper was introduced.
+
+Against `/tmp/nudlist_init_stage1_final.json`, fuzzy matching rises from
+45.106697% to 45.109860%. `NuRndrSwapScreen` improves from 46.97619% to
+an exact 100% at the original 173-byte size, and `NuRndrSwapScreenEx`
+from 54.294117% to an exact 100% at 48 bytes. No other function score
+changed. Both private reset copies are 48 bytes in the current build
+versus 46 in the original due to ordinary expression code generation;
+their source behavior is preserved. Target/WASM/native builds, all three
+lint modes, four repository checks, and 13,425/13,425 original text-symbol
+coverage pass. The rebuilt 120-frame Map/Cantina fixture smoke passed on
+this attempt; the original movement/trig sanitizer flake remains documented.
+
+### Static display-list dispatch tables
+
+The original `nudlist_android.c` owns a writable, file-local 49-entry
+`__ItemFnTable` at `0x625ae0`, a writable global 49-entry
+`__ShadowItemTable` at `0x625bc0`, and file-local `CurrentItemTable` at
+`0x625c84`. The latter is initialized to the primary table by a data
+relocation. These are indexed by item type minus `0x80`, as confirmed by
+`NuDisplayListExecute`. The prior implementation instead populated two
+256-entry arrays in BSS through C++ constructors and selected an interior
+pointer. The original table shapes and static initialization now live in
+the original O0 display-list unit alongside `NuDisplayListDrawItems` and
+`NuDisplayListSetItemTable`; the executor remains in its separate owner.
+A focused internal callback header declares the functions used by the
+tables and their definition units. The host-only item histogram no longer
+prints a handler pointer, removing its sole dependency on the non-original
+public 256-entry table.
+
+Against `/tmp/nurndr_reset_stage2_final.json`, fuzzy matching rises from
+45.109860% to 45.110252%. `NuDisplayListDrawItems` improves from 53.29% to
+83.24% and `NuDisplayListSetItemTable` from 49.89% to 54.33%, with no
+function regressions. The target ELF has local/global/local data symbols
+of 196/196/4 bytes, respectively; the current-table word has an
+`R_386_RELATIVE` relocation to the primary table base, and the two old
+table-constructor symbols are absent. Target/WASM/native builds, all three
+lint modes, four repository checks, and 13,425/13,425 original text-symbol
+coverage pass. The rebuilt Map fixture reached 120 healthy frames.
+
+A further ordinary source-shape trial changes `NuDisplayListSetItemTable`
+from two direct comparisons to a two-case `switch`, reflecting the
+original's single load/test/branch sequence. This raises that body from
+54.33% to 94.06% and the whole score from 45.110252% to 45.110740%,
+with no other function-score changes. The remaining `DrawItems` gap
+looks like an otherwise-unused O0 local copy of its argument; no
+speculative local was added merely to gain matching.
+
+### Scratch/clear Android owner
+
+The original `nuscratch_android.c` text run ends with `Nu360_dxClear` at
+`0x317070`; its optimized body is followed by the framebuffer functions
+in the next run. The clear-colour cache is a four-byte function-local
+BSS symbol, `_ZZ13Nu360_dxClearE10lastColour`, not the file-static state
+previously held by `nuposteffect_plain.cpp`. The clear wrapper and cache
+now live in `nuscratch_android.c` at target `-O2`, with the existing
+post-effect header as their real interface. The scratch allocator
+functions remain in `nucore_plain.cpp` for a later coordinated move.
+Their original bodies are EBP-framed and effectively unoptimized while
+the clear body is optimized; moving the five allocators wholesale into
+this `-O2` file could lower matching. This mixed-codegen boundary needs
+an ordinary source/toolchain explanation before claiming a complete TU,
+not a per-function optimization attribute added for the score.
+
+The isolated target report is unchanged at 45.110252%: the clear body
+remains 69.208954% and no other function score changes. The new owner
+does emit the original local cache symbol. Target/WASM/native builds,
+all three lint modes, four repository checks, complete 13,425/13,425
+symbol coverage, and a rebuilt 120-healthy-frame Map smoke pass.

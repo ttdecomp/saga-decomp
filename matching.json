@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 45.095284,
+    "fuzzy_match_percent": 45.11074,
     "total_code": "4722419",
-    "matched_code": "392643",
-    "matched_code_percent": 8.314446,
+    "matched_code": "393418",
+    "matched_code_percent": 8.330858,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4696,
-    "matched_functions_percent": 34.89115,
+    "matched_functions": 4703,
+    "matched_functions_percent": 34.94316,
     "total_units": 1
   },
   "text": {
@@ -86774,6 +86774,22 @@
           "match_percent": 100.0
         },
         {
+          "name": "NuDisplayListInit",
+          "demangled_name": "NuDisplayListInit",
+          "address": 2730899,
+          "offset": 1840931,
+          "size": 90,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuDisplayListDrawItems",
+          "demangled_name": "NuDisplayListDrawItems",
+          "address": 2730989,
+          "offset": 1841021,
+          "size": 53,
+          "match_percent": 83.23529
+        },
+        {
           "name": "NuDisplayListAddClut",
           "demangled_name": "NuDisplayListAddClut",
           "address": 2731057,
@@ -86812,6 +86828,54 @@
           "offset": 1841265,
           "size": 44,
           "match_percent": 100.0
+        },
+        {
+          "name": "NuDisplayListLinkItem",
+          "demangled_name": "NuDisplayListLinkItem",
+          "address": 2731282,
+          "offset": 1841314,
+          "size": 73,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuDisplayListLinkItemVP",
+          "demangled_name": "NuDisplayListLinkItemVP",
+          "address": 2731355,
+          "offset": 1841387,
+          "size": 214,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuDisplayListLinkItems",
+          "demangled_name": "NuDisplayListLinkItems",
+          "address": 2731569,
+          "offset": 1841601,
+          "size": 148,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuDisplayListPrepareFaceonPS",
+          "demangled_name": "NuDisplayListPrepareFaceonPS",
+          "address": 2733975,
+          "offset": 1844007,
+          "size": 19,
+          "match_percent": 99.25
+        },
+        {
+          "name": "NuDisplayListSetItemTable",
+          "demangled_name": "NuDisplayListSetItemTable",
+          "address": 2734214,
+          "offset": 1844246,
+          "size": 58,
+          "match_percent": 94.05556
+        },
+        {
+          "name": "DisplayListSetAlphaPS",
+          "demangled_name": "DisplayListSetAlphaPS",
+          "address": 2734272,
+          "offset": 1844304,
+          "size": 92,
+          "match_percent": 99.85185
         }
       ]
     },
@@ -87455,14 +87519,6 @@
           "offset": 1968224,
           "size": 1077,
           "match_percent": 4.141264
-        },
-        {
-          "name": "Nu360_dxClear",
-          "demangled_name": "Nu360_dxClear",
-          "address": 3240048,
-          "offset": 2350080,
-          "size": 275,
-          "match_percent": 69.208954
         }
       ]
     },
@@ -87899,6 +87955,22 @@
           "match_percent": 100.0
         },
         {
+          "name": "_GLOBAL__sub_I_nurndr_android.c",
+          "demangled_name": "_GLOBAL__sub_I_nurndr_android.c",
+          "address": 2711395,
+          "offset": 1821427,
+          "size": 29,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuDisplayListCheckBuffer",
+          "demangled_name": "NuDisplayListCheckBuffer",
+          "address": 2711511,
+          "offset": 1821543,
+          "size": 5,
+          "match_percent": 100.0
+        },
+        {
           "name": "FaceYDirStream",
           "demangled_name": "FaceYDirStream",
           "address": 2711516,
@@ -87912,6 +87984,22 @@
           "address": 2711521,
           "offset": 1821553,
           "size": 10,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuRndrSwapScreen",
+          "demangled_name": "NuRndrSwapScreen",
+          "address": 2713563,
+          "offset": 1823595,
+          "size": 173,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuRndrSwapScreenEx",
+          "demangled_name": "NuRndrSwapScreenEx",
+          "address": 2713736,
+          "offset": 1823768,
+          "size": 48,
           "match_percent": 100.0
         },
         {
@@ -87936,6 +88024,21 @@
           "offset": 1818313,
           "size": 5,
           "match_percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "nu2api/nu3d/android/nuscratch_android.c.o",
+      "source": "src/nu2api/nu3d/android/nuscratch_android.c",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nuscratch_android.o",
+      "functions": [
+        {
+          "name": "Nu360_dxClear",
+          "demangled_name": "Nu360_dxClear",
+          "address": 3240048,
+          "offset": 2350080,
+          "size": 275,
+          "match_percent": 69.208954
         }
       ]
     },
@@ -88768,30 +88871,6 @@
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nudlist.o",
       "functions": [
         {
-          "name": "NuDisplayListDrawItems",
-          "demangled_name": "NuDisplayListDrawItems",
-          "address": 2730989,
-          "offset": 1841021,
-          "size": 53,
-          "match_percent": 53.294117
-        },
-        {
-          "name": "NuDisplayListSetItemTable",
-          "demangled_name": "NuDisplayListSetItemTable",
-          "address": 2734214,
-          "offset": 1844246,
-          "size": 58,
-          "match_percent": 49.88889
-        },
-        {
-          "name": "DisplayListSetAlphaPS",
-          "demangled_name": "DisplayListSetAlphaPS",
-          "address": 2734272,
-          "offset": 1844304,
-          "size": 92,
-          "match_percent": 13.037037
-        },
-        {
           "name": "_Z27NuDisplayListCreateMtlDlistP19nudisplaylistitem_sP7numtl_sP9variptr_uS3_",
           "demangled_name": "NuDisplayListCreateMtlDlist(nudisplaylistitem_s*, numtl_s*, variptr_u*, variptr_u)",
           "address": 3050112,
@@ -88942,14 +89021,6 @@
       "source": "src/nu2api/nu3d/nudlist_stubs.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nudlist_stubs.o",
       "functions": [
-        {
-          "name": "NuDisplayListCheckBuffer",
-          "demangled_name": "NuDisplayListCheckBuffer",
-          "address": 2711511,
-          "offset": 1821543,
-          "size": 5,
-          "match_percent": 100.0
-        },
         {
           "name": "NuDisplayListDraw",
           "demangled_name": "NuDisplayListDraw",
@@ -89992,22 +90063,6 @@
       "source": "src/nu2api/nu3d/nurndr_plain.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nurndr_plain.o",
       "functions": [
-        {
-          "name": "NuRndrSwapScreen",
-          "demangled_name": "NuRndrSwapScreen",
-          "address": 2713563,
-          "offset": 1823595,
-          "size": 173,
-          "match_percent": 46.97619
-        },
-        {
-          "name": "NuRndrSwapScreenEx",
-          "demangled_name": "NuRndrSwapScreenEx",
-          "address": 2713736,
-          "offset": 1823768,
-          "size": 48,
-          "match_percent": 54.294117
-        },
         {
           "name": "NuRndrFx",
           "demangled_name": "NuRndrFx",
@@ -95539,7 +95594,7 @@
           "address": 2527774,
           "offset": 1637806,
           "size": 2532,
-          "match_percent": 19.533018
+          "match_percent": 19.534592
         },
         {
           "name": "NuDisableOSMenuFreeze",
@@ -97065,46 +97120,6 @@
           "offset": 1818333,
           "size": 70,
           "match_percent": 44.857143
-        },
-        {
-          "name": "NuDisplayListInit",
-          "demangled_name": "NuDisplayListInit",
-          "address": 2730899,
-          "offset": 1840931,
-          "size": 90,
-          "match_percent": 49.565216
-        },
-        {
-          "name": "NuDisplayListLinkItem",
-          "demangled_name": "NuDisplayListLinkItem",
-          "address": 2731282,
-          "offset": 1841314,
-          "size": 73,
-          "match_percent": 16.26087
-        },
-        {
-          "name": "NuDisplayListLinkItemVP",
-          "demangled_name": "NuDisplayListLinkItemVP",
-          "address": 2731355,
-          "offset": 1841387,
-          "size": 214,
-          "match_percent": 8.635135
-        },
-        {
-          "name": "NuDisplayListLinkItems",
-          "demangled_name": "NuDisplayListLinkItems",
-          "address": 2731569,
-          "offset": 1841601,
-          "size": 148,
-          "match_percent": 32.134617
-        },
-        {
-          "name": "NuDisplayListPrepareFaceonPS",
-          "demangled_name": "NuDisplayListPrepareFaceonPS",
-          "address": 2733975,
-          "offset": 1844007,
-          "size": 19,
-          "match_percent": 1.75
         },
         {
           "name": "NuSpecialDrawAtAlpha",
@@ -117287,6 +117302,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -117376,6 +117392,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -117465,6 +117482,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -117565,6 +117583,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -117700,6 +117719,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -117800,6 +117820,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -117900,6 +117921,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -118000,6 +118022,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -118100,6 +118123,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -118200,6 +118224,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -118512,6 +118537,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -118612,6 +118638,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -118712,6 +118739,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -118861,6 +118889,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -118886,9 +118915,10 @@
       "address": 2711465,
       "offset": 1821497,
       "size": 46,
-      "match_percent": 67.30769,
+      "match_percent": 82.30769,
       "candidate_units": [
-        "nu2api/nu3d/nudlist.cpp.o"
+        "nu2api/nu3d/android/nudlist_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o"
       ]
     },
     {
@@ -118972,6 +119002,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -119037,6 +119068,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuprim_android.c.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nubridge.cpp.o",
         "nu2api/nu3d/nudlist_stubs.cpp.o",
@@ -119201,6 +119233,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -119226,9 +119259,10 @@
       "address": 2730569,
       "offset": 1840601,
       "size": 46,
-      "match_percent": 0.0,
+      "match_percent": 82.30769,
       "candidate_units": [
-        "nu2api/nu3d/nudlist.cpp.o"
+        "nu2api/nu3d/android/nudlist_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o"
       ]
     },
     {
@@ -119264,6 +119298,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuprim_android.c.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nubridge.cpp.o",
         "nu2api/nu3d/nudlist_stubs.cpp.o",
@@ -119380,6 +119415,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -119432,6 +119468,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuprim_android.c.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nubridge.cpp.o",
         "nu2api/nu3d/nudlist_stubs.cpp.o",
@@ -119560,6 +119597,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -119660,6 +119698,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -119760,6 +119799,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -119860,6 +119900,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -119923,6 +119964,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuprim_android.c.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nubridge.cpp.o",
         "nu2api/nu3d/nudlist_stubs.cpp.o",
@@ -120013,6 +120055,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -120113,6 +120156,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -120224,6 +120268,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -120324,6 +120369,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -120437,6 +120483,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -120537,6 +120584,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -120672,6 +120720,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -120772,6 +120821,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -120872,6 +120922,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -120972,6 +121023,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -121135,6 +121187,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -121235,6 +121288,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -121335,6 +121389,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -121783,6 +121838,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -122013,6 +122069,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -122218,6 +122275,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -122677,6 +122735,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -122777,6 +122836,7 @@
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_android.c.o",
         "nu2api/nu3d/android/nurain_android.c.o",
+        "nu2api/nu3d/android/nurndr_android.c.o",
         "nu2api/nu3d/glutils.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
@@ -124200,14 +124260,6 @@
       "demangled_name": "_GLOBAL__sub_I_nufloat_android.c",
       "address": 2699592,
       "offset": 1809624,
-      "size": 29,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_GLOBAL__sub_I_nurndr_android.c",
-      "demangled_name": "_GLOBAL__sub_I_nurndr_android.c",
-      "address": 2711395,
-      "offset": 1821427,
       "size": 29,
       "match_percent": 0.0
     },
@@ -129925,10 +129977,10 @@
     }
   ],
   "summary": {
-    "bazel_units": 528,
+    "bazel_units": 529,
     "functions": 13454,
-    "assigned_functions": 12331,
+    "assigned_functions": 12332,
     "ambiguous_functions": 231,
-    "unassigned_functions": 892
+    "unassigned_functions": 891
   }
 }

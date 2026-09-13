@@ -7,12 +7,14 @@ load("@rules_cc//cc:defs.bzl", "CcInfo", "cc_common")
 _SOURCE_EXTENSIONS = ["c", "C", "cc", "cpp", "cxx", "c++"]
 _DISABLED_FEATURES = ["layering_check"]
 
-# These original .c-named translation units contain C++ constructors and are
+# These original .c-named translation units use C++ source semantics and are
 # compiled as C++ by the matching and host builds. Lint them in that language
 # as well; clang-tidy cannot infer the Bazel per-file -x override from a suffix.
 _CXX_NAMED_C_SOURCES = [
     "src/nu2api/nu3d/android/nuptl_android.c",
     "src/nu2api/nu3d/android/nudlist_android.c",
+    "src/nu2api/nu3d/android/nurndr_android.c",
+    "src/nu2api/nu3d/android/nuscratch_android.c",
     "src/nu2api/nu3d/android/nuprim_android.c",
     "src/nu2api/nu3d/glutils.c",
     "src/nu2api/nu3d/android/nurain_android.c",

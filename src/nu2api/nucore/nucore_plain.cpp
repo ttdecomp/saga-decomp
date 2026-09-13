@@ -18,8 +18,7 @@ extern "C" NUGCUTLOCATORFNENTRY_s *locatorfns;
 // compatibility until their real bodies land in a domain file.
 //
 // Faithfully transcribed in this TU:
-//   NuDisplayListInit              @0x29ad60 — anchors the static 2D list
-//   NuDisplayListLinkItems         @0x29ae31 — appends N items + NEXT term.
+//   NuDisplayListInit              → android/nudlist_android.c @0x29ab93
 //   NuDisplayListLinkMtl           @0x2e8cc0 — minimal 2D-path mtl link
 //   NuCameraSet                    via NuCameraSetEx(cam,0) (matrix work stubbed)
 //   NuIOS_GetAspectRatio           inline ratio from nuapi screen dims
@@ -211,7 +210,6 @@ extern "C" {
 }
 
 // C++-linkage helpers defined in sibling TUs.
-void DisplayListCreateDynMtlList(VARIPTR *buf, VARIPTR buf_end); // supportall.cpp
 void NuPadRecordEndFrame(void);                                  // nupad_interface.cpp
 void bgSuspendMain(i32);                                         // main.cpp
 void NuAnimBuffInit(i32, VARIPTR *, VARIPTR);                    // nu2api_nucore_misc.cpp
@@ -232,39 +230,6 @@ extern "C" {
     void NuShaderManagerSetfv(i32 semantic, const f32 *values);
     void *NuScratchAlloc32(i32 size);
     void NuScratchRelease(void);
-
-    extern VARIPTR *display_list_buffer_end;
-    extern VARIPTR rndrstream_free;
-    extern VARIPTR rndrstream_end;
-
-    i32 NuThreadCreateCriticalSection(void);
-
-    // Shared with the nudlist TU (original file-static in this TU).
-    static void nudlist_SetNext(nudisplaylistitem_s *item, void *next) {
-        item->next = next;
-    }
-
-    void NuDisplayListResetBuffer(void);
-
-    // The static 2D display list's stream-area base lives at manager+0x4C8
-    // (nudisplaylist_s+0x10 of the embedded 2D list at manager+0x4B8) and points
-    // at manager+0x4FC.
-    static const usize NUDLIST_2D_STREAM_BASE_OFFSET = 0x4C8;
-    static const usize NUDLIST_2D_STREAM_AREA_OFFSET = 0x4FC;
-    static const usize NUDLIST_2D_CRITSEC_OFFSET = 0x5EC;
-
-    // original 0x29ad60
-    void NuDisplayListInit(VARIPTR *buf, VARIPTR *buf_end) {
-        u8 *mgr = (u8 *)&global_dlist_manager;
-        // The static 2D list starts anchored on the stream-head sentinel.
-        // DisplayListCreateDynMtlList initialises the sentinel and mtl_last.
-        *(u8 **)(mgr + NUDLIST_2D_STREAM_BASE_OFFSET) = mgr + NUDLIST_2D_STREAM_AREA_OFFSET;
-
-        DisplayListCreateDynMtlList(buf, *buf_end);
-        NuDisplayListResetBuffer();
-
-        *(i32 *)(mgr + NUDLIST_2D_CRITSEC_OFFSET) = NuThreadCreateCriticalSection();
-    }
 
     // ---------------------------------------------------------------------------
     // Redirected symbols — real bodies live elsewhere (kept as comments)
@@ -920,40 +885,6 @@ extern "C" {
     void NuDisplayListEndCriticalSection(void) {
         NuThreadCriticalSectionEnd(global_dlist_manager.loading_critical_section);
     }
-    VARIPTR *NuDisplayListLinkItemVP(nudisplaylist_s *list, u8 type, void *call_addr, VARIPTR *buf) {
-        auto *call = reinterpret_cast<nudisplaylistitem_s *>(buf->void_ptr);
-        list->mtl_last->next = call;
-        call->type = type;
-        call->id = 3;
-        call->next = call_addr != nullptr ? call_addr : call + 2;
-
-        auto *next = call + 1;
-        next->type = 0x8d;
-        next->id = 1;
-        next->next = list->dyn_geom + 1;
-        list->mtl_last = next;
-        buf->addr += sizeof(nudisplaylistitem_s) * 2;
-        return call_addr != nullptr ? nullptr : buf;
-    }
-    void NuDisplayListLinkItem(nudisplaylist_s *list, u8 type, void *call_addr) {
-        NuDisplayListLinkItemVP(list, type, call_addr, NuDisplayListGetBuffer());
-    }
-    // Append `count` item slots from the shared stream buffer, then a NEXT
-    // terminator. Original 0x29ae31.
-    VARIPTR *NuDisplayListLinkItems(nudisplaylist_s *list, i32 count) {
-        VARIPTR *buf = NuDisplayListGetBuffer();
-        nudlist_SetNext(list->mtl_last, buf->void_ptr);
-        list->items = reinterpret_cast<nudisplaylistitem_s *>(buf->void_ptr);
-        buf->addr += count * sizeof(nudisplaylistitem_s);
-
-        auto *terminator = reinterpret_cast<nudisplaylistitem_s *>(buf->void_ptr);
-        terminator->type = 0x8d;
-        terminator->id = 1;
-        nudlist_SetNext(terminator, list->dyn_geom + 1);
-        list->mtl_last = terminator;
-        buf->addr += 0x10;
-        return buf;
-    }
 } // extern "C"
 
 // Local helpers matching original static display-list setters (t local symbols)
@@ -1012,9 +943,6 @@ extern "C" {
         last->next = continuation;
         last->id = 1;
         list->mtl_last = last;
-    }
-    void *NuDisplayListPrepareFaceonPS(VARIPTR *, void *faceon, NUMTX *) {
-        return faceon;
     }
     void *DisplayListCreateFaceonTransformPS(VARIPTR *buffer, NUMTX *transform, NUMTL *mtl, void *faceon);
     void *DisplayListCreateGeomTransformPS(VARIPTR *buffer, NUMTX *transform, NUMTL *mtl, void *next, void *tx);

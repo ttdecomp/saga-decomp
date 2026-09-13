@@ -55,12 +55,16 @@ extern i32 g_backingHeight;
 #ifdef __cplusplus
 
 void NuRndrStreamInit(i32 stream_buffer_size, VARIPTR *buffer);
+extern i32 rndr_blend_shape_deformer_wt_cnt;
+extern i32 rndr_blend_shape_deformer_wt_ptrs_cnt;
 void NuLightBurnoutEffect(i32 mode, f32 threshold, f32 intensity, f32 flare);
 // axes[0] is the center; axes[1..3] are the three shape basis vectors.
 void NuRndrCalcRandEllipsePos(struct nuvec4_s *position, NUMTX *matrix, NUVEC *axes);
 void NuRndrCalcRandCylinderPos(struct nuvec4_s *position, NUMTX *matrix, NUVEC *axes);
 
 extern "C" {
+    void NuRndrSwapStreamBuffers(void);
+    i32 NuRndrSwapScreen(i32 mode);
     extern i32 g_minmiplevel;
     extern f32 g_mipmapbias;
     void NuRndrSetGlobalMinMipLevel(i32 level);

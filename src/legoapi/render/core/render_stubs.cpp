@@ -247,7 +247,7 @@ extern "C" {
     void DisplayListPrintItemPS(void) {
     }
 
-    // DisplayListSetAlphaPS is fully transcribed in nu3d/nudlist.cpp (original 0x29b8c0 / 0x29b77e).
+    // DisplayListSetAlphaPS lives in nu3d/android/nudlist_android.c (original 0x29b8c0).
     void DisplayListSetFxItemParamPS(void *, i32, f32, i32) {
     }
 

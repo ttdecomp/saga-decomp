@@ -3,6 +3,7 @@
 
 #include "decomp.h"
 #include "nu2api/numath/numtx.h"
+#include "nu2api/nu3d/android/nudlist_callbacks.h"
 
 struct numtl_s;
 struct nunativetex_s;
@@ -48,7 +49,5 @@ void NuIOS_SetCullMode(i32 mode);
 extern "C" void NuMtlSetRenderStatesPS(numtl_s *mtl);
 extern "C" void NuRenderContextSetZFunc(i32 zfunc);
 extern "C" void NuIOS_SetVertexFormat(usize fmt);
-void NuIOSDLMtlCallback(void *arg);
 void NuIOSDLPreWarmGeomCallback(void *arg);
 void NuIOS_ResetVAODuplicateFinder();
-void NuIOSDLGeom2DCallback(void *arg);

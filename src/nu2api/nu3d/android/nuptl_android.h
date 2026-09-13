@@ -1,6 +1,7 @@
 #pragma once
 
 #include "decomp.h"
+#include "nu2api/nu3d/android/nudlist_callbacks.h"
 
 struct PartHeader;
 struct debinftype;
@@ -24,7 +25,6 @@ void BuildDebrisVerts(PartHeader *header, uv1debdata *chunk_data, numtl_s *mater
                       i32 particle_type, f32 a, f32 b, f32 c, f32 near_clip);
 void AddParticleGroupToDisplayList(nunativedebrisdata_s *group);
 
-void NuIOSDLDebrisCallback(void *data);
 i32 NuDebrisRendererNextBuffer();
 void NuDebrisRendererFlushBuffers();
 extern "C" void NuInitDebrisRenderer(VARIPTR *buffer, VARIPTR buffer_end);

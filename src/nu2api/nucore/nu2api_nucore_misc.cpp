@@ -1,4 +1,5 @@
 #include "nu2api_nucore_types.h"
+#include "nu2api/nu3d/android/nudlist_callbacks.h"
 #include "nu2api/nu3d/nulgtlaser.h"
 #include "nu2api/nu3d/nuprim.h"
 #include "nu2api/numath/nuvec4.h"

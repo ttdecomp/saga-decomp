@@ -100,6 +100,7 @@ typedef struct nudisplaylist_s {
 void DisplayListLinkDynamicMtls(void);
 
 void DisplayListPrintItem(nudisplaylistitem_s *item, i32 index, i32 depth, i32 *, i32 file_handle);
+void DisplayListCreateDynMtlList(VARIPTR *buffer, VARIPTR buffer_end);
 
 #ifdef __cplusplus
 extern "C" {
@@ -318,13 +319,11 @@ extern "C" {
     extern "C" NUDLIST_MANAGER global_dlist_manager;
 
     extern VARIPTR *display_list_buffer;
+    void NuDisplayListInit(VARIPTR *buffer, VARIPTR buffer_end);
 
-    // Item-handler dispatch tables extracted from the binary. The original
-    // keeps two handler arrays indexed by item type - 0x80; they are modelled
-    // here as absolute-type-indexed [0x100] arrays. Entries for types without
-    // a handler are NULL.
+    // Item-handler function signature (the original tables are private to
+    // nudlist_android.c and indexed by item type - 0x80).
     typedef void (*nudl_handler_fn)(void *data);
-    extern nudl_handler_fn g_nudl_dispatch_table[0x100]; // __ItemFnTable
 
     // Transcribed functions (original addresses in nudlist.cpp comments).
     void NuDisplayListExecute(nudisplaylistitem_s *item, const nudl_handler_fn *item_table);
@@ -383,6 +382,7 @@ extern "C" {
     void NuDisplaySceneClonePS(NUDLDLISTSCENE *source, NUDLDLISTSCENE *destination, VARIPTR *buffer);
     void DisplayListCreateFxList(VARIPTR *buffer, VARIPTR end, i32 count);
     VARIPTR *NuDisplayListLinkItemVP(nudisplaylist_s *dl, u8 type, void *call_addr, VARIPTR *buf);
+    void *NuDisplayListPrepareFaceonPS(VARIPTR *buffer, void *faceon, NUMTX *transform);
 
     // Debug helpers consumed by NuDisplayListCaptureSortPriority (defined as
     // stubs in supportall.cpp / nucore_plain.cpp).
