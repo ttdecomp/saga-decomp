@@ -21,8 +21,6 @@ struct SHOPINPUT;
 void ReleasePush(GameObject_s *) {
 }
 
-i32 LEGOCONTEXT_PUSHSPINNER = -1;
-i32 LEGOCONTEXT_PUSHOBSTACLE = -1;
 
 void SetPushAngle(GameObject_s *object) {
     u16 angle;

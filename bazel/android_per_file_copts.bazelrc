@@ -106,6 +106,7 @@ build:target --per_file_copt=^src/legoapi/characters/core/characters\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/characters/core/character\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/characters/motion/gameanim\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/characters/motion/animation\.cpp$@-O2
+build:target --per_file_copt=^src/legoapi/characters/motion/contexts\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/characters/motion/chris\.cpp$@-O2
 # The original keeps ResetSpaceLevel's full local symbol and passes its two
 # pointer arguments in eax/edx; disabling IPA-SRA reproduces that exact shape.

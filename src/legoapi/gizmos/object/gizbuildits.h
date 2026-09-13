@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nu2api/nucore/fixed_width.h"
+#include "legoapi/characters/motion/contexts.h"
 u32 GizBuildIts_TotalScore(void *world);
 
 #include "legoapi/gizmo/base/gizmo.h"
@@ -17,7 +18,6 @@ struct GAMEANIMOBJ_s;
 struct HINT_s;
 enum BUILDIT_FIND_ENUM : i32;
 
-extern i32 LEGOCONTEXT_BUILDIT;
 extern i16 GizBuilditGDeb[6];
 extern f32 GIZBUILDITWOBBLEJUMPHEIGHT;
 extern void (*GizBuildIt_FinishFn)(GIZBUILDIT_s *);

@@ -23,8 +23,6 @@ struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
 
-i32 LEGOCONTEXT_BUCK = -1;
-i16 LEGOACT_BUCK = -1;
 f32 BUCK_RIDERJUMPCLEARANCE = 1.0f;
 void (*BuckStartExtraFn)(GameObject_s *) = NULL;
 void NewRumble(nupad_s *, f32, i32);

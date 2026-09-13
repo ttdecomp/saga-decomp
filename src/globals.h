@@ -1,6 +1,8 @@
 #pragma once
 
 #include "decomp.h"
+#include "legoapi/characters/motion/animation_ids.h"
+#include "legoapi/characters/motion/contexts.h"
 #include "legoapi/world/level.h"
 #include "legoapi/world/mission.h"
 #include "nu2api/nu3d/nucamera.h"
@@ -70,47 +72,13 @@ DECOMP_ASSERT(sizeof(TERRAIN_LAYER_s) == 0x0c, "TERRAIN_LAYER_s ABI");
 typedef i32 (*USING_EXTRA_ACTIONS_FN)(GameObject_s *object);
 
 extern CHARACTER_CONTEXT_INFO_s *CInfo;
-extern i32 LEGOCONTEXT_SUPERCARRY;
 extern USING_EXTRA_ACTIONS_FN UsingExtraActionsFn;
 extern u32 LSW_HintConditions;
 extern bool (*IsWearingBackPackFn)(GameObject_s *);
-extern i32 LEGOCONTEXT_LAND_JUMP;
-extern i16 LEGOACT_LAND;
-extern i16 LEGOACT_LAND2;
-extern i16 LEGOACT_FALLLAND;
-extern i16 LEGOACT_BACKPACKFALLLAND;
-extern i16 LEGOACT_EXTRA_LAND2;
-extern i32 LEGOCONTEXT_BACKFLIP;
-extern i16 LEGOACT_JUMP;
-extern i16 LEGOACT_JUMP2;
-extern i16 LEGOACT_FLIP;
-extern i16 LEGOACT_BACKFLIP;
-extern i16 LEGOACT_EXTRA_JUMP;
-extern i16 LEGOACT_EXTRA_JUMP2;
-extern i16 LEGOACT_MAGNET_JUMP;
-extern i16 LEGOACT_FALL;
 extern i32 (*Jump_PreventJumpFn)(GameObject_s *);
 extern i32 (*CanMagnetClimbFn)(GameObject_s *);
 extern i32 (*CanGlideFn)(GameObject_s *);
 extern i32 DoubleJump_AlwaysReachJump2Height;
-extern i32 LEGOCONTEXT_GLIDE;
-extern i16 LEGOACT_JUMP3;
-extern i16 LEGOACT_COMBATROLL_JUMP;
-extern i16 LEGOACT_COMBATROLL_FALL;
-extern i16 LEGOACT_COMBATROLL_LAND;
-extern i16 LEGOACT_COMBATROLL_FIRE;
-extern i16 LEGOACT_LUNGE;
-extern i16 LEGOACT_LAND3;
-extern i16 LEGOACT_EXTRA_LAND;
-extern i16 LEGOACT_FLIPLAND;
-extern i16 LEGOACT_COMBOLAND;
-extern i32 LEGOCONTEXT_LAND_JUMP2;
-extern i32 LEGOCONTEXT_LAND_FLIP;
-extern i32 LEGOCONTEXT_LAND_COMBOJUMP;
-extern i32 LEGOCONTEXT_LAND_LUNGE;
-extern i16 LEGOACT_LUNGELAND;
-extern i32 LEGOCONTEXT_LAND_SLAM;
-extern i16 LEGOACT_SLAMLAND;
 extern i32 (*Slam_GetDebrisFn)(GameObject_s *, i32);
 extern i32 (*FindSlamOrigin_UseCPosFn)(GameObject_s *);
 extern void (*Jump_EndOfLandContextFn)(GameObject_s *);
@@ -694,20 +662,7 @@ extern f32 DEFAULT_MOVE_RANGE;
 extern u64 _0xffffffffffffffff;
 extern f32 engagefiretime;
 extern f32 idealgoalrange;
-extern i32 LEGOCONTEXT_DROPIN;
-extern i32 LEGOCONTEXT_COMBO;
-extern i32 LEGOCONTEXT_JUMP;
-extern i32 LEGOCONTEXT_DOOMED;
-extern i32 LEGOCONTEXT_LAND_COMBATROLL;
-extern i32 LEGOCONTEXT_WALLSHUFFLE;
-extern i32 LEGOCONTEXT_NETWAIT;
-extern i16 LEGOACT_BUILD;
 extern i32 LEGOHINT_BUILD;
-extern i32 LEGOCONTEXT_BEENTAKENOVER;
-extern i32 LEGOCONTEXT_GETIN;
-extern i32 LEGOCONTEXT_EATEN;
-extern i32 LEGOCONTEXT_WEAPONIN;
-extern i32 LEGOCONTEXT_WEAPONOUT;
 extern i32 WeaponInOut_NoAIJediSfx;
 extern i32 Lap;
 extern PART_s *Part;

@@ -30,43 +30,10 @@ void PlaySabreSfx(char *, GameObject_s *, NUVEC *, i32);
 i32 DoubleJump_JediSlam = 0;
 f32 SLAMJUMPSPEED = 3.0f;
 bool (*IsWearingBackPackFn)(GameObject_s *) = NULL;
-i32 LEGOCONTEXT_LAND_JUMP = -1;
-i16 LEGOACT_LAND = -1;
-i16 LEGOACT_LAND2 = -1;
-i16 LEGOACT_FALLLAND = -1;
-i16 LEGOACT_BACKPACKFALLLAND = -1;
-i16 LEGOACT_EXTRA_LAND2 = -1;
-i32 LEGOCONTEXT_BACKFLIP = -1;
-i16 LEGOACT_JUMP = -1;
-i16 LEGOACT_JUMP2 = -1;
-i16 LEGOACT_FLIP = -1;
-i16 LEGOACT_BACKFLIP = -1;
-i16 LEGOACT_EXTRA_JUMP = -1;
-i16 LEGOACT_EXTRA_JUMP2 = -1;
-i16 LEGOACT_MAGNET_JUMP = -1;
-i16 LEGOACT_FALL = -1;
 i32 (*Jump_PreventJumpFn)(GameObject_s *) = NULL;
 i32 (*CanMagnetClimbFn)(GameObject_s *) = NULL;
 i32 (*CanGlideFn)(GameObject_s *) = NULL;
 i32 DoubleJump_AlwaysReachJump2Height = 0;
-i32 LEGOCONTEXT_GLIDE = -1;
-i16 LEGOACT_JUMP3 = -1;
-i16 LEGOACT_COMBATROLL_JUMP = -1;
-i16 LEGOACT_COMBATROLL_FALL = -1;
-i16 LEGOACT_COMBATROLL_LAND = -1;
-i16 LEGOACT_COMBATROLL_FIRE = -1;
-i16 LEGOACT_LUNGE = 1;
-i16 LEGOACT_LAND3 = -1;
-i16 LEGOACT_EXTRA_LAND = -1;
-i16 LEGOACT_FLIPLAND = -1;
-i16 LEGOACT_COMBOLAND = -1;
-i32 LEGOCONTEXT_LAND_JUMP2 = -1;
-i32 LEGOCONTEXT_LAND_FLIP = -1;
-i32 LEGOCONTEXT_LAND_COMBOJUMP = -1;
-i32 LEGOCONTEXT_LAND_LUNGE = -1;
-i16 LEGOACT_LUNGELAND = -1;
-i32 LEGOCONTEXT_LAND_SLAM = -1;
-i16 LEGOACT_SLAMLAND = -1;
 i32 (*Slam_GetDebrisFn)(GameObject_s *, i32) = NULL;
 
 enum PLAYER_JUMP_RUNTIME_FLAGS : u8 {
@@ -123,7 +90,6 @@ static bool Jump_HasAction(const GameObject_s *object, PLAYER_JUMP_ACTION action
            object->apiobj.character_model->model_data_b[action] != NULL;
 }
 
-extern i16 LEGOACT_COMBOJUMP;
 void (*BigJump_EndOfLandFn)(GameObject_s *) = NULL;
 void StartEndOfJump(GameObject_s *);
 void FindSlamOrigin(GameObject_s *, NUVEC *, NUVEC *);
@@ -290,8 +256,6 @@ i32 UseFallAnim(GameObject_s *object) {
            object->apiobj.character_model->model_data_b[LEGOACT_FALL] != NULL;
 }
 
-i32 LEGOCONTEXT_BIGJUMP = -1;
-i16 LEGOACT_COMBOJUMP = -1;
 extern i16 id_YODA;
 void Player_ClearContext(GameObject_s *, i32);
 void Player_ResetContexts(PLAYERPACKET_s *);

@@ -52,8 +52,7 @@ i32 objhitobj_throwkillpartsup;
 extern i32 objhitobj_noimpactsfx;
 extern i16 *objhitobj_killparts_yrot;
 extern BOLT_s *objhitobj_bolt;
-extern i32 ObstacleCamHoldUntilPlayersMove, LEGOCONTEXT_LAND_SLAM, LEGOCONTEXT_LAND_LUNGE, LEGOCONTEXT_COMBO,
-    LEGOCONTEXT_HOLD;
+extern i32 ObstacleCamHoldUntilPlayersMove;
 extern i32 disable_narrow_socks, players_cannot_exit_speeder, BuildUpDone;
 extern f32 BuildUpScale, DrawBuildUpTime, builduptime;
 void AlertSurroundingCreatures(GameObject_s *, NUVEC *);

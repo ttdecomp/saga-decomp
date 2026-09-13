@@ -29,8 +29,6 @@ i32 SuperCarry_KeepObjectLevel = 1;
 
 #include "nu2api/numath/nuang.h"
 #include "nu2api/nu3d/nuspecial.h"
-i16 LEGOACT_SUPERCARRY_PICKUP = -1;
-i16 LEGOACT_SUPERCARRY_IDLE = -1;
 extern "C" f32 AnimDuration(i32, i32, f32, f32, i32);
 i32 GizmoBlowupBlowup(GIZMOBLOWUP_s *, i32, i32, i32, GameObject_s *, i32);
 u32 (*CanSuperCarryFn)(GameObject_s *) = NULL;
@@ -41,13 +39,6 @@ i32 SuperCarry_Carrying(GameObject_s *);
 #include "legoapi/core/input/gamepads.h"
 #include "legoapi/core/input/timer.h"
 #include "nu2api/numath/nufloat.h"
-extern i16 LEGOACT_SUPERCARRY_WALK;
-i16 LEGOACT_SUPERCARRY_THROW = -1;
-i16 LEGOACT_SUPERCARRY_PUTDOWN = -1;
-i16 LEGOACT_SUPERCARRY_BASH = -1;
-i16 LEGOACT_SUPERCARRY_JUMP = -1;
-i16 LEGOACT_SUPERCARRY_LAND = -1;
-i16 LEGOACT_SUPERCARRY_FALLLAND = -1;
 i32 SuperCarry_UseActionButton = 0;
 i32 SuperCarry_PutDownDrop = 1;
 f32 SUPERCARRY_JUMPSPEED = 1.4f;

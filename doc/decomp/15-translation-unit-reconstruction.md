@@ -565,3 +565,55 @@ cross-TU declarations instead of scattered local `extern` declarations.
   `DrawRopeSingle` falls 0.03 and unrelated `DrawStillScreen` falls 0.24,
   both still body-level differences. Target build, four checks, zero-missing
   symbol coverage, and 120-frame Map smoke pass.
+
+### Animation action-ID data
+
+The original `.data` span `0x00667198..0x0066723b` contains 82 consecutive
+two-byte `LEGOACT_*` globals, all initially `-1` except `LEGOACT_LUNGE = 1`.
+Their global `.symtab` entries are consecutive and reverse-address ordered.
+This data follows the game-object data and precedes the 40-word context-ID
+table; the nearby initializer and local `.bss` sequence is
+`gameobjects.cpp`, `animation.cpp`, `contexts.cpp`. Together these are strong
+evidence for an original animation-owned action-ID table, although global
+data order alone cannot prove source ownership.
+
+The 63 previously defined action IDs were moved, unchanged, to
+`characters/motion/animation.cpp` and declared in its `animation_ids.h` owner
+header. The 19 absent IDs were then reconstructed with their original `-1`
+defaults. Each corresponding assignment in `InitGameAfterConfig` was checked
+against a store through the original GOT before restoring it; these are real
+runtime assignments, not data-layout filler. The current GCC object now
+contains exactly the 82 original action symbols, with every relative `.data`
+offset matching `original address - 0x00667198`. `LEGOACT_LUNGE = 1` remains
+the one non-`-1` default. Both stages preserve whole-binary function matching
+at 44.631924%, with 4,633 exact functions. This is an ownership hypothesis
+supported by layout and startup order, not a claim that all bodies currently
+in `animation.cpp` belong to the original TU.
+
+The adjacent context-ID table starts at `0x0066723c` and consists of 40
+four-byte `LEGOCONTEXT_*` words, all originally `-1`. Their contiguous global
+symbol order, adjacent initializer/local-vector block, and separation from
+the following level data support a distinct `contexts.cpp` owner, still an
+inference rather than definitive TU provenance. The 34 existing definitions
+were moved there; six absent definitions were restored. Every original
+`InitGameAfterConfig` store was checked before restoring the six corresponding
+commented assignments. The original `LEGOCONTEXT_BUILDIT` word also starts at
+`-1` and receives `0x2d` at runtime; the previous source had these phases
+reversed. All 40 current context words now have exact original-relative
+offsets in their object.
+
+A separate GOT-store audit of `InitGameAfterConfig` confirmed 13 more
+previously commented assignments for already-defined action/context IDs;
+those stores and their original values are restored. The only remaining
+commented ID assignment is a duplicate `LEGOCONTEXT_JUMP = 0` (the active
+store already exists), so it remains inactive. No ID assignment was enabled
+on the basis of a comment alone.
+
+`contexts.cpp` has only its necessary owner header. Including broader headers
+produced a 99.35% initializer score in a trial, but no current context code
+needed them, so that score-shaping include was removed. The original TU's
+`VuVec_*` locals and initializer remain unreconstructed. `-O3` is a provisional
+per-file candidate supported by data order and the original initializer
+shape; substantial original-owned functions are still needed to verify it.
+The principled table move preserves whole-binary function matching at
+44.631924% and 4,633 exact functions.

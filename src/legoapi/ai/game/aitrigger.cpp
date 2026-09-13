@@ -180,7 +180,6 @@ i32 GameObjectUsingLever(GameObject_s *object, LEVER_s *lever) {
     return 0;
 }
 
-extern i32 LEGOCONTEXT_GRAPPLE;
 GameObject_s *Grapple_Occupied(GRAPPLE_s *, GameObject_s *, AIPATHCNX_s *);
 
 void AITriggerSetSysProcess(AITRIGGERSETSYS_s *system) {

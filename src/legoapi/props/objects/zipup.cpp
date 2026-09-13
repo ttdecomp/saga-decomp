@@ -469,9 +469,6 @@ struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
 
-i16 LEGOACT_WHIP_SWING_START = -1;
-i16 LEGOACT_WHIP_SWING_SWING = -1;
-i16 LEGOACT_WHIP_SWING_JUMP = -1;
 i32 ObjLandReady(GameObject_s *);
 i32 SuperWeirdo(GameObject_s *);
 void SetHeadTarget(GameObject_s *, NUVEC *, i8, f32, f32, f32);

@@ -1,12 +1,10 @@
 #pragma once
 
 #include "decomp.h"
+#include "legoapi/characters/motion/animation_ids.h"
 #include "legoapi/gizmo/base/gizmo.h"
 
 extern i32 zipup_gizmotype_id;
-extern i16 LEGOACT_WHIP_SWING_START;
-extern i16 LEGOACT_WHIP_SWING_SWING;
-extern i16 LEGOACT_WHIP_SWING_JUMP;
 
 #ifdef __cplusplus
 

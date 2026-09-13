@@ -477,7 +477,6 @@ f32 GizSpinner_GetNearestTargetPoint(GIZSPINNER_s *, NUVEC *, NUVEC *, NUVEC *, 
 void GameObjectSetCanUse(GameObject_s *, void *, u8, u8, f32);
 void ClearSpecialMove(GameObject_s *);
 extern i32 spinner_gizmotype_id;
-extern i32 LEGOCONTEXT_GRAPPLE;
 extern u32 GAMEPAD_SPECIAL, GAMEPAD_JUMP, GAMEPAD_TOGGLERIGHT;
 extern f32 ai_moveradius;
 

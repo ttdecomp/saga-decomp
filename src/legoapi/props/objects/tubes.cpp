@@ -77,5 +77,3 @@ void TractorBeamCode(GameObject_s *object) {
 
     PlaySfx(const_cast<char *>("env_tractorbeam_lp"), &object->apiobj.collision_position);
 }
-
-extern i32 LEGOCONTEXT_TUBE;

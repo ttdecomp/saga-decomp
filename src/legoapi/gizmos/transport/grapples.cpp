@@ -87,8 +87,6 @@ static void Grapple_ResetDynamic(GRAPPLE *grapple, i32 index) {
     grapple->has_terrain_platform = 1;
 }
 
-i32 LEGOCONTEXT_GRAPPLE = -1;
-extern i32 LEGOCONTEXT_JUMP;
 
 GameObject_s *Grapple_Occupied(GRAPPLE *grapple, GameObject_s *object, AIPATHCNX_s *connection) {
     if (LEGOCONTEXT_GRAPPLE != -1) {

@@ -47255,6 +47255,12 @@
       ]
     },
     {
+      "name": "legoapi/characters/motion/contexts.cpp.o",
+      "source": "src/legoapi/characters/motion/contexts.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/contexts.o",
+      "functions": []
+    },
+    {
       "name": "legoapi/characters/motion/gameanim.cpp.o",
       "source": "src/legoapi/characters/motion/gameanim.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/gameanim.o",
@@ -54679,12 +54685,6 @@
           "match_percent": 99.98039
         }
       ]
-    },
-    {
-      "name": "legoapi/gizmo/gizmos/gizmos_gizbuildits.cpp.o",
-      "source": "src/legoapi/gizmo/gizmos/gizmos_gizbuildits.cpp",
-      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/gizmos_gizbuildits.o",
-      "functions": []
     },
     {
       "name": "legoapi/gizmo/gizmos/gizmos_gizmopickups.cpp.o",

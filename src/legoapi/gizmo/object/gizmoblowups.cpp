@@ -2027,7 +2027,6 @@ GIZMOBLOWUP_s *GizmoBlowUp_Target(GameObject_s *object, nuvec_s *position, nuvec
     return nearest != NULL ? nearest : fallback;
 }
 
-extern i16 LEGOACT_PUNCH_BEHIND;
 
 GIZMOBLOWUP_s *GizmoBlowUpOpponent(GameObject_s *object, f32 range, f32 extra_radius, f32 minimum_radius, i32 mode,
                                    u32 mask, u32 value, u32 secondary_mask) {

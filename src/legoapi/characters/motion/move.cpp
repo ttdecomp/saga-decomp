@@ -60,7 +60,6 @@ extern "C" i16 id_GRABCONTROL, id_GRABR2CONTROL;
 float SLAMGRAVITY = -15.0f;
 static float applygravity_extrahoveroffset;
 
-extern i32 LEGOCONTEXT_TUBE;
 
 void MovePlayer_DIRECTIONAL(GameObject_s *object);
 i32 CanStepBack(GameObject_s *object);
@@ -138,13 +137,6 @@ void NewRumble(nupad_s *, f32, i32);
 void FindAnglesZX(NUVEC *, u16 *, u16 *);
 i32 GrappleSwingMode = 1;
 void Hint_SetComplete(i32);
-i32 LEGOCONTEXT_HOLD = -1;
-i32 LEGOCONTEXT_JUMP = -1;
-i16 LEGOACT_SLAM = -1;
-i16 LEGOACT_WALLSHUFFLE_LEFT = -1;
-i16 LEGOACT_WALLSHUFFLE_RIGHT = -1;
-i16 LEGOACT_WALLSHUFFLE_IDLE = -1;
-i16 LEGOACT_HANG_MOVE = -1;
 i32 (*CanStartHoldFn)(GameObject_s *) = NULL;
 void PlaySabreSfx(char *, GameObject_s *, NUVEC *, i32);
 extern "C" f32 AnimDuration(i32, i32, f32, f32, i32);
@@ -5429,8 +5421,6 @@ i32 StartBackFlip(GameObject_s *object) {
     return 1;
 }
 
-i32 LEGOCONTEXT_GETIN = -1;
-i32 LEGOCONTEXT_EATEN = -1;
 
 static void ClearLastSafeTakeoverSource(GameObject_s *object) {
     if (object->takeover_source != NULL &&

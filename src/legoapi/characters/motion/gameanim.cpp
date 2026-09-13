@@ -31,7 +31,6 @@
 #include <float.h>
 #include <string.h>
 
-i32 LEGOCONTEXT_SUPERCARRY = -1;
 
 i32 SuperCarry_Carrying(GameObject_s *object) {
     if (LEGOCONTEXT_SUPERCARRY != -1 && object->character_context == LEGOCONTEXT_SUPERCARRY) {

@@ -15,9 +15,6 @@ void FindAnglesXY(NUVEC *, u16 *, u16 *);
 void Climb_SetMagnetAction(GameObject_s *);
 void Climb_SetMagnetDrawOffsetTarget(GameObject_s *, NUVEC *);
 
-i32 LEGOCONTEXT_CLIMB = -1;
-i16 LEGOACT_IDLE = -1;
-i16 LEGOACT_WALK = -1;
 f32 MAGNETOFFSET;
 
 void Climb_MoveCode(GameObject_s *object) {
@@ -115,12 +112,6 @@ void Climb_MoveCode(GameObject_s *object) {
 }
 
 #include "legoapi/characters/motion/gameanim.h"
-i16 LEGOACT_CLIMB_IDLE = -1;
-i16 LEGOACT_CLIMB_UP = -1;
-i16 LEGOACT_CLIMB_DOWN = -1;
-i16 LEGOACT_CLIMB_LEFT = -1;
-i16 LEGOACT_CLIMB_RIGHT = -1;
-i16 LEGOACT_MAGNET_WALK_METAL = -1;
 
 // Original 0x4f26a0, 498 bytes.
 i32 Climb_SetTargetMom(GameObject_s *object, u16 input_angle) {
