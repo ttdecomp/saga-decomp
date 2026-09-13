@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.689217,
+    "fuzzy_match_percent": 44.691166,
     "total_code": "4722419",
     "matched_code": "387543",
     "matched_code_percent": 8.206451,
@@ -45880,6 +45880,53 @@
       ]
     },
     {
+      "name": "legoapi/characters/core/customiser.cpp.o",
+      "source": "src/legoapi/characters/core/customiser.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/customiser.o",
+      "functions": [
+        {
+          "name": "_GLOBAL__sub_I_customiser.cpp",
+          "demangled_name": "_GLOBAL__sub_I_customiser.cpp",
+          "address": 920752,
+          "offset": 30784,
+          "size": 93,
+          "match_percent": 0.0
+        },
+        {
+          "name": "_Z24Customiser_NextPieceLeftP10CUSTOMISERiiii",
+          "demangled_name": "Customiser_NextPieceLeft(CUSTOMISER*, int, int, int, int)",
+          "address": 4848704,
+          "offset": 3958736,
+          "size": 309,
+          "match_percent": 75.9
+        },
+        {
+          "name": "_Z25Customiser_NextPieceRightP10CUSTOMISERiiii",
+          "demangled_name": "Customiser_NextPieceRight(CUSTOMISER*, int, int, int, int)",
+          "address": 4849024,
+          "offset": 3959056,
+          "size": 309,
+          "match_percent": 79.455444
+        },
+        {
+          "name": "_Z31Customiser_ResetModelTextureIDsP10CUSTOMISER",
+          "demangled_name": "Customiser_ResetModelTextureIDs(CUSTOMISER*)",
+          "address": 4855920,
+          "offset": 3965952,
+          "size": 195,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_Z34Customiser_CopyDefaultPiecesToSaveP10CUSTOMISERP15CUSTOMISESAVE_s",
+          "demangled_name": "Customiser_CopyDefaultPiecesToSave(CUSTOMISER*, CUSTOMISESAVE_s*)",
+          "address": 4856784,
+          "offset": 3966816,
+          "size": 239,
+          "match_percent": 100.0
+        }
+      ]
+    },
+    {
       "name": "legoapi/characters/core/playeritems.cpp.o",
       "source": "src/legoapi/characters/core/playeritems.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/playeritems.o",
@@ -55842,29 +55889,6 @@
       ]
     },
     {
-      "name": "legoapi/gizmo/object/gizminicut.cpp.o",
-      "source": "src/legoapi/gizmo/object/gizminicut.cpp",
-      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/gizminicut.o",
-      "functions": [
-        {
-          "name": "_GLOBAL__sub_I_gizminicut.cpp",
-          "demangled_name": "_GLOBAL__sub_I_gizminicut.cpp",
-          "address": 923440,
-          "offset": 33472,
-          "size": 93,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_Z18GizMiniCut_GetGuidP7GIZMO_s",
-          "demangled_name": "GizMiniCut_GetGuid(GIZMO_s*)",
-          "address": 5084592,
-          "offset": 4194624,
-          "size": 30,
-          "match_percent": 100.0
-        }
-      ]
-    },
-    {
       "name": "legoapi/gizmo/object/gizmoblowups.cpp.o",
       "source": "src/legoapi/gizmo/object/gizmoblowups.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/gizmoblowups.o",
@@ -61350,6 +61374,133 @@
       ]
     },
     {
+      "name": "legoapi/gizmos/trigger/gizminicut.cpp.o",
+      "source": "src/legoapi/gizmos/trigger/gizminicut.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/gizminicut.o",
+      "functions": [
+        {
+          "name": "_GLOBAL__sub_I_gizminicut.cpp",
+          "demangled_name": "_GLOBAL__sub_I_gizminicut.cpp",
+          "address": 923440,
+          "offset": 33472,
+          "size": 93,
+          "match_percent": 99.35294
+        },
+        {
+          "name": "_ZL23GizMiniCut_GetGizmoNameP7GIZMO_s",
+          "demangled_name": "GizMiniCut_GetGizmoName(GIZMO_s*)",
+          "address": 5082304,
+          "offset": 4192336,
+          "size": 19,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL23GizMiniCut_GetMaxGizmosPv",
+          "demangled_name": "GizMiniCut_GetMaxGizmos(void*)",
+          "address": 5082336,
+          "offset": 4192368,
+          "size": 20,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL20GizMiniCut_GetOutputP7GIZMO_sii",
+          "demangled_name": "GizMiniCut_GetOutput(GIZMO_s*, int, int)",
+          "address": 5082368,
+          "offset": 4192400,
+          "size": 65,
+          "match_percent": 69.23077
+        },
+        {
+          "name": "_ZL24GizMiniCut_GetNumOutputsP7GIZMO_s",
+          "demangled_name": "GizMiniCut_GetNumOutputs(GIZMO_s*)",
+          "address": 5082448,
+          "offset": 4192480,
+          "size": 12,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL17GizMiniCut_GetPosP7GIZMO_s",
+          "demangled_name": "GizMiniCut_GetPos(GIZMO_s*)",
+          "address": 5082464,
+          "offset": 4192496,
+          "size": 35,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL24GizMiniCut_GetOutputNameP7GIZMO_si",
+          "demangled_name": "GizMiniCut_GetOutputName(GIZMO_s*, int)",
+          "address": 5082512,
+          "offset": 4192544,
+          "size": 44,
+          "match_percent": 93.63636
+        },
+        {
+          "name": "_ZL29GizMiniCut_ReserveBufferSpacePv",
+          "demangled_name": "GizMiniCut_ReserveBufferSpace(void*)",
+          "address": 5082560,
+          "offset": 4192592,
+          "size": 438,
+          "match_percent": 61.342857
+        },
+        {
+          "name": "_ZL23GizMiniCut_UsingSpecialPP7GIZMO_sPviPc",
+          "demangled_name": "GizMiniCut_UsingSpecial(GIZMO_s**, void*, int, char*)",
+          "address": 5083008,
+          "offset": 4193040,
+          "size": 291,
+          "match_percent": 5.119048
+        },
+        {
+          "name": "_ZL20GizMiniCut_AddGizmosP10GIZMOSYS_siPvS1_",
+          "demangled_name": "GizMiniCut_AddGizmos(GIZMOSYS_s*, int, void*, void*)",
+          "address": 5083312,
+          "offset": 4193344,
+          "size": 118,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_Z16GizMiniCut_ResetPvS_S_",
+          "demangled_name": "GizMiniCut_Reset(void*, void*, void*)",
+          "address": 5083440,
+          "offset": 4193472,
+          "size": 303,
+          "match_percent": 89.84536
+        },
+        {
+          "name": "_Z19GizMiniCut_ActivateP7GIZMO_si",
+          "demangled_name": "GizMiniCut_Activate(GIZMO_s*, int)",
+          "address": 5083744,
+          "offset": 4193776,
+          "size": 455,
+          "match_percent": 92.434784
+        },
+        {
+          "name": "_Z15GizMiniCut_LoadPvS_",
+          "demangled_name": "GizMiniCut_Load(void*, void*)",
+          "address": 5084208,
+          "offset": 4194240,
+          "size": 371,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_Z18GizMiniCut_GetGuidP7GIZMO_s",
+          "demangled_name": "GizMiniCut_GetGuid(GIZMO_s*)",
+          "address": 5084592,
+          "offset": 4194624,
+          "size": 30,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_Z21MiniCut_RegisterGizmoi",
+          "demangled_name": "MiniCut_RegisterGizmo(int)",
+          "address": 5084624,
+          "offset": 4194656,
+          "size": 366,
+          "match_percent": 91.534485
+        }
+      ]
+    },
+    {
       "name": "legoapi/gizmos/trigger/gizrandom.cpp.o",
       "source": "src/legoapi/gizmos/trigger/gizrandom.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/1/gizrandom.o",
@@ -61727,117 +61878,6 @@
           "offset": 4048336,
           "size": 374,
           "match_percent": 97.38983
-        }
-      ]
-    },
-    {
-      "name": "legoapi/gizmos/trigger/minicut.cpp.o",
-      "source": "src/legoapi/gizmos/trigger/minicut.cpp",
-      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/minicut.o",
-      "functions": [
-        {
-          "name": "_ZL23GizMiniCut_GetGizmoNameP7GIZMO_s",
-          "demangled_name": "GizMiniCut_GetGizmoName(GIZMO_s*)",
-          "address": 5082304,
-          "offset": 4192336,
-          "size": 19,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL23GizMiniCut_GetMaxGizmosPv",
-          "demangled_name": "GizMiniCut_GetMaxGizmos(void*)",
-          "address": 5082336,
-          "offset": 4192368,
-          "size": 20,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL20GizMiniCut_GetOutputP7GIZMO_sii",
-          "demangled_name": "GizMiniCut_GetOutput(GIZMO_s*, int, int)",
-          "address": 5082368,
-          "offset": 4192400,
-          "size": 65,
-          "match_percent": 69.23077
-        },
-        {
-          "name": "_ZL24GizMiniCut_GetNumOutputsP7GIZMO_s",
-          "demangled_name": "GizMiniCut_GetNumOutputs(GIZMO_s*)",
-          "address": 5082448,
-          "offset": 4192480,
-          "size": 12,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL17GizMiniCut_GetPosP7GIZMO_s",
-          "demangled_name": "GizMiniCut_GetPos(GIZMO_s*)",
-          "address": 5082464,
-          "offset": 4192496,
-          "size": 35,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL24GizMiniCut_GetOutputNameP7GIZMO_si",
-          "demangled_name": "GizMiniCut_GetOutputName(GIZMO_s*, int)",
-          "address": 5082512,
-          "offset": 4192544,
-          "size": 44,
-          "match_percent": 93.63636
-        },
-        {
-          "name": "_ZL29GizMiniCut_ReserveBufferSpacePv",
-          "demangled_name": "GizMiniCut_ReserveBufferSpace(void*)",
-          "address": 5082560,
-          "offset": 4192592,
-          "size": 438,
-          "match_percent": 61.342857
-        },
-        {
-          "name": "_ZL23GizMiniCut_UsingSpecialPP7GIZMO_sPviPc",
-          "demangled_name": "GizMiniCut_UsingSpecial(GIZMO_s**, void*, int, char*)",
-          "address": 5083008,
-          "offset": 4193040,
-          "size": 291,
-          "match_percent": 5.119048
-        },
-        {
-          "name": "_ZL20GizMiniCut_AddGizmosP10GIZMOSYS_siPvS1_",
-          "demangled_name": "GizMiniCut_AddGizmos(GIZMOSYS_s*, int, void*, void*)",
-          "address": 5083312,
-          "offset": 4193344,
-          "size": 118,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_Z16GizMiniCut_ResetPvS_S_",
-          "demangled_name": "GizMiniCut_Reset(void*, void*, void*)",
-          "address": 5083440,
-          "offset": 4193472,
-          "size": 303,
-          "match_percent": 89.84536
-        },
-        {
-          "name": "_Z19GizMiniCut_ActivateP7GIZMO_si",
-          "demangled_name": "GizMiniCut_Activate(GIZMO_s*, int)",
-          "address": 5083744,
-          "offset": 4193776,
-          "size": 455,
-          "match_percent": 92.434784
-        },
-        {
-          "name": "_Z15GizMiniCut_LoadPvS_",
-          "demangled_name": "GizMiniCut_Load(void*, void*)",
-          "address": 5084208,
-          "offset": 4194240,
-          "size": 371,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_Z21MiniCut_RegisterGizmoi",
-          "demangled_name": "MiniCut_RegisterGizmo(int)",
-          "address": 5084624,
-          "offset": 4194656,
-          "size": 366,
-          "match_percent": 91.534485
         }
       ]
     },
@@ -69216,22 +69256,6 @@
           "match_percent": 6.760563
         },
         {
-          "name": "_Z24Customiser_NextPieceLeftP10CUSTOMISERiiii",
-          "demangled_name": "Customiser_NextPieceLeft(CUSTOMISER*, int, int, int, int)",
-          "address": 4848704,
-          "offset": 3958736,
-          "size": 309,
-          "match_percent": 75.9
-        },
-        {
-          "name": "_Z25Customiser_NextPieceRightP10CUSTOMISERiiii",
-          "demangled_name": "Customiser_NextPieceRight(CUSTOMISER*, int, int, int, int)",
-          "address": 4849024,
-          "offset": 3959056,
-          "size": 309,
-          "match_percent": 79.455444
-        },
-        {
           "name": "_Z26Customiser_LoadAccessoriesP10CUSTOMISERP23APICHARACTERMODELLIST_s",
           "demangled_name": "Customiser_LoadAccessories(CUSTOMISER*, APICHARACTERMODELLIST_s*)",
           "address": 4849344,
@@ -69280,14 +69304,6 @@
           "match_percent": 7.826087
         },
         {
-          "name": "_Z31Customiser_ResetModelTextureIDsP10CUSTOMISER",
-          "demangled_name": "Customiser_ResetModelTextureIDs(CUSTOMISER*)",
-          "address": 4855920,
-          "offset": 3965952,
-          "size": 195,
-          "match_percent": 100.0
-        },
-        {
           "name": "_Z30Customiser_SaveModelTextureIDsP10CUSTOMISERP16CHARACTERMODEL_s",
           "demangled_name": "Customiser_SaveModelTextureIDs(CUSTOMISER*, CHARACTERMODEL_s*)",
           "address": 4856128,
@@ -69310,14 +69326,6 @@
           "offset": 3966704,
           "size": 102,
           "match_percent": 12.0
-        },
-        {
-          "name": "_Z34Customiser_CopyDefaultPiecesToSaveP10CUSTOMISERP15CUSTOMISESAVE_s",
-          "demangled_name": "Customiser_CopyDefaultPiecesToSave(CUSTOMISER*, CUSTOMISESAVE_s*)",
-          "address": 4856784,
-          "offset": 3966816,
-          "size": 239,
-          "match_percent": 100.0
         },
         {
           "name": "_Z20Customiser_ConfigurePcP9variptr_uS1_iiPFiP11CUSTOMPIECEEPFvS3_P8nufpar_sEPFiS_EP15CUSTOMISESAVE_sPs",
@@ -123017,14 +123025,6 @@
       "match_percent": 0.0
     },
     {
-      "name": "_GLOBAL__sub_I_customiser.cpp",
-      "demangled_name": "_GLOBAL__sub_I_customiser.cpp",
-      "address": 920752,
-      "offset": 30784,
-      "size": 93,
-      "match_percent": 0.0
-    },
-    {
       "name": "_GLOBAL__sub_I_edbobs.cpp",
       "demangled_name": "_GLOBAL__sub_I_edbobs.cpp",
       "address": 924288,
@@ -129668,8 +129668,8 @@
   "summary": {
     "bazel_units": 513,
     "functions": 13454,
-    "assigned_functions": 12319,
+    "assigned_functions": 12320,
     "ambiguous_functions": 231,
-    "unassigned_functions": 904
+    "unassigned_functions": 903
   }
 }

@@ -766,3 +766,43 @@ order, using its existing public header. The move changes no function score:
 `SetPlayerTargetPoint` stays 84.13%. The residual wrapper still contains
 unfinished stubs, including an empty `__used__` local helper; those are not
 moved or used as a matching shortcut.
+
+### Mini-cutscene owner and original basename
+
+The original `gizminicut.cpp` run puts `GizMiniCut_GetGuid` at `0x004d95b0`
+directly between `GizMiniCut_Load` and `MiniCut_RegisterGizmo`, with a
+`_GLOBAL__sub_I_gizminicut.cpp` local-symbol block. The already-exact GetGuid
+body was isolated in a separate `-O2` source; the callback/registration owner
+was `-O3` under the generic `minicut.cpp` name. Moving the unchanged body
+into its original position at `-O3` preserves its exact match. The private
+offset-only data shim was replaced with a real `MINICUT::guid` field at the
+verified 0x1a offset, retaining the 0x30-byte ABI. The empty extra source and
+its obsolete option entry are removed.
+
+Renaming the owner source to the original `gizminicut.cpp` basename, with its
+existing `-O3` option moved to the new path, makes the genuine initializer
+score 99.35% rather than 0%. Whole-binary fuzzy matching rises from
+44.6892% to 44.6912%, with no body regression or exact-match loss. The
+public `minicut.h` stays under its semantic API name; filename spelling
+changes no function body.
+
+### Menu versus model customiser code
+
+The current `menus/screens/customise.cpp` mixed the original menu-oriented
+run at `0x001b8f20..0x001bbbb0` with a separate customiser/model run at
+`0x0049fb20..0x004a29c0`. The latter has an original
+`_GLOBAL__sub_I_customiser.cpp` block with file-local
+`Customiser_PieceAvailable_Default` and `CustomSetData` symbols. This proves
+the basename and boundary, but not the exact historical directory; the new
+`characters/core/customiser.cpp` location is a semantic choice.
+
+Four implemented functions in the second run—`Customiser_NextPieceLeft`,
+`Customiser_NextPieceRight`, `Customiser_ResetModelTextureIDs`, and
+`Customiser_CopyDefaultPiecesToSave`—now live in that owner in original
+relative order at the same effective `-O2`. Their bodies are unchanged. A
+real `customiser.h` supplies the call sites and definition, replacing the
+touched source-local declarations. Matching is unchanged: the two near-exact
+piece selectors retain their scores, both texture/save helpers remain exact,
+and no other function changes. The remainder of the original run includes
+unfinished stubs and absent local data, so this is a partial TU extraction;
+no fake initializer or forced-emission marker is added to imply completion.

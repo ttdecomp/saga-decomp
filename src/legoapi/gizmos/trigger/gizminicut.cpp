@@ -203,6 +203,13 @@ i32 GizMiniCut_Load(void *world_ptr, void *) {
     return 1;
 }
 
+i32 GizMiniCut_GetGuid(GIZMO_s *gizmo) {
+    if (gizmo == NULL || gizmo->object == NULL) {
+        return -1;
+    }
+    return static_cast<MINICUT *>(gizmo->object)->guid;
+}
+
 ADDGIZMOTYPE *MiniCut_RegisterGizmo(i32 type_id) {
     static ADDGIZMOTYPE addtype;
 
