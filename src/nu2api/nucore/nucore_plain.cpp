@@ -7,8 +7,6 @@ extern "C" {
     i32 NuLgtLaserOldCnt;
 }
 #include "nu2api/nucore/nuonline.h"
-struct NUGCUTLOCATORFNENTRY_s;
-extern "C" NUGCUTLOCATORFNENTRY_s *locatorfns;
 //
 // This file provides the C-callable export table that the original binary
 // exposes from its single large nucore translation unit. Every symbol below
@@ -18,8 +16,7 @@ extern "C" NUGCUTLOCATORFNENTRY_s *locatorfns;
 // compatibility until their real bodies land in a domain file.
 //
 // Faithfully transcribed in this TU:
-//   NuDisplayListInit              @0x29ad60 — anchors the static 2D list
-//   NuDisplayListLinkItems         @0x29ae31 — appends N items + NEXT term.
+//   NuDisplayListInit              → android/nudlist_android.c @0x29ab93
 //   NuDisplayListLinkMtl           @0x2e8cc0 — minimal 2D-path mtl link
 //   NuCameraSet                    via NuCameraSetEx(cam,0) (matrix work stubbed)
 //   NuIOS_GetAspectRatio           inline ratio from nuapi screen dims
@@ -193,8 +190,6 @@ namespace {
 
 } // namespace
 
-static i32 NuTimeBar_EngineEnabled;
-static i32 NuTimeBar_GpuFrameOutEnabled;
 static i32 clip_special_objects = 1;
 
 using NUHGOBJVIDEOMEMFN = void (*)(nuhgobj_s *);
@@ -213,7 +208,6 @@ extern "C" {
 }
 
 // C++-linkage helpers defined in sibling TUs.
-void DisplayListCreateDynMtlList(VARIPTR *buf, VARIPTR buf_end); // supportall.cpp
 void NuPadRecordEndFrame(void);                                  // nupad_interface.cpp
 void bgSuspendMain(i32);                                         // main.cpp
 void NuAnimBuffInit(i32, VARIPTR *, VARIPTR);                    // nu2api_nucore_misc.cpp
@@ -232,41 +226,6 @@ extern "C" {
     void NuWindAnimate(NUWIND *wind, f32 frametime);
     void NuTimeBarSetRender(i32 set);
     void NuShaderManagerSetfv(i32 semantic, const f32 *values);
-    void *NuScratchAlloc32(i32 size);
-    void NuScratchRelease(void);
-
-    extern VARIPTR *display_list_buffer_end;
-    extern VARIPTR rndrstream_free;
-    extern VARIPTR rndrstream_end;
-
-    i32 NuThreadCreateCriticalSection(void);
-
-    // Shared with the nudlist TU (original file-static in this TU).
-    static void nudlist_SetNext(nudisplaylistitem_s *item, void *next) {
-        item->next = next;
-    }
-
-    void NuDisplayListResetBuffer(void);
-
-    // The static 2D display list's stream-area base lives at manager+0x4C8
-    // (nudisplaylist_s+0x10 of the embedded 2D list at manager+0x4B8) and points
-    // at manager+0x4FC.
-    static const usize NUDLIST_2D_STREAM_BASE_OFFSET = 0x4C8;
-    static const usize NUDLIST_2D_STREAM_AREA_OFFSET = 0x4FC;
-    static const usize NUDLIST_2D_CRITSEC_OFFSET = 0x5EC;
-
-    // original 0x29ad60
-    void NuDisplayListInit(VARIPTR *buf, VARIPTR *buf_end) {
-        u8 *mgr = (u8 *)&global_dlist_manager;
-        // The static 2D list starts anchored on the stream-head sentinel.
-        // DisplayListCreateDynMtlList initialises the sentinel and mtl_last.
-        *(u8 **)(mgr + NUDLIST_2D_STREAM_BASE_OFFSET) = mgr + NUDLIST_2D_STREAM_AREA_OFFSET;
-
-        DisplayListCreateDynMtlList(buf, *buf_end);
-        NuDisplayListResetBuffer();
-
-        *(i32 *)(mgr + NUDLIST_2D_CRITSEC_OFFSET) = NuThreadCreateCriticalSection();
-    }
 
     // ---------------------------------------------------------------------------
     // Redirected symbols — real bodies live elsewhere (kept as comments)
@@ -508,7 +467,7 @@ extern "C" {
         }
         prev_lock = lock;
     }
-    extern nudisplayscene_s currentScene;
+    extern nurenderscene_s currentScene;
     i32 NuRndrDoingScreenGrab;
     i32 motionBlurAccumActiveThisFrame;
 
@@ -922,73 +881,10 @@ extern "C" {
     void NuDisplayListEndCriticalSection(void) {
         NuThreadCriticalSectionEnd(global_dlist_manager.loading_critical_section);
     }
-    VARIPTR *NuDisplayListLinkItemVP(nudisplaylist_s *list, u8 type, void *call_addr, VARIPTR *buf) {
-        auto *call = reinterpret_cast<nudisplaylistitem_s *>(buf->void_ptr);
-        list->mtl_last->next = call;
-        call->type = type;
-        call->id = 3;
-        call->next = call_addr != nullptr ? call_addr : call + 2;
-
-        auto *next = call + 1;
-        next->type = 0x8d;
-        next->id = 1;
-        next->next = list->dyn_geom + 1;
-        list->mtl_last = next;
-        buf->addr += sizeof(nudisplaylistitem_s) * 2;
-        return call_addr != nullptr ? nullptr : buf;
-    }
-    void NuDisplayListLinkItem(nudisplaylist_s *list, u8 type, void *call_addr) {
-        NuDisplayListLinkItemVP(list, type, call_addr, NuDisplayListGetBuffer());
-    }
-    // Append `count` item slots from the shared stream buffer, then a NEXT
-    // terminator. Original 0x29ae31.
-    VARIPTR *NuDisplayListLinkItems(nudisplaylist_s *list, i32 count) {
-        VARIPTR *buf = NuDisplayListGetBuffer();
-        nudlist_SetNext(list->mtl_last, buf->void_ptr);
-        list->items = reinterpret_cast<nudisplaylistitem_s *>(buf->void_ptr);
-        buf->addr += count * sizeof(nudisplaylistitem_s);
-
-        auto *terminator = reinterpret_cast<nudisplaylistitem_s *>(buf->void_ptr);
-        terminator->type = 0x8d;
-        terminator->id = 1;
-        nudlist_SetNext(terminator, list->dyn_geom + 1);
-        list->mtl_last = terminator;
-        buf->addr += 0x10;
-        return buf;
-    }
 } // extern "C"
 
 // Local helpers matching original static display-list setters (t local symbols)
 
-static __used__ void NuDisplayListSetID(nudisplaylistitem_s *item, unsigned char id) {
-    item->id = id;
-}
-static __used__ void NuDisplayListAddItem(nudisplaylist_s *list, unsigned char id, void *item) {
-    (void)list;
-    (void)id;
-    (void)item;
-}
-static __used__ void NuDisplayListSetItem(nudisplaylistitem_s *item, unsigned char a, unsigned char b, void *c) {
-    (void)item;
-    (void)a;
-    (void)b;
-    (void)c;
-}
-static __used__ void NuDisplayListSetNext(nudisplaylistitem_s *item, void *next) {
-    item->next = next;
-}
-static __used__ void NuDisplayListSetID_CNT(nudisplaylistitem_s *item) {
-    item->id = 0;
-}
-static __used__ void NuDisplayListSetID_RET(nudisplaylistitem_s *item) {
-    item->id = 4;
-}
-static __used__ void NuDisplayListSetID_CALL(nudisplaylistitem_s *item) {
-    (void)item;
-}
-static __used__ void NuDisplayListSetID_NEXT(nudisplaylistitem_s *item) {
-    item->id = 1;
-}
 
 extern "C" {
     // original 0x2e8cc0
@@ -1043,9 +939,6 @@ extern "C" {
         last->next = continuation;
         last->id = 1;
         list->mtl_last = last;
-    }
-    void *NuDisplayListPrepareFaceonPS(VARIPTR *, void *faceon, NUMTX *) {
-        return faceon;
     }
     void *DisplayListCreateFaceonTransformPS(VARIPTR *buffer, NUMTX *transform, NUMTL *mtl, void *faceon);
     void *DisplayListCreateGeomTransformPS(VARIPTR *buffer, NUMTX *transform, NUMTL *mtl, void *next, void *tx);
@@ -2773,41 +2666,6 @@ extern "C" {
     void *NuMemReAllocFn(void *ptr, u32 size) {
         return NuMemoryGet()->GetThreadMem()->_BlockReAlloc(ptr, size, 4, 1, "", 0);
     }
-    u8 PS2_SCRATCH_BASE[0x8000];
-    static u8 *ps2_scratch_free;
-
-    // Original @0x316d41.
-    void NuScratchReset(void) {
-        ps2_scratch_free = PS2_SCRATCH_BASE;
-    }
-
-    static void *NuScratchAllocAligned(i32 size, usize alignment) {
-        if (ps2_scratch_free == NULL) {
-            NuScratchReset();
-        }
-        u8 *previous = ps2_scratch_free;
-        u8 *allocation = reinterpret_cast<u8 *>(ALIGN(reinterpret_cast<usize>(ps2_scratch_free), alignment));
-        ps2_scratch_free = allocation + ALIGN(size, 4);
-        *reinterpret_cast<u8 **>(ps2_scratch_free) = previous;
-        ps2_scratch_free += sizeof(previous);
-        return allocation;
-    }
-
-    // Original @0x316e45 / 0x316d5d / 0x316dd1.
-    void *NuScratchAlloc128(i32 size) {
-        return NuScratchAllocAligned(size, 16);
-    }
-    void *NuScratchAlloc32(i32 size) {
-        return NuScratchAllocAligned(size, 4);
-    }
-    void *NuScratchAlloc64(i32 size) {
-        return NuScratchAllocAligned(size, 8);
-    }
-
-    // Original @0x316eb9.
-    void NuScratchRelease(void) {
-        ps2_scratch_free = *reinterpret_cast<u8 **>(ps2_scratch_free - sizeof(ps2_scratch_free));
-    }
     void *NuPtrBlockRead(NUFILE file) {
         void *block = NuMemFileAddr(file);
         return NuPtrBlockFix(block);
@@ -3096,7 +2954,7 @@ extern "C" {
         currentScene.accumulation_frames = frames;
         currentScene.accumulation_mode = mode;
     }
-    extern nudisplayscene_s currentScene;
+    extern nurenderscene_s currentScene;
     void NuBackbufferCopy(i32 texture_id) {
         currentScene.unknown_214 = static_cast<u32>(texture_id);
     }
@@ -3551,9 +3409,6 @@ extern "C" {
     }
     void NuPostBloom(i32, const NuBloomParameters *parameters) {
         currentScene.bloom = *parameters;
-    }
-    // This entry point is empty in the original Android binary.
-    void NuRainSetFall(void) {
     }
     void NuRenderContextInit(void) {
         extern f32 g_renderContext_viewProj[16];
@@ -4018,12 +3873,6 @@ extern "C" {
         ++render_state.state.vertex_groups_id;
     }
 
-    void NuTimeBarSlotLastValue(void) {
-    }
-    void NuTimeBarSlotLastValueMicroseconds(void) {
-    }
-    void NuTimeBarSlotSetEx(void) {
-    }
 
     // ---------------------------------------------------------------------------
     // Light / wind / particles / debris
@@ -4979,20 +4828,8 @@ extern "C" {
         }
     }
 #undef NUGCUT_CURVE_VALUE
-    void NuGCutSceneDestroy(NUGCUTSCENE_s *cutscene) {
-        if (cutscene->character_system != NULL && NuCutSceneDestroyCharacters != NULL) {
-            NuCutSceneDestroyCharacters(cutscene);
-        }
-    }
-    void NuGCutSceneLoadAddr(void) {
-    }
-    void NuGCutSceneSysInit(NUGCUTLOCATORFNENTRY_s *locator_functions) {
-        locatorfns = locator_functions;
-    }
     void NuGCutSetCutAudioStream(i32 stream) {
         NuGCutAudioStream = stream;
-    }
-    void NuGSceneSetCrossFade(void) {
     }
     void NuGHGRelocate(void) {
     }
@@ -5049,8 +4886,6 @@ extern "C" {
             value = (value + dead_zone) * 255 / (255 - dead_zone);
         }
         return value;
-    }
-    void NuPs2VideoScreenDump(void) {
     }
     // ---------------------------------------------------------------------------
     // Culling / visibility / portals / occlusion
@@ -5282,15 +5117,6 @@ extern "C" {
     void NuOcclusionManagerSetOccluderScreenSpaceThreshold(f32 threshold) {
         g_OcclusionManager.unknown_15c = threshold;
     }
-    void NuInvalidateClipRanges(nudldlistscene_s *scene) {
-        for (i32 index = 0; index < scene->nclip_objects; ++index) {
-            if (scene->lod_ranges[index] != 0.0f) {
-                scene->lod_ranges[index] = FLT_MAX;
-            }
-            scene->far_clip_ranges[index] = FLT_MAX;
-        }
-    }
-
     // ---------------------------------------------------------------------------
     // Viewport
     // ---------------------------------------------------------------------------
@@ -5298,15 +5124,6 @@ extern "C" {
     // ---------------------------------------------------------------------------
     // Strings / conversion / Unicode
     // ---------------------------------------------------------------------------
-
-    void NuQTAddElement(void) {
-    }
-    void NuQTCreate(void) {
-    }
-    void NuQTRead(void) {
-    }
-    void NuQTWrite(void) {
-    }
 
     // ---------------------------------------------------------------------------
     // Containers / lists / params
@@ -5325,38 +5142,13 @@ extern "C" {
     }
     void NuHtmlVBarGraph(void) {
     }
-    // Profiling timebar sets are a deferred subsystem (the real one is
-    // NuTimeBarCreateSet @0x2d7450 -> CreateSetEx @0x2d73f0 -> CreateTimeBar
-    // @0x2a9860). Consumers only ever hand the returned handle to the
-    // NuTimeBarSlot* stubs, so NULL behaves like profiling disabled.
-    void *NuTimeBarCreateSet(i32) {
-        return NULL;
-    }
-    void NuTimeBarCreateSetEx2(void) {
-    }
-    void NuTimeBarDestroySet(void) {
-    }
-    void NuTimeBarEnable(i32 enabled) {
-        NuTimeBar_EngineEnabled = enabled;
-    }
-    void NuTimeBarIndicateGpuFrameOut(i32 enabled) {
-        NuTimeBar_GpuFrameOutEnabled = enabled;
-    }
     void NuTimeBarInit(void) {
         VARIPTR unused = {};
         NuTimeBarInitEx(NULL, unused);
     }
-    extern "C++" {
-        static i32 NuTimeBar_PeakReset;
-    }
-    void NuTimeBarResetPeaks(void) {
-        NuTimeBar_PeakReset = 1;
-    }
     void NuTimeBarSetRender(i32) {
     }
     void NuTimeBarSetRenderHorizontal(void) {
-    }
-    void NuTimeBarSetScaleY(void) {
     }
 
     // ---------------------------------------------------------------------------
@@ -5447,86 +5239,6 @@ extern "C" {
     // ---------------------------------------------------------------------------
 
     void NuSplineList(void) {
-    }
-    i32 NuOnlineAchievementAchievedExPS(i32 player, i32 achievement, NUONLINEACHIEVEMENTCALLBACK callback) {
-        // Preserve the original unsigned bound, including its acceptance of index 2.
-        if ((u32)player > 2) {
-            return 0;
-        }
-        return NuOnlineAchievementAchievedProfile(g_nupadMapping[player].port, achievement, callback);
-    }
-    i32 NuOnlineAchievementAchievedPS(i32 achievement, NUONLINEACHIEVEMENTCALLBACK callback) {
-        extern i32 g_signedinUser;
-        return NuOnlineAchievementAchievedProfile(g_signedinUser, achievement, callback);
-    }
-    i32 NuOnlineHasPlayerDownloadedPS(u32) {
-        return 0;
-    }
-    i32 NuOnlineHasPlayerSignedInExPS(void) {
-        return 0;
-    }
-    extern i32 g_signedinUser;
-    i32 NuOnlineHasPlayerSignedInPS(void) {
-        return g_signedinUser != -1;
-    }
-    void NuOnlineInitPS(void) {
-    }
-    void NuOnlineSetContextExPS(i32 player, i32 context, i32 value) {
-        if ((u32)player <= 2) {
-            NuOnlineSetContextProfilePS(g_nupadMapping[player].port, context, value);
-        }
-    }
-    void NuOnlineSetContextPS(i32 context, i32 value) {
-        NuOnlineSetContextProfilePS(g_signedinUser, context, value);
-    }
-    void NuOnlineSetDefaultContextExPS(i32 player, i32 context, i32 value) {
-        if ((u32)player <= 2) {
-            NuOnlineSetDefaultContextProfilePS(g_nupadMapping[player].port, context, value);
-        }
-    }
-    void NuOnlineSetDefaultContextPS(i32 context, i32 value) {
-        NuOnlineSetDefaultContextProfilePS(g_signedinUser, context, value);
-    }
-    void NuOnlineSetDefaultPresenceModeExPS(i32 player, i32 mode) {
-        if ((u32)player <= 2) {
-            NuOnlineSetDefaultPresenceModeProfilePS(g_nupadMapping[player].port, mode);
-        }
-    }
-    void NuOnlineSetDefaultPresenceModePS(i32 mode) {
-        NuOnlineSetDefaultPresenceModeProfilePS(g_signedinUser, mode);
-    }
-    void NuOnlineSetPresenceModeExPS(i32 player, i32 mode) {
-        if ((u32)player <= 2) {
-            NuOnlineSetPresenceModeProfilePS(g_nupadMapping[player].port, mode);
-        }
-    }
-    void NuOnlineSetPresenceModePS(i32 mode) {
-        NuOnlineSetPresenceModeProfilePS(g_signedinUser, mode);
-    }
-    void NuOnlineSetProfilePlayer(void) {
-    }
-    void NuOnlineSetPropertyExPS(i32 player, i32 property, i32 size, void *data) {
-        if ((u32)player <= 2) {
-            NuOnlineSetPropertyProfilePS(g_nupadMapping[player].port, property, size, data);
-        }
-    }
-    void NuOnlineSetPropertyPS(i32 property, i32 size, void *data) {
-        NuOnlineSetPropertyProfilePS(g_signedinUser, property, size, data);
-    }
-    i32 NuOnlineSignInPlayerPS(void) {
-        return 0;
-    }
-    void NuFmvInit(void) {
-    }
-    i32 NuFmvPlayV(i32 option, ...) {
-        return 1;
-    }
-    // The original wrapper forwards eight 32-bit arguments through a tagged
-    // option list. Option meanings beyond this layout remain unrecovered.
-    i32 NuFmvPlay(u32 argument0, i32 enabled, u32 argument2, u32 argument3, u32 argument4, u32 argument5, u32 argument6,
-                  u32 argument7) {
-        return NuFmvPlayV(2, argument0, enabled != 0 ? 3 : 0, 4, argument2, 5, argument3, 6, argument4, 7, argument5, 8,
-                          argument6, argument7, 1);
     }
     extern void (*nuapi_endframe_callbackfn)(void);
     void NuRegisterEndFrameCallBackFn(void (*callback)(void)) {

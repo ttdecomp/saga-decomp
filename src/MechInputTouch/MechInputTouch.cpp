@@ -4,6 +4,7 @@
 #include "legoapi/gizmo/base/TeleportObjectInterface.h"
 #include "nu2api/nu3d/nuspline.h"
 #include "legoapi/gizmos/object/gizpanel.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "MechInputTouch_types.h"
 #include "gamelib/util/gamelib_util_types.h"
 #include "legoapi/gizmo/base/GizForceObjectInterface.h"
@@ -17,7 +18,6 @@
 
 extern i16 id_RANCOR, id_ANAKINJEDI;
 i32 GameRayCast(NUVEC *, NUVEC *, f32, i32);
-void CalcAveragePosAndRad(GIZBUILDIT_s &, VuVec &, f32 &, bool);
 bool CalculateRayBoxIntersection(VuVec const &, VuVec const &, VuVec const &, VuVec const &, f32, f32 &);
 extern "C" void NewRayCastGetImpactNormal(NUVEC *);
 f32 CalcCapsuleIntersectDistance(VuVec const &, VuVec const &, f32, VuVec const &, f32);

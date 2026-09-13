@@ -7,7 +7,7 @@
 #include "nu2api/nu3d/nupostparams.h"
 
 struct nunativetex_s;
-struct nudldlistscene_s;
+struct nudisplayscene_s;
 struct nuinstanim_s;
 struct nuhspecial_s;
 struct numtx_s;
@@ -37,7 +37,7 @@ typedef struct nuvideoresheader_s {
 
 extern NUVIDEORESHEADER g_VideoResHeader;
 
-struct nudisplayscene_s {
+struct nurenderscene_s {
     u32 render_scene_id;  // 0x00
     void *state_ptr;      // 0x04
     u32 clear_flags;      // 0x08
@@ -177,7 +177,7 @@ typedef struct nugscn_s {
     NUPORTALSPHERE *portal_spheres; // 0xf8, one 0x10-byte sphere per instance
     NUPORTALBOX *portal_boxes;      // 0xfc, one 0x20-byte box per instance
     undefined pad_100[0x10];
-    struct nudldlistscene_s *display_list;
+    struct nudisplayscene_s *display_list;
     undefined pad_114[0x0c];
     i32 visibility_result_instance_count; // 0x120
     undefined pad_124[4];
@@ -382,6 +382,10 @@ DECOMP_ASSERT(offsetof(NUGSCN, instance_visibility_flags) == 0x13c, "NUGSCN port
 DECOMP_ASSERT(offsetof(NUGSCN, animation_end_frames) == 0x1e0, "NUGSCN animation end-frame table offset");
 
 #ifdef __cplusplus
+void *NuGScnBufferAllocAligned(i32 size, i32 alignment);
+void NuGScnDestroyPS(NUGSCN *scene);
+void ReadInstAnimBlock(i32 file, NUGSCN *scene);
+void ReadInstAnimBlockDlist(i32 file, NUGSCN *scene);
 i32 NuGScnReadTexturesPS(i32 file, VARIPTR *buf, VARIPTR buf_end);
 void NuGScnCreatePS(NUGSCN *scene, VARIPTR *buf, VARIPTR *buf_end);
 i32 NuGScnFixupTID(NUGSCN *scene, i32 tid);

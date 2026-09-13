@@ -52,6 +52,7 @@ void KillGameObject(GameObject_s *object, i32 reason, i32 flags);
 void InitSurfaceInfo(GameObject_s *object);
 i32 SetObjOnSurface(GameObject_s *object, i32 mode);
 i32 Game_IgnoreInput();
+i32 GameRayCast(NUVEC *position, NUVEC *displacement, f32 radius, i32 mask);
 GameObject_s *GetNamedGameObject(AISYS_s *aisys, char *name);
 char *GameObj_GetName(i32 model, GameObject_s *object, char *buffer);
 APIOBJECT_s *GameAPIOBJECTFromObjID(u8 object_id);

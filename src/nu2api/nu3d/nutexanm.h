@@ -109,6 +109,10 @@ extern "C" {
     void NuTexAnimEnvProc(nutexanimenv_s *env);
     nutexanimenv_s *NuTexAnimEnvCreate(VARIPTR *buffer, numtl_s *material, u16 *ids, nutexanimprog_s *program);
     nutexanimprog_s *NuTexAnimProgFind(char *name);
+    nutexanimprog_s *NuTexAnimProgCreate(VARIPTR *buffer, i32 instruction_count, char *name);
+    void NuTexAnimProgDestroy(nutexanimprog_s *program);
+    nutexanimprog_s *NuTexAnimProgRead(VARIPTR *buffer, char *path);
+    void NuTexAnimProgWrite(char *path, nutexanimprog_s *program);
     nutexanimprog_s *NuTexAnimProgReadScript(char *path, VARIPTR *buffer);
     void NuTexAnimProgAssembleEnd(nutexanimprog_s *program);
     void NuTexAnimAddList(nutexanim_s *anim);

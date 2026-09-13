@@ -1,11 +1,10 @@
 #include "nu2api_nucore_types.h"
+#include "nu2api/nu3d/android/nudlist_callbacks.h"
 #include "nu2api/nu3d/nulgtlaser.h"
 #include "nu2api/nu3d/nuprim.h"
 #include "nu2api/numath/nuvec4.h"
 #include "nu2api/numath/nutrig.h"
 extern "C" {
-    void *NuScratchAlloc32(i32);
-    void NuScratchRelease();
     i32 NuRndrBeginSceneEx(i32, i32, i32);
     void NuRndrEndSceneEx(i32);
     extern i32 NuPrimCSPos;
@@ -41,8 +40,6 @@ extern "C" f32 *NuAnimCurveExtractAllNodeCurves_3(ani3_animheader_s *, i32, f32,
 extern "C" void NuAnimData2CalcTime(nuanimdata2_s *, f32, nuanimtime_s *);
 extern "C" f32 NuAnimCurve2CalcValEx(nuanimcurve2_s *, nuanimtime_s *, u32);
 void NuGCutRigidCalcMtx_3(NUGCUTRIGID_s *, f32, numtx_s *);
-extern void *globalbuffer;
-extern i32 MaxAnimJoints;
 
 i32 GetIntCurveVal(ani3_animheader_s *animation, f32 *values, i32 curve) {
     if (animation->curve_types[curve] == 10) {
@@ -66,9 +63,6 @@ void NuHGobjRead(variptr_u *, char *) {
 static void NuHtmlFlush(i32) {
 }
 
-void NuDDSGetSize(char const *) {
-}
-
 void NuErrorPrint(char *message) {
     printf("%s", message);
 }
@@ -82,12 +76,7 @@ void NuWindFreeGrp(NuWindGType *group) {
     }
 }
 
-extern "C" void *NuAnimBuffCreate(i32 max_joints, variptr_u *buf);
 
-void NuAnimBuffInit(i32 max_joints, variptr_u *buf, variptr_u) {
-    MaxAnimJoints = max_joints;
-    globalbuffer = NuAnimBuffCreate(max_joints, buf);
-}
 
 void NuFntFindStart(nutex_s *, i32 *, i32 *, i32, i32) {
 }
@@ -106,40 +95,7 @@ void NuDebugMsgPrint(char *message) {
     printf("%s", message);
 }
 
-// original 0x2955ee -- lightmap display-list packet.  Mode 1 installs one
-// lightmap; mode 2 walks the packet's three lightmap ids.  The latter really
-// does select texture unit zero for each entry in the target binary.
-void NuIOSDLLightmap(void *arg) {
-    i32 *packet = static_cast<i32 *>(arg);
-    const i32 mode = packet[0];
-
-    if (mode == 1) {
-        const i32 texture_id = packet[1] > 0 ? packet[1] : 1;
-        NUNATIVETEX *texture = NuTexGetNative(texture_id);
-        glActiveTexture(GL_TEXTURE0);
-        g_currentTexUnit = 0;
-        glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
-    } else if (mode == 2) {
-        for (i32 index = 0; index < 3; ++index) {
-            const i32 texture_id = packet[index + 2] > 0 ? packet[index + 2] : 1;
-            NUNATIVETEX *texture = NuTexGetNative(texture_id);
-            glActiveTexture(GL_TEXTURE0);
-            g_currentTexUnit = 0;
-            glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
-        }
-    } else {
-        return;
-    }
-
-    const f32 *offset = reinterpret_cast<const f32 *>(packet + 5);
-    const f32 shader_offset[4] = {offset[0], -offset[1], 0.0f, 0.0f};
-    NuShaderManagerSetfv(0x58, shader_offset);
-}
-
 void NuVpSetDestRect(float, float, float, float) {
-}
-
-void NuDDSGetMipLevel(i32, i32, i32, NUTEXFORMAT, i32, bool, i32, i32, i32 &, i32 &, i32 &) {
 }
 
 extern "C" u8 CutSceneBoundingBoxTrackRoot;
@@ -408,51 +364,12 @@ void NuGCutRigidCalcMtx(NUGCUTRIGID_s *rigid, float frame, numtx_s *mtx) {
     NuMtxTranslate(mtx, reinterpret_cast<NUVEC *>(&rigid->base_matrix.m30));
 }
 
-void NuIOSDLFogCallback(void *arg) {
-    const NUFOGSTATE *fog = static_cast<const NUFOGSTATE *>(arg);
-    if (fog->enabled != 0) {
-        const u32 colour = fog->colour;
-        const f32 fog_colour[4] = {
-            static_cast<f32>(colour & 0xff) / 255.0f,
-            static_cast<f32>((colour >> 8) & 0xff) / 255.0f,
-            static_cast<f32>((colour >> 16) & 0xff) / 255.0f,
-            static_cast<f32>(colour >> 24) / 255.0f,
-        };
-        const f32 fog_params[4] = {
-            fog->near_distance,
-            fog->far_distance,
-            fog->far_distance - fog->near_distance,
-            fog->density,
-        };
-        NuShaderManagerSetfv(0x47, fog_colour);
-        NuShaderManagerSetfv(0x48, fog_params);
-    } else {
-        const f32 fog_params[4] = {100000.0f, 0.0f, 100000.0f, 0.0f};
-        NuShaderManagerSetfv(0x48, fog_params);
-    }
-}
-
-// original 0x295420 -- legacy packet containing three texture ids.
-void NuIOSDLLightmapOld(void *arg) {
-    const i32 *texture_ids = static_cast<const i32 *>(arg);
-    for (i32 index = 0; index < 3; ++index) {
-        const i32 texture_id = texture_ids[index] > 0 ? texture_ids[index] : 1;
-        NUNATIVETEX *texture = NuTexGetNative(texture_id);
-        glActiveTexture(GL_TEXTURE0 + index);
-        g_currentTexUnit = index;
-        glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
-    }
-
-    const f32 shader_offset[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    NuShaderManagerSetfv(0x58, shader_offset);
-}
-
 // NuIOSDLMtlCallback is transcribed in android/nuiosdl_gl.cpp (original 0x29c480).
 
 // original 0x2f87d0
 void NuDisplayListCreate(nudisplayscene_s *raw_scene, variptr_u *buffer, variptr_u, i32 item_count, i32 material_count,
                          i32, i32, i32 sort_priority_count, i32, i32 allocate_materials) {
-    NUDLDLISTSCENE *scene = reinterpret_cast<NUDLDLISTSCENE *>(raw_scene);
+    NUDLDLISTSCENE *scene = raw_scene;
     scene->nitems = item_count;
     scene->nmtls = material_count;
 
@@ -530,9 +447,6 @@ void NuDisplayListCreate(nudisplayscene_s *raw_scene, variptr_u *buffer, variptr
 void NuFadeSetFxCodeMtls(nugeom_s *, unsigned char *) {
 }
 
-void NuDisplaySceneUnclip(nudisplayscene_s *) {
-}
-
 void NuGCutRigidCalcMtx_3(NUGCUTRIGID_s *rigid, float frame, numtx_s *mtx) {
     ani3_animheader_s *animation = reinterpret_cast<ani3_animheader_s *>(rigid->animation);
     f32 *values = NuAnimCurveExtractAllNodeCurves_3(animation, 0, frame, NULL);
@@ -561,24 +475,6 @@ void NuGCutRigidCalcMtx_3(NUGCUTRIGID_s *rigid, float frame, numtx_s *mtx) {
     NuMtxTranslate(mtx, reinterpret_cast<NUVEC *>(&rigid->base_matrix.m30));
 }
 
-nuanimdatachunk_s *NuAnimDataChunkCreate(i32 curve_set_count) {
-    NuMemoryManager *memory = NuMemoryGet()->GetThreadMem();
-    u8 *data = static_cast<u8 *>(memory->_BlockAlloc(0x14, 4, 1, "", 0));
-    *reinterpret_cast<i32 *>(data) = curve_set_count;
-    *reinterpret_cast<void **>(data + 4) = NULL;
-    *reinterpret_cast<void **>(data + 8) = NULL;
-    *reinterpret_cast<void **>(data + 0xc) = NULL;
-    *reinterpret_cast<void **>(data + 0x10) = NULL;
-
-    const u32 array_size = static_cast<u32>(curve_set_count) * sizeof(void *);
-    void **curve_sets = static_cast<void **>(memory->_BlockAlloc(array_size, 4, 1, "", 0));
-    *reinterpret_cast<void ***>(data + 8) = curve_sets;
-    memset(curve_sets, 0, array_size);
-    return reinterpret_cast<nuanimdatachunk_s *>(data);
-}
-
-void NuGCutSceneSysInitVfx(i32 (*)(char const *), i32 (*)(i32, VuMtx *), void (*)(i32), void (*)(i32, VuMtx *)) {
-}
 
 // NuIOSDLGeom2DCallback is transcribed in android/nuiosdl_gl.cpp (original 0x29d1a0).
 
@@ -586,77 +482,10 @@ i32 NuIOS_GetInAppProduct(i32, NuIOS_InAppProduct *) {
     return 0;
 }
 
-extern "C" i32 g_signedinUser;
 
-void NuOnlineResetProfiles() {
-    g_signedinUser = -1;
-}
 
-extern "C" void NuAnimCurveSetDestroy(void *, i32);
 
-void NuAnimDataChunkDestroy(nuanimdatachunk_s *chunk) {
-    u8 *data = reinterpret_cast<u8 *>(chunk);
-    const i32 curve_set_count = *reinterpret_cast<i32 *>(data);
-    void **curve_sets = *reinterpret_cast<void ***>(data + 8);
-    const i32 destroy_curves = *reinterpret_cast<void **>(data + 0x10) == NULL;
 
-    for (i32 index = 0; index < curve_set_count; ++index) {
-        if (curve_sets[index] != NULL) {
-            NuAnimCurveSetDestroy(curve_sets[index], destroy_curves);
-        }
-    }
-
-    void *curve_data = *reinterpret_cast<void **>(data + 0xc);
-    if (curve_data != NULL) {
-        NuMemoryGet()->GetThreadMem()->BlockFree(curve_data, 0);
-    }
-    void *shared_data = *reinterpret_cast<void **>(data + 0x10);
-    if (shared_data != NULL) {
-        NuMemoryGet()->GetThreadMem()->BlockFree(shared_data, 0);
-    }
-    if (curve_sets != NULL) {
-        NuMemoryGet()->GetThreadMem()->BlockFree(curve_sets, 0);
-    }
-    NuMemoryGet()->GetThreadMem()->BlockFree(chunk, 0);
-}
-
-void NuAnimRelocatePtrsANI3(ani3_animheader_s *, i32) {
-}
-
-void NuGCutLocatorCalcMtx_3(NUGCUTLOCATOR_s *locator, numtx_s *mtx, float frame) {
-    ani3_animheader_s *animation = reinterpret_cast<ani3_animheader_s *>(locator->animation);
-    f32 *values = NuAnimCurveExtractAllNodeCurves_3(animation, 0, frame, NULL);
-    if ((*animation->node_flags & 1) == 0) {
-        NuMtxSetIdentity(mtx);
-    } else {
-        NUANGVEC angles = {
-            static_cast<NUANG>(values[3] * 10430.378f),
-            static_cast<NUANG>(values[4] * 10430.378f),
-            static_cast<NUANG>(values[5] * 10430.378f),
-        };
-        NuMtxSetRotateXYZ(mtx, &angles);
-    }
-    NUVEC translation = {values[0], values[1], values[2]};
-    NuMtxTranslate(mtx, &translation);
-    mtx->m02 = -mtx->m02;
-    mtx->m12 = -mtx->m12;
-    mtx->m20 = -mtx->m20;
-    mtx->m21 = -mtx->m21;
-    mtx->m23 = -mtx->m23;
-    mtx->m32 = -mtx->m32;
-    NuMtxTranslate(mtx, reinterpret_cast<NUVEC *>(&locator->base_matrix.m30));
-}
-
-// Original 0x294764. The skin packet begins with the number of palette
-// matrices followed by their contiguous 4x4 values.
-void SAGA_HOST_WEAK NuIOSDLSkinMtxCallback(void *data) {
-    i32 *packet = static_cast<i32 *>(data);
-    const i32 matrix_count = *packet++;
-    NUSHADEROBJECT *shader = NuShaderManagerGetCurrentShader();
-    if (shader != NULL) {
-        NuShaderObjectSetElementsfv(shader, 0x5a, 0, matrix_count * 4, reinterpret_cast<const f32 *>(packet));
-    }
-}
 
 void NuGCutCharAnimProcess_3(NUGCUTCHAR_s *character, f32 frame, NUMTX *matrix, i32 *visible, u32 *animation_index,
                              f32 *animation_rate, f32 *blend_time, f32 *animation_start_frame, i32 *layer_mask) {
@@ -710,130 +539,13 @@ void NuGCutCharAnimProcess_3(NUGCUTCHAR_s *character, f32 frame, NUMTX *matrix, 
     }
 }
 
-i32 NuGCutLocatorIsVisble_3(NUGCUTLOCATOR_s *locator, float frame, float *scale, float *rate) {
-    static char locator_scale_filter[] = {6, 7, 8, static_cast<char>(0xff)};
-    static char locator_filter[] = {6, 7, static_cast<char>(0xff)};
-    static char sfx_filter[] = {3, static_cast<char>(0xff)};
-    ani3_animheader_s *animation = reinterpret_cast<ani3_animheader_s *>(locator->animation);
-    char *filter = animation->curve_count == 4 ? sfx_filter
-                                               : (animation->curve_count == 8 ? locator_filter : locator_scale_filter);
-    f32 *values = NuAnimCurveExtractAllNodeCurves_3(animation, 0, frame, filter);
-    if (animation->curve_count == 4) {
-        f32 visible = values[3];
-        return static_cast<i32>(visible < 0.0f ? visible - 0.5f : visible + 0.5f);
-    }
-    f32 visible = values[7];
-    i32 result = static_cast<i32>(visible < 0.0f ? visible - 0.5f : visible + 0.5f);
-    if (result != 0 && scale != NULL) {
-        *scale = values[6];
-    }
-    if (rate != NULL) {
-        *rate = animation->curve_count < 9 ? 1.0f : values[8];
-    }
-    return result;
-}
 
-extern "C" i32 NuGCutLocatorCalcMtx(NUGCUTLOCATOR_s *locator, float frame, NUMTX *mtx, nuanimtime_s *time) {
-    if (locator->animation == NULL) {
-        *mtx = locator->base_matrix;
-        return 0;
-    }
-    if (*reinterpret_cast<u32 *>(locator->animation) + 0xbeb1b6ccU < 2) {
-        NuGCutLocatorCalcMtx_3(locator, mtx, frame);
-        return 0;
-    }
-    nuanimdata2_s *animation = locator->animation;
-    auto evaluate = [&](u32 curve) {
-        u8 type = animation->curve_types[curve];
-        return type == 0 ? animation->curves[curve].data.constant
-                         : NuAnimCurve2CalcValEx(&animation->curves[curve], time, type);
-    };
-    if ((*animation->node_flags & 1) == 0) {
-        NuMtxSetIdentity(mtx);
-    } else {
-        NUANGVEC angles = {
-            static_cast<NUANG>(evaluate(3) * 10430.378f),
-            static_cast<NUANG>(evaluate(4) * 10430.378f),
-            static_cast<NUANG>(evaluate(5) * 10430.378f),
-        };
-        NuMtxSetRotateXYZ(mtx, &angles);
-    }
-    NUVEC translation = {evaluate(0), evaluate(1), evaluate(2)};
-    NuMtxTranslate(mtx, &translation);
-    mtx->m02 = -mtx->m02;
-    mtx->m12 = -mtx->m12;
-    mtx->m20 = -mtx->m20;
-    mtx->m21 = -mtx->m21;
-    mtx->m23 = -mtx->m23;
-    mtx->m32 = -mtx->m32;
-    NuMtxTranslate(mtx, reinterpret_cast<NUVEC *>(&locator->base_matrix.m30));
-    return 0;
-}
-
-extern "C" i32 NuGCutLocatorIsVisble(NUGCUTLOCATOR_s *locator, float frame, nuanimtime_s *time, float *scale,
-                                     float *rate) {
-    if (locator->animation == NULL) {
-        const i32 visible = locator->flags & 8;
-        if (scale != NULL && visible != 0) {
-            *scale = locator->locator_scale;
-        }
-        return visible;
-    }
-    if (*reinterpret_cast<u32 *>(locator->animation) + 0xbeb1b6ccU < 2) {
-        return NuGCutLocatorIsVisble_3(locator, frame, scale, rate);
-    }
-    nuanimdata2_s *animation = locator->animation;
-    if (rate != NULL) {
-        *rate = 1.0f;
-    }
-    nuanimcurve2_s *curves = animation->curves;
-    u8 *curve_types = animation->curve_types;
-    if (animation->curve_count == 4) {
-        const i8 type = curve_types[3];
-        if (type == 0) {
-            return static_cast<i32>(curves[3].data.constant);
-        }
-        return static_cast<i32>(NuAnimCurve2CalcValEx(&curves[3], time, static_cast<u32>(type)));
-    }
-    const i8 visible_type = curve_types[7];
-    i32 visible;
-    if (visible_type == 0) {
-        visible = static_cast<i32>(curves[7].data.constant);
-    } else {
-        visible = static_cast<i32>(NuAnimCurve2CalcValEx(&curves[7], time, static_cast<u32>(visible_type)));
-    }
-    if (visible != 0 && scale != NULL) {
-        const i8 scale_type = curve_types[6];
-        *scale = scale_type == 0 ? curves[6].data.constant
-                                 : NuAnimCurve2CalcValEx(&curves[6], time, static_cast<u32>(scale_type));
-    }
-    return visible;
-}
 
 i32 NuIOS_GetPurchaseResult() {
     return 0;
 }
 
 void NuLightMotionBlurEffect(i32, float) {
-}
-
-void NuTimeGetMicrosecondsPS(u32 *, u32 *) {
-}
-
-// original 0x2954f0 -- legacy three-lightmap packet followed by a UV offset.
-void NuIOSDLLightmapOffsetOld(void *arg) {
-    const i32 *texture_ids = static_cast<const i32 *>(arg);
-    for (i32 index = 0; index < 3; ++index) {
-        const i32 texture_id = texture_ids[index] > 0 ? texture_ids[index] : 1;
-        NUNATIVETEX *texture = NuTexGetNative(texture_id);
-        glActiveTexture(GL_TEXTURE0 + index);
-        g_currentTexUnit = index;
-        glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
-    }
-
-    const f32 *offset = reinterpret_cast<const f32 *>(texture_ids + 3);
-    const f32 shader_offset[4] = {offset[0], -offset[1], 0.0f, 0.0f};
-    NuShaderManagerSetfv(0x58, shader_offset);
 }
 
 void NuIOS_DisplaySystemAlert(char const *) {
@@ -843,14 +555,10 @@ i32 NuIOS_IsProductPurchased(char *) {
     return 0;
 }
 
-void NuAnimGetAnimDataSizeANI3(ani3_animheader_s *) {
-}
 
 void NuGCutRigidForceInstanced(NUGCUTSCENE_s *) {
 }
 
-void NuIOSDLReflectionCallback(void *) {
-}
 
 i32 NuIOS_GetInAppProductByID(char *, NuIOS_InAppProduct *) {
     return 0;
@@ -862,130 +570,6 @@ void NuIOS_GetShaderProgramKey(ShaderObjectKey const &) {
 void NuSpecialFindByPlatformID(nugscn_s *, nuhspecial_s *, i32) {
 }
 
-extern "C" {
-    extern NUANIMBUFFEVALUATECB AnimBuffEvalCB;
-    extern void **AnimBuffEvalData;
-    extern i32 *AnimBuffEvalJoint;
-}
-void NuAnimBuffEvaluate_3_QuatB(numtx_s *base, nuanimbuff_s *buffer, nugscn_s *scene, numtx_s *matrices,
-                                ani3_animheader_s *animation, NUHGOBJROOTFN root_fn, nuvec_s *root_translation,
-                                void *root_data) {
-    nuhgobj_s *object = reinterpret_cast<nuhgobj_s *>(scene);
-    i32 count = animation->node_count < object->joint_count ? animation->node_count : object->joint_count;
-    NUQUAT *quaternions = static_cast<NUQUAT *>(NuScratchAlloc32((count + 1) * 16));
-    quaternions = reinterpret_cast<NUQUAT *>(ALIGN(reinterpret_cast<usize>(quaternions), 16));
-    NUVEC *scales = static_cast<NUVEC *>(NuScratchAlloc32(count * sizeof(NUVEC)));
-    if (!buffer)
-        buffer = static_cast<nuanimbuff_s *>(globalbuffer);
-    void *callback_data[256];
-    if (AnimBuffEvalData && AnimBuffEvalJoint) {
-        memset(callback_data, 0, object->joint_count * sizeof(void *));
-        for (i32 index = 0; AnimBuffEvalData[index]; ++index) {
-            i32 mapped = AnimBuffEvalJoint[index];
-            if (mapped >= 0 && mapped < object->joint_override_map_count) {
-                u8 joint_index = object->joint_override_map[mapped];
-                if (joint_index != 255)
-                    callback_data[joint_index] = AnimBuffEvalData[index];
-            }
-        }
-    }
-    // Slot255 and the root/nonroot scale selection follow the original evaluator.
-    NUVEC root_scale;
-    if (base) {
-        root_scale = NuMtxGetScale(base);
-        NuMtxToQuat(base, &quaternions[255]);
-    } else {
-        root_scale.x = root_scale.y = root_scale.z = 1.0f;
-        quaternions[255] = NUQUAT{0, 0, 0, 1};
-    }
-    NUVEC root_values = {0, 0, 0};
-    nuanimbuffjoint_s *joint = buffer->joints;
-    NUQUAT *rotation = quaternions;
-    NUMTX *matrix = matrices;
-    NUVEC *scale = scales;
-    const u8 *joint_flags = buffer->joint_flags;
-    for (i32 index = 0; index < count; ++index, ++joint, ++rotation, ++matrix, ++scale) {
-        u8 parent = object->joints[index].parent_index;
-        u8 flags = *joint_flags++;
-        if (flags & 1)
-            *rotation = *reinterpret_cast<NUQUAT *>(&joint->rotation);
-        else
-            *rotation = NUQUAT{0, 0, 0, 1};
-        NUVEC *parent_scale;
-        if (parent != 255) {
-            const NUQUAT q = *rotation, p = quaternions[parent];
-            rotation->z = (p.w * q.z + q.w * p.z + p.x * q.y) - q.x * p.y;
-            rotation->x = (p.w * q.x + q.w * p.x + p.y * q.z) - p.z * q.y;
-            rotation->y = (p.w * q.y + q.w * p.y + p.z * q.x) - p.x * q.z;
-            rotation->w = ((p.w * q.w - q.x * p.x) - q.y * p.y) - q.z * p.z;
-            parent_scale = &root_scale;
-        } else
-            parent_scale = &scales[parent];
-        NuQuatToMtx(rotation, matrix);
-        if (flags & 8) {
-            scale->x = joint->scale.x * parent_scale->x;
-            scale->y = joint->scale.y * parent_scale->y;
-            scale->z = joint->scale.z * parent_scale->z;
-            NuMtxPreScaleVU0(matrix, scale);
-        } else
-            *scale = *parent_scale;
-        if (flags & 16)
-            scale->x = scale->y = scale->z = 1.0f;
-        if (flags & 2) {
-            root_values.x = joint->translation.x;
-            root_values.y = joint->translation.y;
-            root_values.z = -joint->translation.z;
-            if (parent != 255)
-                NuVecMtxTransform(reinterpret_cast<NUVEC *>(&matrix->m30), &joint->translation, &matrices[parent]);
-            else if (base)
-                NuVecMtxTransform(reinterpret_cast<NUVEC *>(&matrix->m30), &joint->translation, base);
-            else {
-                matrix->m30 = joint->translation.x;
-                matrix->m31 = joint->translation.y;
-                matrix->m32 = joint->translation.z;
-            }
-        } else if (parent != 255) {
-            matrix->m30 = matrices[parent].m30;
-            matrix->m31 = matrices[parent].m31;
-            matrix->m32 = matrices[parent].m32;
-            matrix->m33 = matrices[parent].m33;
-        } else if (base) {
-            matrix->m30 = base->m30;
-            matrix->m31 = base->m31;
-            matrix->m32 = base->m32;
-            matrix->m33 = base->m33;
-        }
-        if (parent == 255) {
-            if (root_fn)
-                root_fn(matrix, root_data, &root_values, &root_values, root_translation, 0.0f);
-            root_fn = NULL;
-            if (flags & 64)
-                scale->x = scale->y = scale->z = 1.0f;
-        }
-        if (AnimBuffEvalCB && callback_data[index])
-            AnimBuffEvalCB(matrix, callback_data[index], rotation);
-    }
-    // Callbacks observe the engine coordinates; reflect the completed hierarchy afterward.
-    for (i32 index = 0; index < count; ++index) {
-        NUMTX *matrix = &matrices[index];
-        matrix->m02 = -matrix->m02;
-        matrix->m12 = -matrix->m12;
-        matrix->m20 = -matrix->m20;
-        matrix->m21 = -matrix->m21;
-        matrix->m23 = -matrix->m23;
-        matrix->m32 = -matrix->m32;
-    }
-    for (i32 index = count; index < object->joint_count; ++index)
-        NuMtxSetIdentity(&matrices[index]);
-    AnimBuffEvalCB = NULL;
-    AnimBuffEvalData = NULL;
-    AnimBuffEvalJoint = NULL;
-    NuScratchRelease();
-    NuScratchRelease();
-}
-
-void NuDDSSetTextureDescription(char *, NUTEXFORMAT, i32, i32, i32, i32, nutexturetype_e) {
-}
 
 void NuIOS_GetNumInAppPurchases() {
 }
@@ -1025,27 +609,12 @@ i32 NuIOS_CanMakeInAppPurchases() {
 void NuIOS_RestoreInAppPurchases() {
 }
 
-void NuOnlineSetContextProfilePS(i32, i32, i32) {
-}
 
 void NuCameraTransformScissorClip(nuvec_s *, nuvec_s *, i32, numtx_s *) {
 }
 
-// NuDebrisRendererFlushBuffers is transcribed in android/nuptl_flush.cpp (original 0x296f35).
+// NuDebrisRendererFlushBuffers is transcribed in android/nuptl_android.c (original 0x296f35).
 
-// Original 0x294d93. The packet stores a count followed by up to eight vec4
-// vertex-offset entries for semantic 0x50.
-void NuIOSDLVertexOffsetsCallback(void *arg) {
-    const i32 *packet = static_cast<const i32 *>(arg);
-    i32 count = packet[0];
-    if (count > 8) {
-        count = 8;
-    }
-    NuShaderManagerSetElementsfv(0x50, 0, count, reinterpret_cast<const f32 *>(packet + 1));
-}
-
-void NuOnlineSetPropertyProfilePS(i32, i32, i32, void *) {
-}
 
 void NuIOS_CopyBackbufferToTexture(nunativetex_s *texture, bool) {
     texture->width = g_backingWidth;
@@ -1082,8 +651,6 @@ i32 NuIOS_PurchaseInAppProductByNum(i32) {
     return 0;
 }
 
-void NuIOSDLDeferredTransformCallback(void *) {
-}
 
 i32 NuIOS_AreInAppPurchasesAvailable() {
     return 0;
@@ -1219,44 +786,12 @@ GLuint NuIOS_CreateGLTexFromPVRInMemory(void *data, i32 *out_width, i32 *out_hei
     return texture;
 }
 
-void NuOnlineSetPresenceModeProfilePS(i32, i32) {
-}
 
 void NuDynamicLightTestShadowExtrusions(nudynamiclight_s *, _vuv_s const *, _vuv_s const *, i32 *) {
 }
 
-i32 NuOnlineAchievementAchievedProfile(i32, i32, void (*)(i32, i32)) {
-    return 0;
-}
-
-void NuOnlineSetDefaultContextProfilePS(i32, i32, i32) {
-}
 
 void NuRenderContextForceSamplerStatePS(i32, d3dsamplerstate_u const *) {
-}
-
-void NuGCutSceneRemapFocusIdToLocaterNum(NUGCUTSCENE_s *cutscene, variptr_u *buffer) {
-    if (cutscene->version <= 4 || cutscene->camera_system == NULL ||
-        cutscene->camera_system->focus_state_animation == NULL || cutscene->locator_system == NULL) {
-        return;
-    }
-
-    buffer->addr = ALIGN(buffer->addr, 2);
-    cutscene->focus_camera_indices = reinterpret_cast<u16 *>(buffer->void_ptr);
-    NUGCUTLOCATORSYS_s *system = cutscene->locator_system;
-    for (u32 i = 0; i < system->locator_count; ++i) {
-        NUGCUTLOCATOR_s *locator = &system->locators[i];
-        if ((system->types[locator->type_index].flags & 8) != 0) {
-            *reinterpret_cast<u16 *>(buffer->void_ptr) = static_cast<u16>(i);
-            buffer->void_ptr = reinterpret_cast<u16 *>(buffer->void_ptr) + 1;
-        }
-    }
-}
-
-void NuIOSDLDeferredTransformParamsCallback(void *) {
-}
-
-void NuOnlineSetDefaultPresenceModeProfilePS(i32, i32) {
 }
 
 f32 NuATanf(f32 value) {

@@ -15,7 +15,7 @@
 #include "legoapi/gizmos/trigger/ai.h"
 #include "legoapi/gizmos/door/door.h"
 #include "legoapi/gizmos/fx/edgizshadowmachine.h"
-#include "legoapi/gizmos/trigger/gizaimessage.h"
+#include "legoapi/gizmo/base/gizmessage.h"
 #include "legoapi/gizmos/traps/gizbombgen.h"
 #include "legoapi/gizmos/object/gizbuildits.h"
 #include "legoapi/gizmos/traps/gizforce.h"
@@ -719,7 +719,6 @@ GizTurretObjectInterface::~GizTurretObjectInterface() {
     turret.mech_object_interface = NULL;
 }
 
-void CalcAveragePosAndRad(GIZBUILDIT_s &, VuVec &, f32 &, bool);
 f32 hackFlashTimer;
 GAMEANIMSET_s *hackFlashingGameAnimSet;
 

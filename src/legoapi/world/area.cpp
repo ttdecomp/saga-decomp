@@ -19,6 +19,7 @@ i32 Area_CharIDInCurrentList(i32 character_id) {
     return result;
 }
 #include "legoapi/characters/core/character.h"
+#include "legoapi/characters/core/customiser.h"
 #include "legoapi/characters/core/players.h"
 #include "legoapi/core/config/cheat.h"
 #include "legoapi/core/input/gamepads.h"
@@ -150,7 +151,6 @@ extern void *theGameThings;
 extern void IconScenes_Load(APICHARACTERMODELLIST_s *, i32, variptr_u *, variptr_u *);
 extern void MakeFreePlayModelList(i32, i32, i32, i32, i32);
 extern void Customiser_LoadAccessories(CUSTOMISER *, APICHARACTERMODELLIST_s *);
-extern void Customiser_ResetModelTextureIDs(CUSTOMISER *);
 extern void Customiser_SetAnimsToLoad(CUSTOMISER *, i32);
 extern void GameLoadCharacterModels(APICHARACTERMODELLIST_s *, i32, variptr_u *, variptr_u *, i32, i32);
 extern void CharScenes_AreaLoad(APICHARACTERMODELLIST_s *, variptr_u *, variptr_u);

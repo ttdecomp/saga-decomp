@@ -25,6 +25,7 @@ extern "C" {
     void NuFramebufferAttachTex2D(nuframebuffer_s *, i32, nueffecttex_s *, i32);
     void NuFramebufferBind(nuframebuffer_s *);
     nuframebuffer_s *NuFramebufferGetBound();
+    nuframebuffer_s *NuFramebufferGetFrontBuffer();
     nuframebuffer_s *NuFramebufferGetObject(i32);
     nueffecttex_s *NuFramebufferGetAttachedTex(nuframebuffer_s *, i32, i32 *, i32 *);
     i32 NuFramebufferGetWidth(nuframebuffer_s *);

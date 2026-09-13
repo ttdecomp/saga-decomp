@@ -421,8 +421,5 @@ void UpdateTrooperCannons(WORLDINFO_s *) {
 void UpdateMiniSnowTroopers(WORLDINFO_s *) {
 }
 
-void SetLevelExBlowupFunc(i32 (*)(GIZMOBLOWUP_s *, i32)) {
-}
-
 static __used__ void seed_chase(f32 *, i32, abi_long) {
 }

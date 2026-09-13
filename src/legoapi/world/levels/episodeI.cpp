@@ -10,6 +10,7 @@
 #include "legoapi/core/input/qrand.h"
 #include "legoapi/cutscenes/cutscenes.h"
 #include "legoapi/gizmo/base/GizBlowupObjectInterface.h"
+#include "legoapi/gizmo/object/gizmoblowups.h"
 #include "legoapi/characters/motion.h"
 #include "legoapi/items/objects/gameobjects.h"
 #include "legoapi/menus/core/gamehint.h"

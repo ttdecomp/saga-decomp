@@ -46,6 +46,10 @@ void *NuThreadBase::GetParam() const {
     return this->fn_arg;
 }
 
+const char *NuThreadBase::GetDebugName() const {
+    return this->name;
+}
+
 NuThread::NuThread(const NuThreadCreateParameters &params) : NuThreadBase(params) {
     sched_param scheduling;
     pthread_attr_t attrs;
@@ -87,6 +91,10 @@ NuThread::NuThread(const NuThreadCreateParameters &params) : NuThreadBase(params
 }
 
 NuThread::~NuThread() {
+}
+
+void NuThread::SetDebugName(const char *name) {
+    NuThreadBase::SetDebugName(name);
 }
 
 void *NuThread::ThreadMain(void *thread) {
@@ -168,6 +176,10 @@ void NuThreadSemaphore::Wait() {
     this->signaled_count--;
 
     pthread_mutex_unlock(&this->mutex);
+}
+
+void NuThread::Resume() {
+    this->is_suspended = false;
 }
 
 NuThread *NuThreadInitPS() {

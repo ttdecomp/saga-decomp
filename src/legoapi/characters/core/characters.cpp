@@ -19,6 +19,7 @@
 #include "legoapi/menus/screens/shop.h"
 #include "legoapi/render/fx.h"
 #include "legoapi/gizmos/object/lever.h"
+#include "legoapi/gizmos/door/zipups.h"
 #include "legoapi/gizmos/object/technos.h"
 #include "legoapi/world/level.h"
 #include "legoapi/world/areas.h"
@@ -29,6 +30,7 @@
 #include "nu2api/nucore/bgproc.h"
 #include "nu2api/nu3d/nudlist.h"
 #include "nu2api/nu3d/nuspecial.h"
+#include "nu2api/nucore/nustring.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -82,7 +84,6 @@ char *TexAnimList_LSW[32] = {
 };
 
 void InitStreaks(VARIPTR *, VARIPTR, char *);
-void InitRopeMtl(char *, VARIPTR *, VARIPTR *);
 void InitRipples(ripple_set_s **, VARIPTR *, VARIPTR *, i32);
 void CreateFadeMaterials();
 void CreateUsefulMaterials();
@@ -497,6 +498,39 @@ void CharScene_Draw(WORLDINFO_s *world, i32 character_id, numtx_s *matrix, numtx
             NuSpecialDrawAt(special, reflection_matrix);
         }
     }
+}
+
+i32 CharIDFromName(char *name) {
+    for (i32 i = 0; i < CHARCOUNT; i++) {
+        if (NuStrICmp(CDataList[i].file, name) == 0) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+CHARACTERDATA *CDataFromName(char *name) {
+    for (i32 i = 0; i < CHARCOUNT; i++) {
+        if (NuStrICmp(CDataList[i].file, name) == 0) {
+            return &CDataList[i];
+        }
+    }
+
+    return nullptr;
+}
+
+i32 RedirectAnim(char *path, ANIMREDIRECT *redirects, ANIMLIST_s *animation_list, char *directory) {
+    CHARACTERANIM_s *animation = reinterpret_cast<CHARACTERANIM_s *>(animation_list);
+    for (ANIMREDIRECT *redirect = redirects; redirect->name != NULL; ++redirect) {
+        if (redirect->animation_id == animation->animation_id && NuStrICmp(redirect->name, animation->name) == 0) {
+            NuStrCpy(path, directory);
+            NuStrCat(path, animation->name);
+            animation->flags &= ~CHARACTER_ANIMATION_FLAG_BSA;
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void CharScenes_Init(variptr_u *buf, variptr_u *) {

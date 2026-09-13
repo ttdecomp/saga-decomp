@@ -26,7 +26,8 @@ typedef struct MINICUT_s {
     MINICUTPART *parts; // 0x10
     i32 part_count;     // 0x14
     u8 played;          // 0x18
-    u8 reserved_19[3];
+    u8 reserved_19;
+    u16 guid;           // 0x1a
     f32 field_0x1c;
     f32 field_0x20;
     f32 field_0x24;
@@ -37,8 +38,10 @@ typedef struct MINICUT_s {
 DECOMP_ASSERT(sizeof(MINICUT) == 0x30, "MINICUT ABI");
 DECOMP_ASSERT(offsetof(MINICUT, parts) == 0x10, "MINICUT parts offset");
 DECOMP_ASSERT(offsetof(MINICUT, part_count) == 0x14, "MINICUT part-count offset");
+DECOMP_ASSERT(offsetof(MINICUT, guid) == 0x1a, "MINICUT guid offset");
 
 ADDGIZMOTYPE *MiniCut_RegisterGizmo(i32 type_id);
+i32 GizMiniCut_GetGuid(GIZMO_s *gizmo);
 
 extern "C" {
 #endif

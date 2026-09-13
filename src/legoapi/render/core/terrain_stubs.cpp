@@ -2,6 +2,7 @@
 #include "decomp.h"
 #include "legoapi/legoapi_types.h"
 #include "legoapi/render/fx.h"
+#include "legoapi/render/fx/game_deb.h"
 #include "nu2api/numath/nufloat.h"
 #include "nu2api/numath/nutrig.h"
 #include "nu2api/numath/numtx.h"
@@ -10,6 +11,8 @@
 #include "nu2api/nu3d/nutex.h"
 #include "nu2api/nu3d/nuportal.h"
 #include "nu2api/nu3d/android/nutimebar_plain.h"
+#include "nu2api/nu3d/android/nurain_android.h"
+#include "nu2api/nu3d/android/nuptl_android.h"
 #include "gameapi/edtools/edstubs.h"
 #include "nu2api/nu3d/nucamera.h"
 #include "nu2api/nucore/nustring.h"
@@ -75,9 +78,6 @@ struct TERRAIN_PLATFORM_CALLBACK {
 static i32 PlatCodeCallback;
 static TERRAIN_PLATFORM_CALLBACK PlatCallback[8];
 extern "C" i32 DeletePlatinst(i32 platform_index);
-extern "C" PartHeader *CreateDmaPartEffectList(void *memory, i32 *size);
-extern "C" dma_particle_chunk_s *CreateDmaParticleSet(void *memory, i32 *size);
-extern "C" dma_particle_chunk_s *CreateDmaParticleSetGlass(void *memory, i32 *size);
 void ScanTerrIDRemovePlat(i32 platform_index);
 
 u8 TerrainHitInfo[4];
@@ -141,9 +141,6 @@ extern "C" {
     extern i32 globalframes;
     extern i32 update_debris_enabled;
     extern u32 debrisseed;
-    extern PartHeader **DmaDebTypes;
-    extern i32 EDPP_MAX_DMADEBTYPES;
-    extern i32 freeDmaDebType;
     extern i32 debris_setup_called;
     extern usize debris_trash_space;
     extern usize debris_trash_size;
@@ -164,11 +161,8 @@ extern "C" {
     extern f32 debris_thinning_level;
     extern i32 forced_debris_thinning;
 
-    void NuRndrParticleGroup(uv1debdata *, PartHeader *, NUMTL *, f32, NUMTX *, i32, f32, f32, f32, f32);
-    void NuRndrSetParticleRotation(NUMTX *);
 
     void DebrisReScale(i32, f32);
-    void GenericDebinfoDmaTypeUpdate(debinftype *);
     void DebReAlloc(debkeydatatype_s *, i32);
     extern "C++" void DebrisProcessSpheres(uv1deb *, f32, debinftype *, debkeydatatype_s *, i32);
     extern "C++" {
@@ -909,7 +903,6 @@ extern "C" {
     i32 DebrisGlassParticlesActive(void);
     i32 NuRndrBeginSceneEx(i32, i32, i32);
     void NuRndrEndScene(void);
-    void NuRainDraw(i32);
 
     void DebrisDrawGlassEx(i32 flicker) {
         if (debris_initialised == 0)

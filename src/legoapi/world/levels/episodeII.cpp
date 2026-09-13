@@ -467,7 +467,7 @@ void KaminoA_AlwaysUpdate(WORLDINFO_s *) {
 }
 
 #include "legoapi/gizmos/traps/gizturrets.h"
-#include "legoapi/gizmos/trigger/gizaimessage.h"
+#include "legoapi/gizmo/base/gizmessage.h"
 GIZTURRET_s *GizTurret_FindByName(GIZTURRETSYS_s *, char *);
 extern i32 obstacle_gizmotype_id;
 nuhspecial_s walllights[2], walllights_disco[2], striplights[2], discolights[2];

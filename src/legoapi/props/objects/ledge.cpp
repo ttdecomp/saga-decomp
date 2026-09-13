@@ -17,12 +17,7 @@ struct nunativegscene_s;
 struct SHOPINPUT;
 
 f32 LEDGETERRAINLOOKAHEAD = 0.02f;
-i32 LEGOCONTEXT_LEDGETERRAIN = -1;
 i32 LedgeTerrain_CheckAnims = 1;
-i16 LEGOACT_LEDGE_GRAB = -1;
-i16 LEGOACT_LEDGE_IDLE = -1;
-i16 LEGOACT_LEDGE_LEFT = -1;
-i16 LEGOACT_LEDGE_RIGHT = -1;
 extern "C" TERRAIN_SURFACE_s TerSurface[32];
 void StartJump(GameObject_s *, i32);
 extern "C" f32 AnimDuration(i32, i32, f32, f32, i32);

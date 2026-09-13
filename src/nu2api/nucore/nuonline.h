@@ -3,6 +3,8 @@
 #include "nu2api/nucore/common.h"
 
 typedef void (*NUONLINEACHIEVEMENTCALLBACK)(i32, i32);
+extern "C" i32 g_signedinUser;
+void NuOnlineResetProfiles();
 i32 NuOnlineAchievementAchievedProfile(i32 profile, i32 achievement, NUONLINEACHIEVEMENTCALLBACK callback);
 void NuOnlineSetPresenceModeProfilePS(i32 profile, i32 mode);
 void NuOnlineSetDefaultPresenceModeProfilePS(i32 profile, i32 mode);
@@ -21,6 +23,7 @@ extern "C" {
     void NuOnlineSetDefaultContextPS(i32 context, i32 value);
     void NuOnlineSetPresenceModePS(i32 mode);
     void NuOnlineSetDefaultPresenceModePS(i32 mode);
+    void NuOnlineSetProfilePlayer(void);
     i32 NuOnlineAchievementAchieved(i32 achievement, NUONLINEACHIEVEMENTCALLBACK callback);
     i32 NuOnlineAchievementAchievedPS(i32 achievement, NUONLINEACHIEVEMENTCALLBACK callback);
     i32 NuOnlineAchievementAchievedEx(i32 player, i32 achievement, NUONLINEACHIEVEMENTCALLBACK callback);

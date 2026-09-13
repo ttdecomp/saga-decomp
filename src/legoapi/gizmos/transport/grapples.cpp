@@ -1,4 +1,5 @@
 #include "legoapi/gizmos/transport/grapples.h"
+#include "legoapi/actions/combat/rope.h"
 
 #include "decomp.h"
 #include "globals.h"
@@ -19,7 +20,6 @@
 extern "C" void NewTerrPlatformsOff(void);
 f32 GameShadow(GameObject_s *object, NUVEC *position, f32 probe_height, i32 terrain_mask);
 void FindAnglesZX(NUVEC *normal, u16 *x_rotation, u16 *z_rotation);
-void DrawRopeCurved(NUVEC *start, NUVEC *points, i32 point_count, i32 flags, NUMTL *material);
 void EnableShadowMapRendering(i32 enabled);
 void ResetShadowMapRendering();
 
@@ -87,8 +87,6 @@ static void Grapple_ResetDynamic(GRAPPLE *grapple, i32 index) {
     grapple->has_terrain_platform = 1;
 }
 
-i32 LEGOCONTEXT_GRAPPLE = -1;
-extern i32 LEGOCONTEXT_JUMP;
 
 GameObject_s *Grapple_Occupied(GRAPPLE *grapple, GameObject_s *object, AIPATHCNX_s *connection) {
     if (LEGOCONTEXT_GRAPPLE != -1) {
@@ -567,4 +565,39 @@ ADDGIZMOTYPE *Grapples_RegisterGizmo(i32 type_id) {
     grapple_gizmotype_id = type_id;
 
     return &addtype;
+}
+
+// Original 0x4d6eb0, 220 bytes.
+void Grapple_SetPlayerTargetPoint(GameObject_s *object, nuvec_s *target) {
+    target->x = 0.0f;
+    target->z = 0.0f;
+    target->y = -object->field_0x768;
+    i32 amplitude = (static_cast<i32>(object->grapple_swing_degrees) << 16) / 360;
+    i32 angle = static_cast<i32>(static_cast<f32>(amplitude) * NuTrigTable[object->grapple_swing_phase >> 1] *
+                                 static_cast<GRAPPLE *>(object->field_0x788)->field_0x4c);
+    NuVecRotateX(target, target, angle);
+    NuVecRotateY(target, target, object->takeover_start_angle);
+    NuVecAdd(target, target, &static_cast<GRAPPLE *>(object->field_0x788)->shadow_probe_position);
+}
+
+// Original 0x4d6f90, 248 bytes.
+i32 Grapple_SetTargetMom(GameObject_s *object) {
+    if (object->field_0x7a3 == 1) {
+        object->target_velocity.x = (object->external_force.x - object->apiobj.upper_position.x) * 20.0f;
+        object->target_velocity.y = (object->external_force.y - object->apiobj.upper_position.y) * 20.0f;
+        object->target_velocity.z = (object->external_force.z - object->apiobj.upper_position.z) * 20.0f;
+    } else {
+        NUVEC point;
+        Grapple_SetPlayerTargetPoint(object, &point);
+        object->target_velocity.x = (point.x - object->apiobj.upper_position.x) * 5.0f;
+        object->target_velocity.y = (point.y - object->apiobj.upper_position.y) * 5.0f;
+        object->target_velocity.z = (point.z - object->apiobj.upper_position.z) * 5.0f;
+    }
+    return 1;
+}
+
+// Original 0x4d7090, 23 bytes.
+void Grapple_SetRotOrder(GameObject_s *object) {
+    if (object->field_0x7a3 != 1)
+        object->field_0x1086 = 2;
 }

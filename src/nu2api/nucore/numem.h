@@ -60,6 +60,11 @@ extern "C" {
     void NuMemBlkDestroy(NUMEMBLK *pool);
     NUMEMBLK *NuMemBlkCreate(u32 element_size, i32 count, u32 alignment_mask);
     NUMEMBLK *NuMemBlkCreateVari(u32 element_size, i32 count, u32 alignment_mask, VARIPTR *buffer);
+    void *NuScratchAlloc32(i32 size);
+    void *NuScratchAlloc64(i32 size);
+    void *NuScratchAlloc128(i32 size);
+    void NuScratchReset(void);
+    void NuScratchRelease(void);
 #ifdef __cplusplus
 }
 #endif

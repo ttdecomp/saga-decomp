@@ -4,10 +4,10 @@
 
 #include "decomp.h"
 #include "nu2api/nu3d/numtl.h"
+#include "nu2api/nucore/numemory.h"
 #include "nu2api/nucore/nutime.h"
 
 #include <cstddef>
-#include <cstdlib>
 #include <cstring>
 
 // ---------------------------------------------------------------------------
@@ -36,6 +36,9 @@ static constexpr i32 kMaxTimeBarSets = 16;
 static TimeBarSet *NuTimeBar_SetList[kMaxTimeBarSets];
 static NUMTL *NuTimeBar_FrameOutMtl;
 static i32 NuTimeBar_Initialised;
+static i32 NuTimeBar_PeakReset;
+static i32 NuTimeBar_GpuFrameOutEnabled;
+static i32 NuTimeBar_EngineEnabled;
 static const u32 NuTimeBar_DefaultColours[kMaxTimeBarSets] = {
     0x00000040, 0x22222240, 0x00004440, 0x00008840, 0x44000040, 0x88000040, 0x44004440, 0x88008840,
     0x00440040, 0x00880040, 0x00444440, 0x00888840, 0x44440040, 0x88880040, 0x44444440, 0x88888840,
@@ -44,7 +47,7 @@ static const u32 NuTimeBar_DefaultColours[kMaxTimeBarSets] = {
 // ---------------------------------------------------------------------------
 static void *timebar_allocate(VARIPTR *buffer, usize size, usize alignment) {
     if (buffer == NULL) {
-        return std::calloc(1, size);
+        return NU_ALLOC(size, alignment, 1, "Main", 0);
     }
 
     usize address = ALIGN(buffer->addr, alignment);
@@ -87,6 +90,10 @@ static i32 CreateTimeBar(VARIPTR *buffer, VARIPTR unused_buffer, i32 *colours, i
             break;
         }
     }
+    if (list_index == kMaxTimeBarSets) {
+        list_index = kMaxTimeBarSets - 1;
+        NuTimeBar_SetList[list_index] = timebar;
+    }
 
     if (colours != NULL) {
         std::memcpy(timebar->colours, colours, static_cast<usize>(slot_count) * sizeof(i32));
@@ -102,6 +109,16 @@ static i32 CreateTimeBar(VARIPTR *buffer, VARIPTR unused_buffer, i32 *colours, i
 
 extern "C" i32 NuTimeBarCreateSetEx(VARIPTR *buffer, VARIPTR unused_buffer, i32 *colours) {
     return CreateTimeBar(buffer, unused_buffer, colours, 16);
+}
+
+extern "C" i32 NuTimeBarCreateSetEx2(VARIPTR *buffer, VARIPTR unused_buffer, i32 field_28) {
+    i32 set = NuTimeBarCreateSetEx(buffer, unused_buffer, NULL);
+    NuTimeBar_SetList[set + 1]->field_28 = field_28;
+    return set;
+}
+
+extern "C" i32 NuTimeBarCreateSet(i32 *colours) {
+    return NuTimeBarCreateSetEx(NULL, VARIPTR{}, colours);
 }
 
 extern "C" void NuTimeBarInitEx(VARIPTR *buffer, VARIPTR unused_buffer) {
@@ -201,4 +218,58 @@ extern "C" void NuTimeBarSlotSetName(i32 set, i32 slot, const char *name) {
         TimeBarSet *timebar = NuTimeBar_SetList[set + 1];
         timebar->slot_names[slot] = name;
     }
+}
+
+extern "C" void NuTimeBarSlotSetEx(i32 set, i32 slot, i32 value, const char *name) {
+    if (NuTimeBar_Initialised == 0) {
+        return;
+    }
+    if (slot == 6 && set == -1) {
+        value = static_cast<i32>(static_cast<u32>(static_cast<f64>(static_cast<f32>(static_cast<u32>(value))) * 63.556));
+    }
+    TimeBarSet *timebar = NuTimeBar_SetList[set + 1];
+    i32 accumulator = 1 - timebar->toggle_flags[slot];
+    timebar->accumulators[accumulator][slot] = value;
+    timebar->slot_names[slot] = name;
+}
+
+extern "C" i32 NuTimeBarSlotLastValueMicroseconds(i32 set, i32 slot) {
+    TimeBarSet *timebar = NuTimeBar_SetList[set + 1];
+    return timebar->accumulators[timebar->toggle_flags[slot]][slot];
+}
+
+extern "C" i32 NuTimeBarSlotLastValue(i32 set, i32 slot) {
+    u32 elapsed = static_cast<u32>(NuTimeBarSlotLastValueMicroseconds(set, slot));
+    return static_cast<i32>((static_cast<f32>(elapsed) * 60.0f / 1000000.0f) * 262.5f);
+}
+
+extern "C" void NuTimeBarResetPeaks(void) {
+    NuTimeBar_PeakReset = 1;
+}
+
+extern "C" void NuTimeBarSetScaleY(void) {
+}
+
+extern "C" void NuTimeBarEnable(i32 enabled) {
+    NuTimeBar_EngineEnabled = enabled;
+}
+
+extern "C" void NuTimeBarIndicateGpuFrameOut(i32 enabled) {
+    NuTimeBar_GpuFrameOutEnabled = enabled;
+}
+
+extern "C" void NuTimeBarDestroySet(i32 set) {
+    TimeBarSet *timebar = NuTimeBar_SetList[set + 1];
+    if (timebar->uses_buffer == 0) {
+        NU_FREE(timebar->accumulators[0]);
+        NU_FREE(timebar->accumulators[1]);
+        NU_FREE(timebar->start_times);
+        NU_FREE(timebar->field_14);
+        NU_FREE(timebar->field_18);
+        NU_FREE(timebar->colours);
+        NU_FREE(timebar->toggle_flags);
+        NU_FREE(timebar->slot_names);
+        NU_FREE(timebar);
+    }
+    NuTimeBar_SetList[set + 1] = NULL;
 }

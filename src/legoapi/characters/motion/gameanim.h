@@ -49,6 +49,9 @@ i32 GameAnimSet_Reset(GAMEANIMSET_s *set);
 i32 GameAnimSet_JumpToStart(GAMEANIMSET_s *set);
 i32 GameAnimSet_JumpToEnd(GAMEANIMSET_s *set);
 i32 GameAnimSet_Playing(GAMEANIMSET_s *set);
+// Animation-set state and object membership helpers.
+i32 GameAnimSet_IsAnimationReset(GAMEANIMSET_s *set);
+void GameAnimSet_RemoveAllObjects(GAMEANIMSET_s *set);
 void GameAnimSet_EvalAnim(GAMEANIMSET_s *set);
 f32 GameAnimSet_GetAnimPos(GAMEANIMOBJ_s *object);
 void GameAnimSet_SetAnimPos(GAMEANIMOBJ_s *object, f32 position);

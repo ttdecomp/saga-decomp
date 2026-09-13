@@ -4,12 +4,12 @@
 
 #include "nu2api/nucore/fixed_width.h"
 #include "decomp.h"
+#include "gamelib/util/CRC16.h"
 #include <stddef.h>
 
 struct AIPATHNODE_s;
 struct AndroidOBBUtils;
 struct BOLT_s;
-struct CRC16;
 struct EdClass;
 struct EdStream;
 struct FtpFile;
@@ -85,11 +85,6 @@ struct AndroidOBBUtils {
     static void InitPackagePaths();
     static i32 LookupPackagePath(char *, NuFileDeviceAndroidOBBType::T);
     static i32 OpenFile(char const *);
-};
-struct CRC16 {
-    CRC16();
-    void hash(unsigned char const *, i32);
-    void hashInverse(unsigned char const *, i32);
 };
 struct FtpFile {
     u8 reserved_00[8];
@@ -182,6 +177,7 @@ struct NetSession {
     u8 reserved_00[0x34];
     u32 error;
 };
+extern NetSession *theSession;
 DECOMP_ASSERT(sizeof(NetMessage) == 0x10, "NetMessage ABI");
 DECOMP_ASSERT(offsetof(NetMessage, data) == 4, "NetMessage data offset");
 DECOMP_ASSERT(offsetof(NetMessage, read_offset) == 8, "NetMessage read cursor offset");
@@ -214,7 +210,7 @@ struct NetRotator2 {
                       i32);
 };
 struct NetSample {
-    i32 values[4];
+    u32 values[4];
     void Max(NetSample const &);
     void Reset();
     void operator+=(NetSample const &);

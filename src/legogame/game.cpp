@@ -5,6 +5,9 @@
 #include "legoapi/core/config/cheat.h"
 #include "legogame/game.h"
 #include "legoapi/characters/motion.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
+#include "legoapi/gizmo/object/gizmoblowups.h"
+#include "legoapi/actions/character/transform.h"
 
 #include <string.h>
 
@@ -32,7 +35,6 @@ extern "C" {
 }
 void ResetShadowMapRenderingFn(void);
 void EnableShadowMapRenderingFn(void);
-extern i32 (*GizBuildIt_CanStartBuildingFn)(GIZBUILDIT_s *, GameObject_s *);
 extern BOLTTYPE_s GlobalBoltType[44];
 void AlertSurroundingCreatures(GameObject_s *, NUVEC *);
 void Bolt_Debris_LSW(BOLT_s *, NUVEC *, i32, NUVEC *, i32);
@@ -48,10 +50,7 @@ static BOLTSYS BoltSys_LSW = {GlobalBoltType,
                               GetShootDirection_LSW,
                               Bolt_HitPart_LSW,
                               Bolt_AlternateFire_LSW};
-extern void (*GizBuildIt_FinishFn)(GIZBUILDIT_s *);
 extern i16 tALLEXTRASUNLOCKED;
-extern i32 LEGOCONTEXT_BUCK;
-extern i16 LEGOACT_BUCK;
 extern void (*BuckStartExtraFn)(GameObject_s *);
 void BuckStartExtra_LSW(GameObject_s *);
 void AddFancyMessageRGB(char *, f32, f32, f32, f32, i32, u8, u8, u8);
@@ -61,7 +60,6 @@ void AddPartDebris(PARTDEBSYS_s *, i32, NUVEC *);
 extern i32 Lighting_HighlightFlash;
 extern i32 (*Lighting_BlueFlickerFn)(GameObject_s *);
 i32 ObjZappedBlue(GameObject_s *);
-extern i16 LEGOACT_SHOOTRIGHT, LEGOACT_SHOOTLEFT, LEGOACT_SHOOTBACK;
 
 f32 minikittime;
 extern f32 (*Hint_AlphaTargetFn)();
@@ -73,7 +71,6 @@ static f32 Hint_AlphaTarget() {
     return 1.0f;
 }
 
-extern i32 (*GizBuildit_AutoBuildPosFn)(void *, NUVEC *, NUVEC *, u16 *);
 static i32 GizBuildit_AutoBuildPos_Game(void *context, NUVEC *position, NUVEC *result, u16 *angle) {
     WORLDINFO_s *world = static_cast<WORLDINFO_s *>(context);
     if (world == NULL)
@@ -103,9 +100,6 @@ static void GizBuildIt_FinishFn_Game(GIZBUILDIT_s *buildit) {
     }
 }
 
-extern i32 LEGOCONTEXT_HOLD;
-extern i32 LEGOCONTEXT_BLOCK;
-extern i16 LEGOACT_DEACTIVATED;
 extern void (*Tag_DrawIconFn)(GameObject_s *);
 extern i32 (*Tag_NoHiddenIconFn)(GameObject_s *);
 extern char *LEGOASCII_UP;
@@ -117,9 +111,7 @@ static i32 Tag_NoHiddenIcon(GameObject_s *) {
     }
     return 0;
 }
-extern i32 LEGOCONTEXT_JUMP;
 extern i32 DoubleJump_JediSlam;
-extern i16 LEGOACT_SLAM;
 extern i32 (*CanStartHoldFn)(GameObject_s *);
 static i32 CanStartHold_Game(GameObject_s *) {
     return 1;
@@ -165,8 +157,6 @@ static void BigJump_EndOfLand(GameObject_s *object) {
 }
 #include "legoapi/world/world.h"
 
-extern void (*GizmoBlowUp_SfxFn)(GIZMOBLOWUP_s *, NUVEC *);
-extern i32 (*GizmoBlowUp_NoTargetFn)(WORLDINFO_s *, GameObject_s *);
 static i32 GizmoBlowUp_NoTarget(WORLDINFO_s *world, GameObject_s *) {
     if (world->current_level == DEATHSTARRESCUEA_LDATA)
         return GameCam->sock_position.location.sock == 2;
@@ -275,7 +265,6 @@ void Levers_InitTerrain(WORLDINFO_s *world);
 void GizPanel_InitTerrain(WORLDINFO_s *world);
 void HatMachines_InitTerrain(WORLDINFO_s *world);
 void GizmoBlowupsFinalSetup(WORLDINFO_s *world);
-void GizmoBlowup_TransformDraw_Game(GIZMOBLOWUP_s *blowup);
 void InitClimbObjectSys(WORLDINFO_s *world);
 void GizmoPushBlockInitAndReset(WORLDINFO_s *world, void *progress);
 extern NUFPCOMJMP LevelConfigKeywords_BeforeLoad[];
@@ -961,7 +950,7 @@ void InitGameAfterConfig(void) {
     LEGOACT_BACKPACKFALLLAND = 0xb3;
     LEGOACT_BACKFLIP = 0x77;
     LEGOACT_DEACTIVATED = 0x41;
-    //  LEGOACT_PUNCH_BEHIND = 0x94;
+    LEGOACT_PUNCH_BEHIND = 0x94;
     LEGOACT_SHOOTRIGHT = 0x5b;
     LEGOACT_SHOOTLEFT = 0x5a;
     LEGOACT_SHOOTBACK = 0x5c;
@@ -969,7 +958,7 @@ void InitGameAfterConfig(void) {
     LEGOACT_LEDGE_IDLE = 0x9d;
     LEGOACT_LEDGE_LEFT = 0x9e;
     LEGOACT_LEDGE_RIGHT = 0x9f;
-    //  LEGOACT_HANG_IDLE = 0x91;
+    LEGOACT_HANG_IDLE = 0x91;
     LEGOACT_HANG_MOVE = 0x92;
     LEGOACT_CLIMB_IDLE = 0x87;
     LEGOACT_CLIMB_UP = 0xcd;
@@ -979,36 +968,35 @@ void InitGameAfterConfig(void) {
     LEGOACT_WALLSHUFFLE_IDLE = 0x8a;
     LEGOACT_WALLSHUFFLE_LEFT = 0x8b;
     LEGOACT_WALLSHUFFLE_RIGHT = 0x8c;
-    extern i16 LEGOACT_PUSH;
     LEGOACT_PUSH = 0x52;
-    //  LEGOACT_SUPERPUSH_IDLE = 0xae;
-    //  LEGOACT_SUPERPUSH_PUSH = 0xaf;
-    //  LEGOACT_SUPERPUSH_PULL = 0xb0;
+    LEGOACT_SUPERPUSH_IDLE = 0xae;
+    LEGOACT_SUPERPUSH_PUSH = 0xaf;
+    LEGOACT_SUPERPUSH_PULL = 0xb0;
     LEGOACT_BUILD = 0x5f;
     LEGOACT_FLIP = 0xc;
     LEGOACT_FLIPLAND = 0xd;
     LEGOACT_BACKFLIP = 0x77;
-    //  LEGOACT_WALLJUMP_WAIT = 0xa1;
-    //  LEGOACT_GRAPPLE_IDLE = 0xba;
-    //  LEGOACT_GRAPPLE_UP = 0xbb;
-    //  LEGOACT_GRAPPLE_DOWN = 0xbc;
-    //  LEGOACT_GRAPPLE_HANG = 0xbd;
-    //  LEGOACT_GLIDE = 0x93;
-    //  LEGOACT_SUPERCARRY_PICKUP = 0xa3;
-    //  LEGOACT_SUPERCARRY_IDLE = 0xa4;
+    LEGOACT_WALLJUMP_WAIT = 0xa1;
+    LEGOACT_GRAPPLE_IDLE = 0xba;
+    LEGOACT_GRAPPLE_UP = 0xbb;
+    LEGOACT_GRAPPLE_DOWN = 0xbc;
+    LEGOACT_GRAPPLE_HANG = 0xbd;
+    LEGOACT_GLIDE = 0x93;
+    LEGOACT_SUPERCARRY_PICKUP = 0xa3;
+    LEGOACT_SUPERCARRY_IDLE = 0xa4;
     LEGOACT_SUPERCARRY_WALK = 0xa5;
-    //  LEGOACT_SUPERCARRY_THROW = 0xa6;
-    //  LEGOACT_SUPERCARRY_PUTDOWN = 0xd5;
-    //  LEGOACT_SUPERCARRY_BASH = 0xd6;
-    //  LEGOACT_SUPERCARRY_JUMP = 0xd7;
-    //  LEGOACT_SUPERCARRY_LAND = 0xd8;
-    //  LEGOACT_SUPERCARRY_FALLLAND = 0xd9;
+    LEGOACT_SUPERCARRY_THROW = 0xa6;
+    LEGOACT_SUPERCARRY_PUTDOWN = 0xd5;
+    LEGOACT_SUPERCARRY_BASH = 0xd6;
+    LEGOACT_SUPERCARRY_JUMP = 0xd7;
+    LEGOACT_SUPERCARRY_LAND = 0xd8;
+    LEGOACT_SUPERCARRY_FALLLAND = 0xd9;
     LEGOACT_MAGNET_WALK_METAL = 0xc5;
-    //  LEGOACT_MAGNET_TIPTOE = 0xc6;
-    //  LEGOACT_MAGNET_WALK = 199;
-    //  LEGOACT_MAGNET_RUN = 200;
+    LEGOACT_MAGNET_TIPTOE = 0xc6;
+    LEGOACT_MAGNET_WALK = 199;
+    LEGOACT_MAGNET_RUN = 200;
     LEGOACT_MAGNET_JUMP = 0xc9;
-    //  LEGOACT_MAGNET_LAND = 0xca;
+    LEGOACT_MAGNET_LAND = 0xca;
     LEGOACT_LUNGE = 0x1f;
     LEGOACT_LUNGELAND = 0x20;
     LEGOACT_SLAM = 0x21;
@@ -1025,11 +1013,11 @@ void InitGameAfterConfig(void) {
     LEGOACT_EXTRA_LAND = 0x7a;
     LEGOACT_EXTRA_LAND2 = 0x7b;
     LEGOACT_BUCK = 0x2a;
-    //  LEGOACT_TEETER = 0xdb;
-    //  LEGOACT_WHIP_START = 0xdc;
-    //  LEGOACT_WHIP_CRACK = 0xdd;
-    //  LEGOACT_WHIP_GRAB = 0xdd;
-    //  LEGOACT_WHIP_BREAK = 0xdd;
+    LEGOACT_TEETER = 0xdb;
+    LEGOACT_WHIP_START = 0xdc;
+    LEGOACT_WHIP_CRACK = 0xdd;
+    LEGOACT_WHIP_GRAB = 0xdd;
+    LEGOACT_WHIP_BREAK = 0xdd;
     LEGOACT_WHIP_SWING_START = 0xe0;
     LEGOACT_WHIP_SWING_SWING = 0xe1;
     LEGOACT_WHIP_SWING_JUMP = 0xe2;
@@ -1041,23 +1029,23 @@ void InitGameAfterConfig(void) {
     LEGOCONTEXT_DOOMED = 0x2b;
     LEGOCONTEXT_LEDGETERRAIN = 0x55;
     LEGOCONTEXT_CLIMB = 0x43;
-    //  LEGOCONTEXT_HANG = 0x4e;
+    LEGOCONTEXT_HANG = 0x4e;
     //  LEGOCONTEXT_JUMP = 0;
     LEGOCONTEXT_BIGJUMP = 0x1f;
     LEGOCONTEXT_WALLSHUFFLE = 0x45;
     LEGOCONTEXT_COMBO = 5;
-    //  LEGOCONTEXT_PUNCH = 0x26;
-    //  LEGOCONTEXT_PUSH = 0x27;
+    LEGOCONTEXT_PUNCH = 0x26;
+    LEGOCONTEXT_PUSH = 0x27;
     LEGOCONTEXT_PUSHSPINNER = 0x28;
     LEGOCONTEXT_PUSHOBSTACLE = 0x59;
-    //  LEGOCONTEXT_BEENTAKENOVER = 0x3b;
+    LEGOCONTEXT_BEENTAKENOVER = 0x3b;
     LEGOCONTEXT_GETIN = 0x3c;
-    //  LEGOCONTEXT_BUILDIT = 0x2d;
+    LEGOCONTEXT_BUILDIT = 0x2d;
     LEGOCONTEXT_WEAPONIN = 6;
     LEGOCONTEXT_WEAPONOUT = 7;
     LEGOCONTEXT_BACKFLIP = 0x20;
-    //  LEGOCONTEXT_WALLJUMPWAIT = 0x57;
-    //  LEGOCONTEXT_GRAPPLE = 0x46;
+    LEGOCONTEXT_WALLJUMPWAIT = 0x57;
+    LEGOCONTEXT_GRAPPLE = 0x46;
     LEGOCONTEXT_SUPERCARRY = 0x58;
     LEGOCONTEXT_LAND_JUMP = 1;
     LEGOCONTEXT_LAND_JUMP2 = 2;
@@ -1065,13 +1053,13 @@ void InitGameAfterConfig(void) {
     LEGOCONTEXT_LAND_COMBOJUMP = 4;
     LEGOCONTEXT_LAND_LUNGE = 0xd;
     LEGOCONTEXT_LAND_SLAM = 0xe;
-    //  LEGOCONTEXT_LAND_SPECIAL = 0x19;
+    LEGOCONTEXT_LAND_SPECIAL = 0x19;
     LEGOCONTEXT_LAND_COMBATROLL = 0x29;
     LEGOCONTEXT_EATEN = 0x39;
-    //  LEGOCONTEXT_SPECIALMOVE_ATTACKER = 0x26;
-    //  LEGOCONTEXT_SPECIALMOVE_VICTIM = 0x30;
+    LEGOCONTEXT_SPECIALMOVE_ATTACKER = 0x26;
+    LEGOCONTEXT_SPECIALMOVE_VICTIM = 0x30;
     LEGOCONTEXT_BUCK = 0x3e;
-    //  LEGOCONTEXT_WHIP = 0x62;
+    LEGOCONTEXT_WHIP = 0x62;
     LEGOCONTEXT_NETWAIT = 99;
     //  LEGOMENU_TITLES = 0;
     LEGOMENU_NEWGAME = LEGO_MENU_NEW_GAME;

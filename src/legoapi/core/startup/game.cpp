@@ -5,6 +5,7 @@
 
 #include "gameapi/gui/apimenu.h"
 #include "legoapi/characters/core/character.h"
+#include "legoapi/characters/core/customiser.h"
 #include "legoapi/core/config/cheat.h"
 #include "legoapi/core/input/gamepads.h"
 #include "legoapi/core/input/timer.h"
@@ -34,7 +35,6 @@ extern void ResetAdaptiveDifficulty(void);
 extern void Cheats_TurnOff(i32);
 extern void Hint_ClearHintsAndDoneFlags(void);
 extern void GamePad_InitButtons(void);
-extern void Customiser_CopyDefaultPiecesToSave(CUSTOMISER *, CUSTOMISESAVE *);
 extern void FinishWeirdoNames(i32);
 extern void Store_UnlockPack(i32, bool);
 extern void ReCalculateCompletionPoints(void);

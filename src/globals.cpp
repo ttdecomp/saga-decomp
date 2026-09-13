@@ -214,6 +214,7 @@ u32 areaSuitBits = 0;
 u8 *Game_LevelSave = NULL;
 EPISODESAVE_s *Game_EpisodeSave = NULL;
 u16 *Game_CompletionSave = NULL;
+void (*CheckLostDataFn)(GIZMOBLOWUP_s *) = NULL;
 MISSIONSAVE *Game_MissionSave = NULL;
 
 // ------------------------------------------------------------------------
@@ -1685,8 +1686,6 @@ i32 (*CutScene_ReplaceCharacterModelFn)(CUTINFO *, NUGCUTCHAR_s *) = NULL;
 i32 (*InitBolt_AddMomentumType)(BOLT_s *, GameObject_s *, nuvec_s *) = NULL;
 i32 (*Bolt_HitPlatFn)(BOLT_s *) = NULL;
 void (*Bolt_HitCustomFn)(BOLT_s *, nuvec_s *) = NULL;
-void (*GameBlowUpBlownUpFn)(GIZMOBLOWUP_s *) = NULL;
-void (*GizmoBlowup_TransformDrawFn)(GIZMOBLOWUP_s *) = NULL;
 void (*GizObstacle_SetDefaultSFXFn)(void *, GIZOBSTACLE_s *) = NULL;
 // Original bss @0x6a3f54 / @0x6a3f50.
 i32 LoadPerm_LanguageSelect = 0;
@@ -1724,7 +1723,6 @@ i32 create_qfont3dz = 0;
 // ------------------------------------------------------------------------
 // Cutscene & system misc
 // ------------------------------------------------------------------------
-u32 EXBLOWUPFLAGS = 0;
 i32 BeenAttacked = 0;
 FadeSystem FadeSys;
 i32 Paused = 0;
@@ -1748,19 +1746,9 @@ i32 LEGOMENU_PAUSEMAIN = -1;
 i32 LEGOMENU_PAUSECUT = -1;
 i32 LEGOMENU_CREDITS = -1;
 i32 MiniCutCam = 0;
-i32 LEGOCONTEXT_DROPIN = -1;
-i32 LEGOCONTEXT_COMBO = -1;
-i32 LEGOCONTEXT_DOOMED = -1;
-i32 LEGOCONTEXT_LAND_COMBATROLL = -1;
-i32 LEGOCONTEXT_WALLSHUFFLE = -1;
-i32 LEGOCONTEXT_NETWAIT = -1;
-i16 LEGOACT_BUILD = -1;
 i32 LEGOHINT_BUILD = -1;
 i32 LEGOHINT_PUSHBLOCKS = -1;
 i32 LEGOHINT_FREEPLAYTOGGLE = -1;
-i32 LEGOCONTEXT_BEENTAKENOVER = -1;
-i32 LEGOCONTEXT_WEAPONIN = -1;
-i32 LEGOCONTEXT_WEAPONOUT = -1;
 i32 WeaponInOut_NoAIJediSfx = 0;
 i32 LEGOSPL_SPLIT = 0;
 GAMECUTSCENES_s game_cutscenes;

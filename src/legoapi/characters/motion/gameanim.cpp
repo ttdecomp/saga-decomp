@@ -1,4 +1,5 @@
 #include "decomp.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "gameapi/edtools/edfile.h"
 #include "globals.h"
 #include "legoapi/core/config/cheat.h"
@@ -30,7 +31,6 @@
 #include <float.h>
 #include <string.h>
 
-i32 LEGOCONTEXT_SUPERCARRY = -1;
 
 i32 SuperCarry_Carrying(GameObject_s *object) {
     if (LEGOCONTEXT_SUPERCARRY != -1 && object->character_context == LEGOCONTEXT_SUPERCARRY) {
@@ -161,7 +161,6 @@ static GAMECHARACTERDATA *GetGameCharacterData(GameObject_s *object);
 void UpdateCharacterIdle(GameObject_s *object);
 void AutoWeaponOnOff(GameObject_s *object);
 void AddFootSteps(GameObject_s *object);
-f32 GizBuildItMul(GameObject_s *object);
 extern "C" f32 AnimDuration(i32 character_id, i32 animation, f32 start_frame, f32 end_frame, i32 subtract_frame_time);
 void RootFnEx(NUMTX *matrix, void *data, NUVEC *source_root, NUVEC *target_root, NUVEC *root_delta, f32 blend,
               i32 include_y);

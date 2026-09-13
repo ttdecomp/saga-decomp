@@ -27,6 +27,8 @@
 #include "nu2api/nu3d/nurndrstat.h"
 #include "nu2api/nu3d/numtl.h"
 
+#include <cfloat>
+
 extern i32 numtl_renderplane;
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -99,81 +101,6 @@ extern "C" void NuDisplayListCaptureEnd(void) {
 // Dispatch tables
 // ──────────────────────────────────────────────────────────────────────────────
 
-void NuIOSDLMtlCallback(void *);
-void NuIOSDLGeomCallback(void *);
-void NuIOSDLTransformCallback(void *);
-void NuIOSDLTransformParamsCallback(void *);
-void NuIOSDLFaceOnCallback(void *);
-void NuIOSDLFaceOnTransformCallback(void *);
-void NuIOSDLGeom2DCallback(void *);
-void NuIOSDLLightsCallback(void *);
-void NuIOSDLSkinMtxCallback(void *);
-void NuIOSDLCameraCallback(void *);
-void NuIOSDLKonstCallback(void *);
-void NuIOSDLFogCallback(void *);
-void NuIOSDLDebrisCallback(void *);
-void NuIOSDLVertexGroupsCallback(void *);
-void NuIOSDLVertexOffsetsCallback(void *);
-void NuIOSDLReflectionCallback(void *);
-void NuIOSDLLightmapOld(void *);
-void NuIOSDLLightmapOffsetOld(void *);
-void NuIOSDLLightmap(void *);
-void NuIOSDLDeferredMtlCallback(void *);
-void NuIOSDLDeferredTransformCallback(void *);
-void NuIOSDLDeferredTransformParamsCallback(void *);
-
-// Primary table — __ItemFnTable @0x625ae0 (sparse, indexed by absolute type).
-nudl_handler_fn g_nudl_dispatch_table[0x100] = {nullptr};
-static nudl_handler_fn s_shadow_table_storage[0x100] = {nullptr};
-static const nudl_handler_fn *s_shadow_table = s_shadow_table_storage;
-
-struct NudlTableInit {
-    NudlTableInit() {
-        auto *t = g_nudl_dispatch_table;
-        auto *s = s_shadow_table_storage;
-        t[0x80] = NuIOSDLMtlCallback;
-        t[0x82] = NuIOSDLGeomCallback;
-        t[0x83] = NuIOSDLTransformCallback;
-        t[0x8b] = NuIOSDLGeomCallback;
-        t[0x8c] = NuIOSDLTransformParamsCallback;
-        t[0x8f] = NuIOSDLFaceOnCallback;
-        t[0x90] = NuIOSDLFaceOnTransformCallback;
-        t[0x93] = NuIOSDLGeom2DCallback;
-        t[0x94] = NuIOSDLLightsCallback;
-        t[0x98] = NuIOSDLGeomCallback;
-        t[0x99] = NuIOSDLSkinMtxCallback;
-        t[0x9a] = NuIOSDLCameraCallback;
-        t[0xa5] = NuIOSDLKonstCallback;
-        t[0xa6] = NuIOSDLFogCallback;
-        t[0xa7] = NuIOSDLDebrisCallback;
-        t[0xa9] = NuIOSDLVertexGroupsCallback;
-        t[0xaa] = NuIOSDLVertexOffsetsCallback;
-        t[0xab] = NuIOSDLReflectionCallback;
-        t[0xae] = NuIOSDLLightmapOld;
-        t[0xaf] = NuIOSDLLightmapOffsetOld;
-        t[0xb0] = NuIOSDLLightmap;
-
-        s[0x80] = NuIOSDLDeferredMtlCallback;
-        s[0x82] = NuIOSDLGeomCallback;
-        s[0x83] = NuIOSDLDeferredTransformCallback;
-        s[0x8b] = NuIOSDLGeomCallback;
-        s[0x8c] = NuIOSDLDeferredTransformParamsCallback;
-        s[0x98] = NuIOSDLGeomCallback;
-        s[0x99] = NuIOSDLSkinMtxCallback;
-        s[0xa9] = NuIOSDLVertexGroupsCallback;
-        s[0xaa] = NuIOSDLVertexOffsetsCallback;
-    }
-};
-static NudlTableInit s_nudl_table_init;
-
-// CurrentItemTable @0x625c84 — points at entry for type 0x80.
-static const nudl_handler_fn *s_current_table = nullptr;
-struct NudlCurrentTableInit {
-    NudlCurrentTableInit() {
-        s_current_table = &g_nudl_dispatch_table[0x80];
-    }
-};
-static NudlCurrentTableInit s_nudl_current_init;
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Item helpers
@@ -196,58 +123,53 @@ static nudisplaylistitem_s *AddCallItem(nudisplaylist_s *list, u8 type, void *ne
     return reinterpret_cast<nudisplaylistitem_s *>(reinterpret_cast<u8 *>(list->items) - kItemSize);
 }
 
-extern "C" nudisplaylist_s *NuDisplayListGet2dList(void) {
-    return &global_dlist_manager.dlist_2d;
-}
-
-extern "C" void NuDisplayListResetBuffer(void) {
-    display_list_buffer = reinterpret_cast<VARIPTR *>(&rndrstream_free);
-    display_list_buffer_end = reinterpret_cast<VARIPTR *>(rndrstream_end.addr);
-}
-
 // ──────────────────────────────────────────────────────────────────────────────
 // Executor
 // ──────────────────────────────────────────────────────────────────────────────
 
+// Original 0x2f1180: reset every material-list head and make all clipping
+// objects visible in the current frame's two-bit visibility map.
+void NuDisplaySceneUnclip(NUDLDLISTSCENE *scene) {
+    for (i32 i = 0; i < static_cast<i32>(scene->nmtls); ++i) {
+        scene->dlist_mtls[i]->mtl_item->id = 0;
+    }
+    for (i32 i = 0; i < scene->nclip_objects; ++i) {
+        scene->clip_used[scene->render_buffer >> 7][i >> 2] |= static_cast<u8>(1u << (2 * (i & 3)));
+    }
+}
+
+// Original 0x2f11f0: reset the scene's per-object near/far clip ranges.
+extern "C" void NuInvalidateClipRanges(NUDLDLISTSCENE *scene) {
+    for (i32 index = 0; index < scene->nclip_objects; ++index) {
+        if (scene->lod_ranges[index] != 0.0f) {
+            scene->lod_ranges[index] = FLT_MAX;
+        }
+        scene->far_clip_ranges[index] = FLT_MAX;
+    }
+}
+
 extern "C" void NuDisplayListExecute(nudisplaylistitem_s *item, const nudl_handler_fn *item_table) {
     // `item_table` points at the entry for type 0x80.
     for (;;) {
-        // Walk the linear run until a NEXT links elsewhere.
-        while (item->id != kItemId_Next) {
-            if (item->id == kItemId_Call) {
-                auto handler = item_table[static_cast<u32>(item->type) - kItemType_Mtl];
-                if (handler) {
-                    handler(item->next);
-                }
-            } else if (item->id != kItemId_Cnt) {
-                // RET (and any unexpected id >=2 other than CALL) terminates.
-                return;
-            }
+        switch (item->id) {
+        case kItemId_Next:
+            item = static_cast<nudisplaylistitem_s *>(item->next);
+            break;
+        case kItemId_Cnt:
             ++item;
+            break;
+        case kItemId_Call: {
+            auto handler = item_table[static_cast<u32>(item->type) - kItemType_Mtl];
+            if (handler)
+                handler(item->next);
+            ++item;
+            break;
         }
-        item = static_cast<nudisplaylistitem_s *>(item->next);
+        default:
+            // RET (and any unexpected id >=2 other than CALL) terminates.
+            return;
+        }
     }
-}
-
-extern "C" void NuDisplayListDrawItems(nudisplaylistitem_s *items) {
-    NuDisplayListExecute(items, s_current_table);
-}
-
-extern "C" void NuDisplayListSetItemTable(i32 which) {
-    if (which == 0) {
-        s_current_table = &g_nudl_dispatch_table[0x80];
-    } else if (which == 1) {
-        s_current_table = &s_shadow_table[0x80];
-    }
-}
-
-extern "C" void DisplayListSetAlphaPS(nudisplaylistitem_s *prev_item, nudisplaylistitem_s *item, f32 alpha) {
-    if (alpha < 0.0f)
-        alpha = 0.0f;
-    if (alpha > 1.0f)
-        alpha = 1.0f;
-    *reinterpret_cast<f32 *>(reinterpret_cast<u8 *>(prev_item->next) + 0x3c) = alpha;
-    (void)item; // second param kept for original signature parity
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -353,7 +275,7 @@ static i32 ClipUsedBlockCount(i32 nclip) {
     return (((nclip + 7) / 8) * 2) / 16 + 1;
 }
 
-static void ResetSceneBeforeFrame(nudldlistscene_s *scene, bool gated) {
+static void ResetSceneBeforeFrame(nudisplayscene_s *scene, bool gated) {
     if (gated && (scene->flags & 6) == 0) {
         return;
     }
@@ -505,35 +427,39 @@ extern "C" NUDLDLISTSCENE *NuDisplaySceneClone(NUDLDLISTSCENE *source, VARIPTR *
     return scene;
 }
 
-// NuDisplaySceneAdd @ 0x2f9e30
+// NuDisplaySceneAdd @ 0x2e9e30
 extern "C" void NuDisplaySceneAdd(NUDLDLISTSCENE *scene) {
     NuThreadCriticalSectionBegin(global_dlist_manager.loading_critical_section);
 
     global_dlist_manager.dlists[global_dlist_manager.ndisplay_lists++] = scene;
     ResetSceneBeforeFrame(scene, /*gated=*/false);
 
-    NUSORTPRI *sort_list = global_dlist_manager.sort_list;
-    for (i32 i = 0; i < scene->nsort_pris; ++i) {
-        NUSORTPRI *sort_pri = &scene->sort_pris[i];
-        if (numtl_renderplane != 0) {
-            sort_pri->sort_pri += numtl_renderplane * 0x20000;
-        }
+    if (scene->nsort_pris > 0) {
+        NUSORTPRI *sort_list = global_dlist_manager.sort_list;
+        i32 used_count = global_dlist_manager.nused_sort_pris;
+        for (i32 i = 0; i < scene->nsort_pris; ++i) {
+            NUSORTPRI *sort_pri = &scene->sort_pris[i];
+            if (numtl_renderplane != 0) {
+                sort_pri->sort_pri += numtl_renderplane * 0x20000;
+            }
 
-        NUSORTPRI *previous = nullptr;
-        NUSORTPRI *current = sort_list;
-        while (current != nullptr && current->sort_pri < sort_pri->sort_pri) {
-            previous = current;
-            current = current->sys_next;
+            NUSORTPRI *previous = nullptr;
+            NUSORTPRI *current = sort_list;
+            while (current != nullptr && current->sort_pri < sort_pri->sort_pri) {
+                previous = current;
+                current = current->sys_next;
+            }
+            sort_pri->sys_next = current;
+            if (previous == nullptr) {
+                sort_list = sort_pri;
+            } else {
+                previous->sys_next = sort_pri;
+            }
+            ++used_count;
         }
-        sort_pri->sys_next = current;
-        if (previous == nullptr) {
-            sort_list = sort_pri;
-        } else {
-            previous->sys_next = sort_pri;
-        }
-        ++global_dlist_manager.nused_sort_pris;
+        global_dlist_manager.sort_list = sort_list;
+        global_dlist_manager.nused_sort_pris = used_count;
     }
-    global_dlist_manager.sort_list = sort_list;
 
     if (scene->material_animations != nullptr) {
         scene->material_animations->next = global_dlist_manager.mtlanim_list;
@@ -547,7 +473,7 @@ extern "C" void NuDisplaySceneAdd(NUDLDLISTSCENE *scene) {
     NuThreadCriticalSectionEnd(global_dlist_manager.loading_critical_section);
 }
 
-// NuDisplaySceneDestroy @ 0x2f9fd0
+// NuDisplaySceneDestroy @ 0x2e9fd0
 extern "C" void NuDisplaySceneDestroy(NUDLDLISTSCENE *scene) {
     if (scene == nullptr) {
         return;
@@ -614,7 +540,7 @@ extern "C" void NuDisplayListSwapBuffersBeginFrame(void) {
     ResetSceneBeforeFrame(&global_dlist_manager.dyn_mtl_dlist, /*gated=*/true);
 
     for (i32 i = 0; i < global_dlist_manager.ndisplay_lists; ++i) {
-        nudldlistscene_s *sc = global_dlist_manager.dlists[i];
+        nudisplayscene_s *sc = global_dlist_manager.dlists[i];
         u32 nv = (~static_cast<u32>(static_cast<u8>(sc->render_buffer))) & 0xffffff80;
         sc->render_buffer &= 0x7f;
         sc->render_buffer |= nv;
@@ -643,7 +569,7 @@ extern "C" void NuDisplayListSwapBuffersBeginFrame(void) {
 #define MTL_BLEND_OP2(mtl) (*(const u8 *)((const u8 *)(mtl) + 0xf8))
 #define MTL_ATTRIB_DWORD1(mtl) (*(const u32 *)((const u8 *)(mtl) + 0x44))
 
-static void UpdateMaterialClipBits(nudldlistscene_s *scene) {
+static void UpdateMaterialClipBits(nudisplayscene_s *scene) {
     if (!scene || !scene->mtls || !scene->mtls[0]) {
         return;
     }
@@ -687,7 +613,7 @@ extern "C" i32 NuDisplayListAddRenderScene(void) {
 
     i32 count = 0;
     for (nusortpri_s *sp = mgr->sort_list; sp; sp = sp->sys_next) {
-        nudldlistscene_s *sc = sp->display_scene;
+        nudisplayscene_s *sc = sp->display_scene;
         if (sc == nullptr) {
             // FX sortpri — carry over unless already captured this frame.
             if ((sp->flags & 2) == 0) {
@@ -769,10 +695,14 @@ extern "C" SAGA_HOST_WEAK void NuDisplayListDrawRenderScene(i32 render_scene_id)
     NuThreadCriticalSectionBegin(mgr->loading_critical_section);
     nudisplaylistrenderscene_s *rs = mgr->safe_render_scenes[render_scene_id];
     if (rs) {
-        for (i32 i = 0; i < rs->nsort_pris; ++i) {
+        const i32 nsort_pris = rs->nsort_pris;
+        for (i32 i = 0; i < nsort_pris; ++i) {
             nusortpri_s *sp = rs->sort_pris[i];
             NuDisplayListCaptureSortPriority(sp);
             NuDisplayListDrawItems(sp->items);
+            // Callbacks can update the slot; the original reloads it before
+            // drawing the next priority or the 2D tail.
+            rs = mgr->safe_render_scenes[render_scene_id];
         }
         NuDisplayListDrawItems(&rs->render_2d_first);
         mgr->safe_render_scenes[render_scene_id] = nullptr;
@@ -1138,7 +1068,7 @@ extern "C" void NuDisplayListSwapBuffersEndFrame(void) {
     UpdateMaterialClipBits(&mgr->dyn_mtl_dlist);
 
     for (i32 i = 0; i < mgr->ndisplay_lists; ++i) {
-        nudldlistscene_s *sc = mgr->dlists[i];
+        nudisplayscene_s *sc = mgr->dlists[i];
         u8 flags = sc->flags;
 
         if ((flags & 4) != 0) {
@@ -1222,7 +1152,7 @@ extern "C" void NuDisplayListSwapBuffersEndFrame(void) {
         }
     };
 
-    auto copyMaterialGeometry = [&](NUDISPLAYLIST *dl, nudisplaylistitem_s *first, nudldlistscene_s *sc) {
+    auto copyMaterialGeometry = [&](NUDISPLAYLIST *dl, nudisplaylistitem_s *first, nudisplayscene_s *sc) {
         *dl->dyn_geom = *first;
         if ((sc->flags & 4) == 0) {
             dl->mtl_last->next = dl->mtl_item->next;
@@ -1236,7 +1166,7 @@ extern "C" void NuDisplayListSwapBuffersEndFrame(void) {
     };
 
     for (nusortpri_s *sp = mgr->sort_list; sp; sp = sp->sys_next) {
-        nudldlistscene_s *sc = sp->display_scene;
+        nudisplayscene_s *sc = sp->display_scene;
         if (!sc) {
             RndrStateUpdateFx(&tmp_state, sp->items);
             continue;
@@ -1293,7 +1223,7 @@ extern "C" void NuDisplayListSwapBuffersEndFrame(void) {
     }
 
     for (i32 i = 0; i < mgr->ndisplay_lists; ++i) {
-        nudldlistscene_s *sc = mgr->dlists[i];
+        nudisplayscene_s *sc = mgr->dlists[i];
         if (sc->local_state) {
             RndrStateResetGlobalState(sc->local_state);
         }
@@ -1319,7 +1249,6 @@ void NuDisplayListEndScene(void) {
 
 extern "C" void *DisplayListCreateFaceonTransformPS(VARIPTR *, NUMTX *, NUMTL *, void *);
 extern "C" void *DisplayListCreateGeomTransformPS(VARIPTR *, NUMTX *, NUMTL *, void *, void *);
-extern "C" void *NuDisplayListPrepareFaceonPS(VARIPTR *, void *, NUMTX *);
 
 extern "C" void NuDisplayListBurstRndrSpecial(nuhspecial_s *handle, u32 count, NUMTX *matrices, i32 clip) {
     u16 visible[1024];

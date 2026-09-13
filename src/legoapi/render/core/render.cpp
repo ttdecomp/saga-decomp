@@ -1,4 +1,5 @@
 #include "legoapi/render/core/render.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "nu2api/nu3d/numtl.h"
 #include "legoapi/cutscenes/cutscenes.h"
 #include <stdio.h>
@@ -368,9 +369,6 @@ struct rtlidata_s;
 
 #include <string.h>
 
-extern NuVertexFormatPS *g_nuFaceOnVertexFormat;
-extern NuVertexFormatPS *g_nuDebrisVertexFormat;
-void NuIOS_ResetVAODuplicateFinder();
 extern i32 VehicleArea;
 extern i32 GAMEDEMO;
 extern STATUSPACKET_s StatusPacket;
@@ -665,7 +663,7 @@ extern "C" {
             scene->flags |= NUDL_SCENE_FLAG_CLIPPING;
             DisplaySceneEvaluateClipFallback(scene);
         }
-        DisplayListGenerateTransforms(reinterpret_cast<nudisplayscene_s *>(scene));
+        DisplayListGenerateTransforms(scene);
 
         if ((scene->instance_visibility_enabled & NUDL_SCENE_INSTANCE_VISIBILITY_ENABLED) == 0 &&
             noscenespecials == 0 && scene->nspecials > 0) {
@@ -691,9 +689,6 @@ extern "C" {
         }
     }
 
-    void NuGScnRndr3(NUGSCN *scene) {
-        NuDisplaySceneRndr(scene->display_list);
-    }
 }
 
 void SetCameraZoom(f32 zoom) {
@@ -845,119 +840,9 @@ extern "C" void NuGScnUpdate(NUGSCN *gscn, f32 frame_delta) {
     }
 }
 
-// --- NuGScn gfx-upload helpers: C++ / file-local (static) in original ---
-// NuGScnUploadGfxDataFromFilePS has C++ linkage (mangled `_Z29NuGScnUploadGfxDataFromFilePSP9variptr_uS_i`);
+// --- NuGScn graphics-data reader ---
 // NuReadGraphicsData is a C++ static function in the original (GCC clones it,
 // hence the `.isra.NNN` suffix in the ROM symbol table).
-
-extern u32 g_lastBoundVAO;
-
-static void NuIOSBindVAO(u32 vao_handle) {
-    if (vao_handle != g_lastBoundVAO) {
-        g_lastBoundVAO = vao_handle;
-    }
-}
-
-static u32 UploadDataToGLBuffer(NUFILE file, u32 size, GLenum target, usize *buffer_handle, VARIPTR *buf,
-                                VARIPTR buf_end) {
-    GLuint gl_buf = 0;
-    BeginCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nu3d/android/nugscn_android.c", 0x56);
-    glGenBuffers(1, &gl_buf);
-    *buffer_handle = gl_buf;
-    NuIOSBindVAO(0);
-    glBindBuffer(target, gl_buf);
-    glBufferData(target, size, 0, GL_STATIC_DRAW);
-    EndCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nu3d/android/nugscn_android.c", 0x5d);
-
-    if (bgProcIsBgThread()) {
-        NuIOS_YieldThread();
-    }
-
-    u32 chunk_limit = g_loadingCharacterInHub != 0 ? 0x4000 : 0x10000;
-    u32 buf_size = buf_end.char_ptr - buf->char_ptr;
-    u32 max_chunk_size = NuMin(chunk_limit, buf_size);
-    u32 largest_chunk = 0;
-
-    for (u32 n = 0, chunk_size = 0; n < size; n += chunk_size) {
-        chunk_size = NuMin(max_chunk_size, size - n);
-        NuFileRead(file, buf->void_ptr, chunk_size);
-
-        BeginCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nu3d/android/nugscn_android.c", 0x73);
-        NuIOSBindVAO(0);
-        glBindBuffer(target, gl_buf);
-        if (chunk_size == size) {
-            glBufferData(target, chunk_size, buf->void_ptr, GL_STATIC_DRAW);
-        } else {
-            glBufferSubData(target, n, chunk_size, buf->void_ptr);
-        }
-        EndCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nu3d/android/nugscn_android.c", 0x80);
-
-        if (bgProcIsBgThread()) {
-            NuIOS_YieldThread();
-        }
-        largest_chunk = NuMax(largest_chunk, chunk_size);
-    }
-    return largest_chunk;
-}
-
-i32 NuGScnUploadGfxDataFromFilePS(VARIPTR *buf, VARIPTR buf_end, i32 file) {
-    VARIPTR max_buf = *buf;
-    i32 section_size = 0;
-    i32 bytes_read = 0;
-
-    memset(&g_VideoResHeader, 0, sizeof(g_VideoResHeader));
-    bytes_read += NuFileRead(file, &section_size, sizeof(section_size));
-    bytes_read += NuGScnReadTexturesPS(file, buf, buf_end);
-
-    bytes_read += NuFileRead(file, &g_VideoResHeader.nvertex_buffers, sizeof(g_VideoResHeader.nvertex_buffers));
-    g_VideoResHeader.vertex_buffers = BUFFER_ALLOC_ARRAY(buf, g_VideoResHeader.nvertex_buffers, usize);
-    for (u32 i = 0; i < g_VideoResHeader.nvertex_buffers; ++i) {
-        u32 size = 0;
-        bytes_read += NuFileRead(file, &size, sizeof(size));
-        if (size == 0) {
-            g_VideoResHeader.vertex_buffers[i] = 0;
-            continue;
-        }
-
-        u32 keep_in_memory = size & 0x80000000;
-        size &= 0x7fffffff;
-        if (keep_in_memory != 0) {
-            g_VideoResHeader.vertex_buffers[i] = buf->addr;
-            buf->addr += size;
-            bytes_read += NuFileRead(file, reinterpret_cast<void *>(g_VideoResHeader.vertex_buffers[i]), size);
-        } else {
-            u32 largest =
-                UploadDataToGLBuffer(file, size, GL_ARRAY_BUFFER, &g_VideoResHeader.vertex_buffers[i], buf, buf_end);
-            bytes_read += size;
-            max_buf.addr = NuMax(max_buf.addr, buf->addr + largest);
-        }
-    }
-
-    bytes_read += NuFileRead(file, &g_VideoResHeader.nindex_buffers, sizeof(g_VideoResHeader.nindex_buffers));
-    g_VideoResHeader.index_buffers = BUFFER_ALLOC_ARRAY(buf, g_VideoResHeader.nindex_buffers, usize);
-    for (u32 i = 0; i < g_VideoResHeader.nindex_buffers; ++i) {
-        u32 size = 0;
-        bytes_read += NuFileRead(file, &size, sizeof(size));
-        if (size == 0) {
-            g_VideoResHeader.index_buffers[i] = 0;
-            continue;
-        }
-        u32 largest =
-            UploadDataToGLBuffer(file, size, GL_ELEMENT_ARRAY_BUFFER, &g_VideoResHeader.index_buffers[i], buf, buf_end);
-        bytes_read += size;
-        max_buf.addr = NuMax(max_buf.addr, buf->addr + largest);
-    }
-
-    i32 total_size = section_size + 4;
-    u8 padding;
-    while (bytes_read < total_size) {
-        bytes_read += NuFileRead(file, &padding, 1);
-    }
-    if (buf->addr < max_buf.addr) {
-        memset(buf->void_ptr, 0, max_buf.addr - buf->addr);
-    }
-    return total_size;
-}
 
 static NUGSCN *NuReadGraphicsData(VARIPTR *buf, VARIPTR *buf_end, char *path, char *, char *scene_data) {
     NUGSCN *scene = reinterpret_cast<NUGSCN *>(scene_data);
@@ -1643,71 +1528,6 @@ void DrawItemMenu2D() {
 void DrawMessageBox(i32, float, float, float, float) {
 }
 
-void DrawRopeCurved(nuvec_s *, nuvec_s *, i32, i32, numtl_s *) {
-}
-
-numtl_s *ropemtl;
-static f32 ROPELEN;
-static u32 ropedif = 0xff505050;
-void FindAnglesZX(NUVEC *, u16 *, u16 *);
-
-void DrawRopeSingle(nuvec_s *start, nuvec_s *end, float amount, numtl_s *material, float time, float grow_time,
-                    float spacing, float scale) {
-    ROPELEN = 0.04f;
-    ropedif = Cheat_IsOn(3) ? 0xff103f10 : 0xff505050;
-    if (material == NULL)
-        material = ropemtl;
-    if (end == NULL || start == NULL)
-        return;
-    amount = NuFmax(0.0f, NuFmin(1.0f, amount));
-    NUVEC direction = {end->x - start->x, end->y - start->y, end->z - start->z};
-    f32 length = NuVecMag(&direction) * amount;
-    f32 repeats = length / ROPELEN;
-    NURND_VERTEX3D vertices[10] = {
-        {{-0.01f, 0.0f, 0.01f}, {-0.7071068286895752f, 0.0f, 0.7071068286895752f}, ropedif, 0.0f, 0.0f},
-        {{-0.01f, length, 0.01f}, {-0.7071068286895752f, 0.0f, 0.7071068286895752f}, ropedif, repeats, 0.0f},
-        {{0.01f, 0.0f, 0.01f}, {0.7071068286895752f, 0.0f, 0.7071068286895752f}, ropedif, 0.0f, 1.0f},
-        {{0.01f, length, 0.01f}, {0.7071068286895752f, 0.0f, 0.7071068286895752f}, ropedif, repeats, 1.0f},
-        {{0.01f, 0.0f, -0.01f}, {0.7071068286895752f, 0.0f, -0.7071068286895752f}, ropedif, 0.0f, 2.0f},
-        {{0.01f, length, -0.01f}, {0.7071068286895752f, 0.0f, -0.7071068286895752f}, ropedif, repeats, 2.0f},
-        {{-0.01f, 0.0f, -0.01f}, {-0.7071068286895752f, 0.0f, -0.7071068286895752f}, ropedif, 0.0f, 3.0f},
-        {{-0.01f, length, -0.01f}, {-0.7071068286895752f, 0.0f, -0.7071068286895752f}, ropedif, repeats, 3.0f},
-        {{-0.01f, 0.0f, 0.01f}, {-0.7071068286895752f, 0.0f, 0.7071068286895752f}, ropedif, 0.0f, 4.0f},
-        {{-0.01f, length, 0.01f}, {-0.7071068286895752f, 0.0f, 0.7071068286895752f}, ropedif, repeats, 4.0f}};
-    u16 x_rotation, z_rotation;
-    FindAnglesZX(&direction, &x_rotation, &z_rotation);
-    NUMTX matrix;
-    NuMtxSetRotationZ(&matrix, z_rotation);
-    NuMtxRotateX(&matrix, x_rotation);
-    NuMtxTranslate(&matrix, start);
-    NuRndrTriStrip3dClip(vertices, 10, &matrix, material);
-    if (Cheat_IsOn(3) == 0 || VehicleArea != 0)
-        return;
-    NUVEC position = v000;
-    NUVEC size = v000;
-    position.y = 0.0f;
-    f32 step = spacing * ROPELEN;
-    u16 rotation = 0;
-    while (position.y < length) {
-        f32 magnitude = scale;
-        if (grow_time >= time) {
-            i32 angle = (i32)((1.0f / grow_time * time) * 16384.0f + 32768.0f + 16384.0f);
-            magnitude = (1.0f + NuTrigTable[(angle >> 1) & 0x7fff]) * scale;
-        }
-        size.x = size.y = size.z = magnitude;
-        rotation = (u16)(rotation + 0x5555);
-        NuMtxSetScale(&matrix, &size);
-        NuMtxTranslate(&matrix, &position);
-        NuMtxRotateY(&matrix, rotation);
-        NuMtxRotateZ(&matrix, z_rotation);
-        NuMtxRotateX(&matrix, x_rotation);
-        NuMtxTranslate(&matrix, start);
-        NuSpecialDrawAt(&WORLD->lev_objs[0x124].special, &matrix);
-        NuSpecialDrawAt(&WORLD->lev_objs[0x125].special, &matrix);
-        NuSpecialDrawAt(&WORLD->lev_objs[0x126].special, &matrix);
-        position.y += step;
-    }
-}
 
 void DrawStatusText(char *text, u16 angle, float x, float y, float scale, u32 colour, i32 alignment) {
     static NUMTX status_mtx;
@@ -3905,7 +3725,6 @@ static void DrawCharacterAttachments(GameObject_s *object, NUMTX *joint_matrices
 void CharScene_Draw(WORLDINFO_s *, i32, NUMTX *, NUMTX *);
 void CharMiniKit_Draw(i32, NUMTX *, i32, f32, f32);
 void Customiser_DrawAccessories(CUSTOMISER *, GameObject_s *, NUMTX *);
-void GizDrawBuildItPiece(GameObject_s *, i32);
 i32 Batarang_GetObjectFromCharID(i32);
 void SuperCarry_DrawObject(GameObject_s *);
 void Grapple_DrawLine(GameObject_s *);
@@ -4315,115 +4134,6 @@ static __used__ double ApplyAntilights(rtl_s *, rtlidata_s *, float) {
 }
 
 static __used__ void DisplayListMaterialClipUpdate(nudisplayscene_s *) {
-}
-
-static __used__ void PreWarmGeomsAndBakeVAOs(nudisplayscene_s *raw_scene, nunativegscene_s *) {
-    NUDLDLISTSCENE *scene = reinterpret_cast<NUDLDLISTSCENE *>(raw_scene);
-    for (i32 clip_index = 0; clip_index < scene->nclip_objects; ++clip_index) {
-        u8 *clip = reinterpret_cast<u8 *>(&scene->clip_objects[clip_index]);
-        u32 nitems = *reinterpret_cast<u32 *>(clip);
-        u32 *materials = *reinterpret_cast<u32 **>(clip + 4);
-        i32 *items = *reinterpret_cast<i32 **>(clip + 8);
-        for (u32 item_index = 0; item_index < nitems; ++item_index) {
-            NUDISPLAYLISTITEM *item = &scene->items[items[item_index]];
-            if (item->type == 0x8f) {
-                continue;
-            }
-            g_boundMaterial = scene->mtls[materials[item_index]];
-            g_LastMtl = g_boundMaterial;
-            u8 vertex_flags = reinterpret_cast<u8 *>(&g_boundMaterial->shader_desc.vtx_desc)[2];
-            if ((vertex_flags & 0x10) == 0) {
-                if ((vertex_flags & 0x20) == 0) {
-                    NuIOS_SetVertexFormat(reinterpret_cast<usize>(g_boundMaterial->vertex_decl));
-                } else {
-                    g_boundVertexFormat = reinterpret_cast<usize>(g_nuFaceOnVertexFormat);
-                }
-            } else {
-                g_boundVertexFormat = reinterpret_cast<usize>(g_nuDebrisVertexFormat);
-            }
-            NuIOSDLPreWarmGeomCallback(item->next);
-        }
-    }
-}
-
-extern "C" void NuGScnFixupPS(NUGSCN *scene) {
-    struct NativeScene {
-        u16 nvertex_buffers;
-        u16 pad_02;
-        usize *vertex_buffers;
-        u16 nindex_buffers;
-        u16 pad_0a;
-        usize *index_buffers;
-        NUDISPLAYLISTGEOM **geometries;
-        i32 ngeometries;
-        struct NativeVertexStream **vertex_streams;
-        i32 nvertex_streams;
-    };
-
-    struct NativeVertexStream {
-        u32 unknown_00;
-        u32 unknown_04;
-        usize vertex_buffer;
-    };
-
-    NativeScene *native_scene = reinterpret_cast<NativeScene *>(scene->field437_0x1d0);
-    i32 dynamic_indices[64];
-    i32 ndynamic = 0;
-    for (i32 i = 0; i < native_scene->ngeometries; ++i) {
-        NUDISPLAYLISTGEOM *geometry = native_scene->geometries[i];
-        i32 vertex_index = static_cast<i32>(geometry->index_buffer);
-        i32 index_index = static_cast<i32>(geometry->vertex_buffer);
-        geometry->index_buffer = static_cast<u32>(g_VideoResHeader.index_buffers[vertex_index]);
-        geometry->vertex_buffer = g_VideoResHeader.vertex_buffers[index_index];
-        if (geometry->vertex_buffer == 0) {
-            geometry->index_count = 0;
-            geometry->vertex_count = 0;
-        }
-        if (geometry->immediate != 0) {
-            BeginCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nu3d/android/nugscn_android.c", 0x25b);
-            NuIOSBindVAO(0);
-            glGenBuffers(1, reinterpret_cast<GLuint *>(&geometry->vertex_format));
-            glBindBuffer(GL_ARRAY_BUFFER, geometry->vertex_format);
-            glBufferData(GL_ARRAY_BUFFER, geometry->vertex_stride * geometry->vertex_count, NULL, GL_DYNAMIC_DRAW);
-            EndCriticalSectionGL("i:/SagaTouch-Android_9176564/nu2api.saga/nu3d/android/nugscn_android.c", 0x262);
-            if (bgProcIsBgThread()) {
-                NuIOS_YieldThread();
-            }
-            dynamic_indices[ndynamic++] = index_index;
-        } else {
-            geometry->vertex_format = 0;
-        }
-    }
-    if (scene != NULL && scene->display_list != NULL && scene->display_list->name != NULL &&
-        NuStrIStr(scene->display_list->name, "cloudcityescape_c") != NULL && native_scene != NULL &&
-        native_scene->ngeometries > 0 && native_scene->geometries[native_scene->ngeometries - 1] != NULL) {
-        NUDISPLAYLISTGEOM *geometry = native_scene->geometries[native_scene->ngeometries - 1];
-        geometry->index_count = 0;
-        geometry->vertex_count = 0;
-    }
-    for (i32 i = 0; i < ndynamic; ++i) {
-        g_VideoResHeader.vertex_buffers[dynamic_indices[i]] = 0;
-    }
-    for (i32 i = 0; i < native_scene->nvertex_streams; ++i) {
-        NativeVertexStream *stream = native_scene->vertex_streams[i];
-        i32 index = static_cast<i32>(stream->vertex_buffer);
-        stream->vertex_buffer = g_VideoResHeader.vertex_buffers[index];
-    }
-    native_scene->nvertex_buffers = g_VideoResHeader.nvertex_buffers;
-    native_scene->nindex_buffers = g_VideoResHeader.nindex_buffers;
-    memcpy(native_scene->vertex_buffers, g_VideoResHeader.vertex_buffers,
-           g_VideoResHeader.nvertex_buffers * sizeof(*native_scene->vertex_buffers));
-    memcpy(native_scene->index_buffers, g_VideoResHeader.index_buffers,
-           g_VideoResHeader.nindex_buffers * sizeof(*native_scene->index_buffers));
-
-    for (i32 i = 0; i < scene->nummtl; ++i) {
-        NuMtlUpdate(scene->mtls[i]);
-    }
-    NuPortalMaxDepth(scene, scene->max_portals);
-    NuThreadCriticalSectionBegin(g_vaoLifetimeMutex);
-    NuIOS_ResetVAODuplicateFinder();
-    PreWarmGeomsAndBakeVAOs(reinterpret_cast<nudisplayscene_s *>(scene->display_list), scene->field437_0x1d0);
-    NuThreadCriticalSectionEnd(g_vaoLifetimeMutex);
 }
 
 #include "legoapi/legoapi_types.h"

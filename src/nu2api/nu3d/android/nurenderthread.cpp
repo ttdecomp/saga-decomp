@@ -34,7 +34,7 @@ extern "C" i32 NuRenderThreadIsCurrentThread(void) {
 }
 
 // Original file-static double buffers (bss 0x119db.. / 0x119fd..).
-static nudisplayscene_s sceneParameters_safe[16];
+static nurenderscene_s sceneParameters_safe[16];
 static i32 sceneParametersCount_safe;
 static void *dynamicLights_safe[64];
 static i32 dynamicLightsCount_safe;
@@ -47,7 +47,7 @@ extern "C" {
 
 // Game-thread scene-parameter queue (defined in nurndr_plain.cpp).
 extern "C" {
-    extern struct nudisplayscene_s sceneParameters[16];
+    extern struct nurenderscene_s sceneParameters[16];
     extern i32 sceneParametersCount;
 }
 static VARIPTR nuspecial_vertex_offsets_safe;
@@ -185,7 +185,7 @@ i32 renderThread_processRenderScenes(void) {
     _NuTimeBarSlotBegin(-1, 4, "CPU_QUEUE_DRAW");
 
     for (i32 i = 0; i < sceneParametersCount_safe; i++) {
-        nudisplayscene_s &scn = sceneParameters_safe[i];
+        nurenderscene_s &scn = sceneParameters_safe[i];
 
         if (scn.unknown_48 != 0 && !NuPostEffectIsInitialised(0x20))
             scn.unknown_48 = 0;
@@ -214,7 +214,7 @@ i32 renderThread_processRenderScenes(void) {
     glViewport(0, 0, g_backingWidth, g_backingHeight);
 
     for (i32 i = 0; i < sceneParametersCount_safe; i++) {
-        nudisplayscene_s &scn = sceneParameters_safe[i];
+        nurenderscene_s &scn = sceneParameters_safe[i];
 
         if (scn.clear_flags != 0) {
             NuFramebufferClear(scn.clear_flags, scn.bg_colour);

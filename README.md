@@ -1,6 +1,6 @@
 # _saga_
 
-![Progress](https://img.shields.io/badge/matching-44.53%25-orange)
+![Progress](https://img.shields.io/badge/matching-45.21%25-orange)
 [![Bazel build](https://github.com/ttdecomp/saga/actions/workflows/build-bazel.yaml/badge.svg)](https://github.com/ttdecomp/saga/actions/workflows/build-bazel.yaml)
 [![Discord](https://img.shields.io/discord/1467775700894224555?color=%235865F2&logo=discord&logoColor=%23FFFFFF)](https://discord.gg/2HJuMtzA7q)
 [![status & wasm build](https://img.shields.io/badge/status%20%26%20wasm%20build-click%20here-orange?style=flat)](https://opensaga.dev/)
@@ -63,25 +63,25 @@ See https://ttdecomp.github.io/saga/
 | `editor` | 8.1% | 13.8% |
 | `gameapi` | 31.4% | 18.0% |
 | `gameframework` | 100.0% | 52.9% |
-| `gamelib` | 26.1% | 24.0% |
+| `gamelib` | 27.5% | 24.4% |
 | `java` | 96.1% | 73.1% |
-| `legoapi` | 41.4% | 29.6% |
-| `legoapi/actions` | 37.9% | 6.8% |
+| `legoapi` | 41.6% | 29.9% |
+| `legoapi/actions` | 37.5% | 7.2% |
 | `legoapi/ai` | 48.1% | 24.1% |
-| `legoapi/audio` | 56.7% | 45.5% |
-| `legoapi/characters` | 39.4% | 18.6% |
-| `legoapi/core` | 31.0% | 21.1% |
-| `legoapi/cutscenes` | 41.0% | 16.9% |
-| `legoapi/gizmo` | 48.7% | 39.6% |
-| `legoapi/gizmos` | 51.9% | 47.3% |
-| `legoapi/items` | 40.9% | 38.1% |
-| `legoapi/menus` | 31.1% | 27.5% |
-| `legoapi/misc` | 31.6% | 13.0% |
-| `legoapi/props` | 59.1% | 13.6% |
-| `legoapi/render` | 40.5% | 27.0% |
-| `legoapi/world` | 39.9% | 30.1% |
+| `legoapi/audio` | 59.7% | 46.5% |
+| `legoapi/characters` | 39.3% | 18.8% |
+| `legoapi/core` | 30.7% | 21.3% |
+| `legoapi/cutscenes` | 41.5% | 17.5% |
+| `legoapi/gizmo` | 50.4% | 42.1% |
+| `legoapi/gizmos` | 50.7% | 45.0% |
+| `legoapi/items` | 41.5% | 38.5% |
+| `legoapi/menus` | 30.9% | 27.3% |
+| `legoapi/misc` | 30.0% | 13.4% |
+| `legoapi/props` | 59.3% | 21.8% |
+| `legoapi/render` | 40.8% | 27.4% |
+| `legoapi/world` | 39.9% | 29.9% |
 | `legogame` | 50.8% | 60.0% |
-| `nu2api` | 69.7% | 56.9% |
+| `nu2api` | 72.1% | 58.2% |
 
 <!-- matching-table-end -->
 

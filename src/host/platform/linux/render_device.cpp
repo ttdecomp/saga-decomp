@@ -10,9 +10,6 @@
 #include "nu2api/nucore/nuapi.h"
 #include "nu2api/nucore/nustring.h"
 
-extern thread_local i32 gt_glContextIndex;
-extern i32 g_nextGLContextIndex;
-
 namespace {
     SDL_Window *host_window;
     SDL_GLContext host_main_context;

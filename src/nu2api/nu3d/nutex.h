@@ -9,6 +9,7 @@
 #include "nu2api/nu3d/android/nutex_android.h"
 
 struct nugscn_s;
+enum nutexturetype_e : i32;
 
 typedef enum nutextype_e {
     NUTEX_RTT24 = 15,
@@ -19,6 +20,14 @@ typedef struct nutex_s {
     i32 width;
     i32 height;
 } NUTEX;
+
+// Bitmap loader results carry a separate allocation at offset 0x10. Plain
+// NUTEX descriptors (such as render targets) contain only the first 12 bytes.
+typedef struct nutexbitmap_s {
+    NUTEX texture;
+    u32 unknown_0c;
+    void *pixels;
+} NUTEXBITMAP;
 
 struct nutexmanager_s;
 
@@ -142,8 +151,14 @@ i32 NuTexGetReqSize(i32 tex_id, i32 level);
 
 i32 NuTexReserve(i32 size);
 void NuTexUnReserve();
+NUTEXBITMAP *NuTexReadBitmap(char *name);
 
 i32 NuDDSGetTextureDescription(const char *dds_data, NUTEXFORMAT &out_format, i32 &out_width, i32 &out_height,
                                i32 &out_depth, i32 &out_mip_count, bool &out_is_cube_map, bool *out_has_four_cc);
+void NuDDSSetTextureDescription(char *dds_data, NUTEXFORMAT format, i32 width, i32 height, i32 depth,
+                                i32 mip_count, nutexturetype_e texture_type);
+void NuDDSGetMipLevel(i32 width, i32 height, i32 depth, NUTEXFORMAT format, i32 mip_count, bool is_cube_map,
+                      i32 level, i32 face, i32 &out_width, i32 &out_height, i32 &out_size);
+i32 NuDDSGetSize(char const *dds_data);
 void GetNativeTextureFormat(NUTEXFORMAT inFormat, i32 &outBpp, u32 &outInternalFormat, u32 &outType, u32 &outFormat,
                             bool &outIsCompressed, NUTEXFORMAT &outFormatEnum);

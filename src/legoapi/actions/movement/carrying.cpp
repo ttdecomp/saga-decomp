@@ -7,7 +7,6 @@
 #include "nu2api/numath/nuang.h"
 #include "nu2api/numath/nutrig.h"
 
-i16 LEGOACT_SUPERCARRY_WALK = -1;
 
 // Original 0x4fd340, 390 bytes.
 i32 SuperCarry_YRotation(GameObject_s *object, u16 input_angle) {

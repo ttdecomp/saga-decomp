@@ -15,6 +15,9 @@ typedef struct SPINNER_s {
 
 ADDGIZMOTYPE *Spinner_RegisterGizmo(i32 type_id);
 GIZSPINNER_s *GizSpinner_FindBySpecialName(void *world, char *name);
+i32 GizSpinner_GetState(GIZSPINNER_s *spinner);
+i32 GizSpinner_Update(GIZSPINNER_s *spinner);
+void GizSpinner_GetSpinnerPos(GIZSPINNER_s *spinner, struct nuvec_s *position);
 
 extern "C" {
 #endif

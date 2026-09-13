@@ -4,9 +4,8 @@
 #include "globals.h"
 #include "legoapi/world/level.h"
 #include "legoapi/world/world.h"
+#include "legoapi/core/input/qrand.h"
 #include "nu2api/nucore/nustring.h"
-
-extern i32 qrand(void);
 
 static char gizrandom_output_name[] = "Random Output";
 
@@ -122,4 +121,20 @@ ADDGIZMOTYPE *GizRandom_RegisterGizmo(i32 type_id) {
     gizrandom_gizmotype_id = type_id;
 
     return &addtype;
+}
+
+GIZMO *createGizRandom(void *, i32 output_count, i32 *output_weights, char *name) {
+    WORLDINFO *world = WorldInfo_CurrentlyLoading();
+    if (world == NULL || world->giz_randoms->count == world->current_level->max_giz_randoms) {
+        return NULL;
+    }
+
+    GIZRANDOM *random = &world->giz_randoms->randoms[world->giz_randoms->count];
+    random->output_count = output_count;
+    for (i32 index = 0; index < output_count; ++index) {
+        random->output_weights[index] = output_weights[index];
+    }
+    NuStrNCpy(random->name, name, sizeof(random->name));
+    ++world->giz_randoms->count;
+    return AddGizmo(world->gizmo_sys, gizrandom_gizmotype_id, NULL, random);
 }

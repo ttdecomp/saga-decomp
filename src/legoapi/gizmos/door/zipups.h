@@ -1,16 +1,15 @@
 #pragma once
 
 #include "decomp.h"
+#include "legoapi/characters/motion/animation_ids.h"
 #include "legoapi/gizmo/base/gizmo.h"
 
 extern i32 zipup_gizmotype_id;
-extern i16 LEGOACT_WHIP_SWING_START;
-extern i16 LEGOACT_WHIP_SWING_SWING;
-extern i16 LEGOACT_WHIP_SWING_JUMP;
 
 #ifdef __cplusplus
 
 struct GameObject_s;
+struct numtl_s;
 
 enum ZIPUP_FLAGS {
     ZIPUP_FLAG_CONFIG_0 = 1 << 0,
@@ -72,6 +71,10 @@ DECOMP_ASSERT(offsetof(ZIPUP, lower_ground_height) == 0x6c, "ZIPUP lower ground 
 ADDGIZMOTYPE *ZipUps_RegisterGizmo(i32 type_id);
 ZIPUP *ZipUp_FindNearest(WORLDINFO_s *world, NUVEC *position, f32 radius, f32 *distance, i32 *endpoint,
                          GameObject_s *object, bool touch);
+void InitRopeMtl(char *name, VARIPTR *buffer, VARIPTR *buffer_end);
+void DrawRopeSingle(NUVEC *start, NUVEC *end, f32 amount, numtl_s *material, f32 time, f32 grow_time,
+                    f32 spacing, f32 scale);
+extern numtl_s *ropemtl;
 
 extern "C" {
 #endif

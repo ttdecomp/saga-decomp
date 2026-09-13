@@ -2288,14 +2288,6 @@ void ClearLevelProgress(i32 index, WORLDINFO *world) {
     GameAnimSys_ClearProgress(index);
 }
 
-void SetLevelExBlowupFlags(u32 flags) {
-    EXBLOWUPFLAGS = flags;
-}
-
-u32 GetLevelExBlowupFlags(void) {
-    return EXBLOWUPFLAGS;
-}
-
 void GoToNewLevel(i32 levelIdx) {
     NewLData = &LDataList[levelIdx];
     if (waiting_for_level != -1) {

@@ -1,4 +1,5 @@
 #include "MechInputTouch_types.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "globals.h"
 #include "legoapi/items/base/apiobject.h"
 
@@ -150,7 +151,6 @@ MechTouchTaskBigJump::MechTouchTaskBigJump(MechInputTouchGestureBasedController 
 void MechTouchTaskBigJump::Update() {
 }
 
-void ForceBuildItToUseNext(GIZBUILDIT_s &);
 
 MechTouchTaskBuildIt::MechTouchTaskBuildIt(MechInputTouchGestureBasedController &owner, MechObjectInterface *object,
                                            VuVec const &)

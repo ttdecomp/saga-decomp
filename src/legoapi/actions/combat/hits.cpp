@@ -1,4 +1,5 @@
 #include "decomp.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "globals.h"
 #include "legoapi/characters/core/character.h"
 #include "legoapi/characters/core/players.h"
@@ -51,8 +52,7 @@ i32 objhitobj_throwkillpartsup;
 extern i32 objhitobj_noimpactsfx;
 extern i16 *objhitobj_killparts_yrot;
 extern BOLT_s *objhitobj_bolt;
-extern i32 ObstacleCamHoldUntilPlayersMove, LEGOCONTEXT_LAND_SLAM, LEGOCONTEXT_LAND_LUNGE, LEGOCONTEXT_COMBO,
-    LEGOCONTEXT_HOLD;
+extern i32 ObstacleCamHoldUntilPlayersMove;
 extern i32 disable_narrow_socks, players_cannot_exit_speeder, BuildUpDone;
 extern f32 BuildUpScale, DrawBuildUpTime, builduptime;
 void AlertSurroundingCreatures(GameObject_s *, NUVEC *);
@@ -84,7 +84,6 @@ GAMEPAD_s *ViewCamGetGamePad();
 i32 Cheat_IsOn(i32);
 void SetFlicker(GameObject_s *, f32);
 void Player_ClearContext(GameObject_s *, i32);
-void GizBuildIt_SetToStart(GIZBUILDIT_s *, i32, i32);
 extern "C" void AddGameDebris(APIDEBRISSYS_s *, i32, NUVEC *);
 extern "C" i32 AnimMiscFlags(CHARACTERMODEL_s *, i32);
 extern "C" void NuSpecialSetVisibility(void *, i32);

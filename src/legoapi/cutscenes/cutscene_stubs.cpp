@@ -2,6 +2,7 @@
 #include "decomp.h"
 #include "legoapi/legoapi_types.h"
 #include "nu2api/nucore/nugcutscene.h"
+#include "nu2api/nucore/NuDynamicLight.h"
 #include "nu2api/nu3d/nurndr.h"
 #include "nu2api/numath/nufloat.h"
 #include "nu2api/numusic/numusic.h"
@@ -22,10 +23,7 @@ extern "C" {
     extern i32 processdeb;
     extern f32 glyntestha;
 
-    i32 (*TriggerLocatorVfxFn)(u16, f32 *) = NULL;
-    void (*ReleaseLocatorVfxFn)(i32) = NULL;
     extern void (*NuCutSceneCharacterRelease)(instNUGCUTCHAR_s *, NUGCUTCHAR_s *);
-    void (*UpdateLocatorVfxFn)(i32, f32 *) = NULL;
     void (*NuCutSceneSFXUpdate)(NUGCUTLOCATORSYS_s *, instNUGCUTLOCATOR_s *, NUGCUTLOCATOR_s *, f32, NUMTX *,
                                 i32) = NULL;
 
@@ -368,20 +366,18 @@ extern "C" {
                 }
                 inst_locator->effect_handle = -1;
             } else {
-                NUMTX matrix;
-                NuGCutLocatorCalcMtx(locator, frame, &matrix, &time);
+                VuMtx matrix;
+                NuGCutLocatorCalcMtx(locator, frame, &matrix.matrix, &time);
                 if ((locator->flags & 4) != 0) {
-                    NuMtxPreTranslate(&matrix, &locator->pivot);
+                    NuMtxPreTranslate(&matrix.matrix, &locator->pivot);
                 }
                 if (parent_mtx != NULL) {
-                    NuMtxMul(&matrix, &matrix, parent_mtx);
+                    NuMtxMul(&matrix.matrix, &matrix.matrix, parent_mtx);
                 }
-                f32 values[16];
-                memcpy(values, &matrix, sizeof(values));
                 if (inst_locator->effect_handle < 0) {
-                    inst_locator->effect_handle = TriggerLocatorVfxFn(static_cast<u16>(effect_index), values);
+                    inst_locator->effect_handle = TriggerLocatorVfxFn(effect_index, &matrix);
                 } else {
-                    UpdateLocatorVfxFn(inst_locator->effect_handle, values);
+                    UpdateLocatorVfxFn(inst_locator->effect_handle, &matrix);
                 }
             }
         } else if ((type->flags & 4) != 0 && NuCutSceneSFXUpdate != NULL) {

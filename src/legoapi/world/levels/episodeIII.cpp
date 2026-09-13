@@ -8,6 +8,7 @@
 #include "legoapi/gizmo/base/GizObstacleObjectInterface.h"
 #include "legoapi/gizmo/base/GizForceObjectInterface.h"
 #include "legoapi/gizmo/base/GizBlowupObjectInterface.h"
+#include "legoapi/gizmo/object/gizmoblowups.h"
 #include "legoapi/gizmo/base/gizmo.h"
 #include "legoapi/legoapi_types.h"
 #include "legoapi/world/levels/levels.h"

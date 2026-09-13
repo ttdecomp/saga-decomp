@@ -1,8 +1,11 @@
 #include "decomp.h"
 #include "legoapi/legoapi_types.h"
 #include "legoapi/render/fx.h"
+#include "legoapi/render/fx/game_deb.h"
 #include "nu2api/nu3d/nutex.h"
+#include "nu2api/nu3d/glutils.h"
 #include "nu2api/nu3d/numtl.h"
+#include "nu2api/nu3d/android/nuptl_android.h"
 #include "nu2api/nucore/nustring.h"
 #include "nu2api/nucore/common.h"
 #include "nu2api/numath/nurand.h"
@@ -19,7 +22,6 @@ struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
 
-NUMTL *CreateAlphaBlendTexture(VARIPTR *, VARIPTR, char *, i32, i32, i32, i32);
 NUMTL *CreateCopyMat(NUMTL *, i32, i32, i32, i32);
 
 uv1deb *GenDebDummy(debkeydatatype_s *, debinftype *, float) {
@@ -34,7 +36,6 @@ extern "C" {
 
     extern u32 debrisseed;
     extern f32 globaltime;
-    void GenericDebinfoDmaTypeUpdate(debinftype *);
 }
 
 static dma_particle_s *DebrisParticleAt(debkeydatatype_s *key, i16 index, u8 particle_type) {
@@ -786,9 +787,6 @@ extern "C" {
     void DebrisProcessTimeSlip(void);
     extern i32 debris_suspended;
 
-    dma_particle_chunk_s *CreateDmaParticleSet(void *, i32 *);
-    dma_particle_chunk_s *CreateDmaParticleSetGlass(void *, i32 *);
-    PartHeader *CreateDmaPartEffectList(void *, i32 *);
     void DebrisTrashableSetup(VARIPTR *, VARIPTR *);
 
     void DebrisSetup2(VARIPTR *, VARIPTR, VARIPTR *, VARIPTR, char *, i32, i32, i32, i32);

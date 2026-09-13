@@ -7,16 +7,16 @@ This document explains how the reconstructed source tree relates to the
 original Android x86 binary. It is the restructuring reference, but generated
 artifacts—not copied counts in prose—are the source of truth.
 
-Snapshot checked on 2026-09-04:
+Snapshot checked on 2026-09-13:
 
 | item | current value |
 |---|---:|
-| target source translation units | 496 |
+| target source translation units | 515 |
 | target C translation units | 13 |
-| target C++ translation units | 483 |
-| generated matching-report units | 496 |
-| optimization levels | 242 default `-O0`, 2 `-O1`, 88 `-O2`, 164 `-O3` |
-| special compile mode | one of the 164 `-O3` TUs also uses `-fPIE` |
+| target C++ translation units | 502 |
+| generated matching-report units | 515 |
+| optimization levels | 172 default `-O0`, 2 `-O1`, 111 `-O2`, 230 `-O3` |
+| special compile mode | one of the 230 `-O3` TUs also uses `-fPIE` |
 | original `_GLOBAL__sub_I_` symbols | 325 occurrences, 320 unique basenames |
 
 These counts describe the current generated files and will change as the tree

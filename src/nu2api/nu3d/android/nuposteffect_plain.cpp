@@ -4,7 +4,7 @@
 // generic filter controls are reconstructed here without adding a new pass.
 //
 // Transcribed originals:
-//   Nu360_dxClear               0x317070  Nu-side glClear wrapper (DX flag bits)
+//   Nu360_dxClear               0x317070  lives in ios_graphics.cpp
 //   NuFramebufferClear          0x2a2720  thin forwarder to Nu360_dxClear
 //   NuFramebufferSwapBuffers    0x2a2700  no-op on Android/host (swap owned by EGL)
 //   NuPostEffectReset           0x2ab8b0
@@ -28,6 +28,7 @@
 #include "nu2api/nucore/NuPostFilter.h"
 #include "nu2api/nu3d/nupostresources.h"
 #include "nu2api/nu3d/android/nuiosdl_gl.h"
+#include "nu2api/nuandroid/ios_graphics.h"
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Post-effect globals
@@ -423,54 +424,6 @@ extern "C" f32 NuPostEffectTiming(i32 *last_frame) {
 // ──────────────────────────────────────────────────────────────────────────────
 // Framebuffer clear / swap
 // ──────────────────────────────────────────────────────────────────────────────
-
-// Cached clear colour to avoid redundant glClearColor calls — the original
-// keeps this as a function-static (_ZZ13Nu360_dxClearE10lastColour).
-static u32 s_lastClearColour = 0;
-
-extern i32 g_renderContext_zFunc; // defined in nuiosdl_gl.cpp
-
-// Nu-side clear flag bits (DX-style) as passed by the engine.  These are NOT
-// GL bits — they are translated to GL_COLOR/DEPTH/STENCIL_BUFFER_BIT below.
-static constexpr u32 kNuClear_Color = 0x100;
-static constexpr u32 kNuClear_Depth = 0x200;
-static constexpr u32 kNuClear_Stencil = 0x800;
-
-// original 0x317070
-// colour is packed ABGR8888 little-endian (R = bits 0..7, G = 8..15,
-// B = 16..23, A = 24..31) — unpacked here to normalised floats for
-// glClearColor.  The depth path also fixes up the host GL depth state so
-// the clear is not inadvertently masked by a previous SetZFunc.
-extern "C" void Nu360_dxClear(u32 clear_flags, u32 colour) {
-    GLbitfield glMask = 0;
-
-    if ((clear_flags & kNuClear_Color) != 0) {
-        glMask |= GL_COLOR_BUFFER_BIT; // 0x4000
-        if (colour != s_lastClearColour) {
-            const float r = static_cast<float>(colour & 0xff) / 255.0f;
-            const float g = static_cast<float>((colour >> 8) & 0xff) / 255.0f;
-            const float b = static_cast<float>((colour >> 0x10) & 0xff) / 255.0f;
-            const float a = static_cast<float>(colour >> 0x18) / 255.0f;
-            glClearColor(r, g, b, a);
-            s_lastClearColour = colour;
-        }
-    }
-    if ((clear_flags & kNuClear_Depth) != 0) {
-        glMask |= GL_DEPTH_BUFFER_BIT; // 0x0100
-        // Ensure depth writes are enabled and depth test is off so the clear
-        // actually reaches the depth buffer, matching the original's
-        // g_renderContext_zFunc bookkeeping (2 == depth test disabled).
-        if (g_renderContext_zFunc != 2) {
-            glDisable(GL_DEPTH_TEST);
-            glDepthMask(GL_TRUE);
-        }
-        g_renderContext_zFunc = 2;
-    }
-    if ((clear_flags & kNuClear_Stencil) != 0) {
-        glMask |= GL_STENCIL_BUFFER_BIT; // 0x0400
-    }
-    glClear(glMask);
-}
 
 // original 0x2a2720 — Android forwarder; the engine calls this per scene
 // when scn.clear_flags != 0 (see nurenderthread.cpp).

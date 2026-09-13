@@ -10,10 +10,10 @@ struct numtl_s;
 typedef struct numtl_s NUMTL;
 struct nugscn_s;
 struct nuhspecial_s;
-struct nudldlistscene_s;
+struct nudisplayscene_s;
 
 typedef struct numtlanimset_s {
-    struct nudldlistscene_s *scene;
+    struct nudisplayscene_s *scene;
     i32 material_count;
     i32 *material_indices;
     struct numtlanimset_s *next;
@@ -77,7 +77,7 @@ DECOMP_ASSERT(offsetof(NUDISPLAYLISTGEOM, dynamic_vertex_data) == 0x34, "geometr
 // (it is the next-free-item cursor consumed by NuDisplayListAddItem).
 // ---------------------------------------------------------------------------
 typedef struct nudisplaylist_s {
-    struct nudldlistscene_s *dlist;      // 0x00 owning display-list scene
+    struct nudisplayscene_s *dlist;      // 0x00 owning display-list scene
     i32 mtl_id;                          // 0x04 index into owning scene->mtls[]
     struct nurndrstate_s *state;         // 0x08 per-material render-state cache
     nudisplaylistitem_s *mtl_item;       // 0x0c
@@ -100,6 +100,7 @@ typedef struct nudisplaylist_s {
 void DisplayListLinkDynamicMtls(void);
 
 void DisplayListPrintItem(nudisplaylistitem_s *item, i32 index, i32 depth, i32 *, i32 file_handle);
+void DisplayListCreateDynMtlList(VARIPTR *buffer, VARIPTR buffer_end);
 
 #ifdef __cplusplus
 extern "C" {
@@ -116,7 +117,7 @@ extern "C" {
         struct nusortpri_s *dlist_next;         // 0x10
         u32 flags;                              // 0x14 bit1: already captured into current frame
         u32 field_18;                           // 0x18 initialised from manager field_4a8
-        struct nudldlistscene_s *display_scene; // 0x1c owning display-list scene (NULL == fx)
+        struct nudisplayscene_s *display_scene; // 0x1c owning display-list scene (NULL == fx)
         u16 nmtls;                              // 0x20 number of materials covered
         u16 mtl_first;                          // 0x22 first material index in scene->mtls[]
     } NUSORTPRI;
@@ -150,14 +151,12 @@ extern "C" {
     // ---------------------------------------------------------------------------
     // Display-list scene record.
     //
-    // In the ORIGINAL this type is named `nudisplayscene_s` (Ghidra DB: 144
-    // bytes). Our tree already binds that tag to the unrelated 0x218-byte
-    // present-parameter block in nugscn.h, so the record keeps a distinct tag
-    // here; every field offset matches the original exactly (verified against
+    // The original type is `nudisplayscene_s` (Ghidra DB: 144 bytes).
+    // Every field offset matches the original exactly (verified against
     // NuDisplayListCreate @0x2e87d0, NuDisplayListSwapBuffersEndFrame @0x2eaef0
     // and NuDisplayListBeforeFrame @0x2a9ea0/@0x2a9ff0).
     // ---------------------------------------------------------------------------
-    typedef struct nudldlistscene_s {
+    typedef struct nudisplayscene_s {
         char *name;                 // 0x00 debug name (CaptureSortPriority)
         i32 nitems;                 // 0x04
         nudisplaylistitem_s *items; // 0x08
@@ -318,15 +317,14 @@ extern "C" {
     extern "C" NUDLIST_MANAGER global_dlist_manager;
 
     extern VARIPTR *display_list_buffer;
+    void NuDisplayListInit(VARIPTR *buffer, VARIPTR buffer_end);
 
-    // Item-handler dispatch tables extracted from the binary. The original
-    // keeps two handler arrays indexed by item type - 0x80; they are modelled
-    // here as absolute-type-indexed [0x100] arrays. Entries for types without
-    // a handler are NULL.
+    // Item-handler function signature (the original tables are private to
+    // nudlist_android.c and indexed by item type - 0x80).
     typedef void (*nudl_handler_fn)(void *data);
-    extern nudl_handler_fn g_nudl_dispatch_table[0x100]; // __ItemFnTable
 
     // Transcribed functions (original addresses in nudlist.cpp comments).
+    void NuInvalidateClipRanges(NUDLDLISTSCENE *scene);
     void NuDisplayListExecute(nudisplaylistitem_s *item, const nudl_handler_fn *item_table);
     void NuDisplayListDrawItems(nudisplaylistitem_s *items);
     void NuDisplayListDrawRenderScene(i32 render_scene_id);
@@ -363,6 +361,8 @@ extern "C" {
     void RndrStateUpdate(void *state, NUMTL *mtl, nudisplaylistitem_s *item);
     void DisplayListUpdateRenderState(void *dl, void *local_state);
     void NuDisplayListLinkItem(nudisplaylist_s *dl, u8 type, void *call_addr);
+    void NuDisplayListLinkMtl(nudisplaylist_s *dl, NUMTL *mtl);
+    void *DisplayListCreateGeomTransformPS(VARIPTR *buffer, NUMTX *transform, NUMTL *mtl, void *next, void *tx);
     void NuDisplayListBurstRndrSpecial(nuhspecial_s *handle, u32 count, NUMTX *matrices, i32 clip);
     VARIPTR *NuDisplayListLinkItems(nudisplaylist_s *dl, i32 count);
     void NuDisplayListLinkList(NUDISPLAYLIST *list, NUDISPLAYLISTITEM *first, NUDISPLAYLISTITEM *last);
@@ -381,6 +381,7 @@ extern "C" {
     void NuDisplaySceneClonePS(NUDLDLISTSCENE *source, NUDLDLISTSCENE *destination, VARIPTR *buffer);
     void DisplayListCreateFxList(VARIPTR *buffer, VARIPTR end, i32 count);
     VARIPTR *NuDisplayListLinkItemVP(nudisplaylist_s *dl, u8 type, void *call_addr, VARIPTR *buf);
+    void *NuDisplayListPrepareFaceonPS(VARIPTR *buffer, void *faceon, NUMTX *transform);
 
     // Debug helpers consumed by NuDisplayListCaptureSortPriority (defined as
     // stubs in supportall.cpp / nucore_plain.cpp).
@@ -398,4 +399,7 @@ extern "C" {
     }
 #ifdef __cplusplus
 }
+
+// Original core C++ entry point (_Z20NuDisplaySceneUnclipP16nudisplayscene_s).
+void NuDisplaySceneUnclip(NUDLDLISTSCENE *scene);
 #endif

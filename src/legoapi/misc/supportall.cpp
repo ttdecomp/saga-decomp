@@ -1,5 +1,6 @@
 #include "nu2api/nu3d/nuprim.h"
 #include "nu2api/nu3d/nuvport.h"
+#include "nu2api/nu3d/android/nuptl_android.h"
 #include "nu2api/numath/nuvec.h"
 #include "legoapi/core/config/cheat.h"
 #include <string.h>
@@ -21,6 +22,7 @@
 #include "legoapi/legoapi_types.h"
 #include "legoapi/render/core/render.h"
 #include "legoapi/render/fx.h"
+#include "legoapi/render/fx/game_deb.h"
 #include "legoapi/world/level.h"
 #include "legoapi/world/levels/levels.h"
 #include "legoapi/world/area.h"
@@ -43,7 +45,6 @@
 void Hint_SetHintFromId(i32, i32, i32);
 void MakeBaddiesForgetAboutParty(i32);
 void ResetRadios();
-void SpecialMiniKits_Reset(WORLDINFO_s *);
 void SuperCounters_FixUpGizmos(WORLDINFO_s *);
 void AITriggerSetSysReset(AITRIGGERSETSYS_s *);
 void AITriggerSysAutoSetUp(WORLDINFO_s *, AITRIGGERSETSYS_s *);
@@ -123,7 +124,6 @@ void InitPlayerAI(GameObject_s *object);
 void ResetPlayer(GameObject_s *, i32, nuvec_s *, i32);
 f32 GetVehicleAreaRememberSpeed();
 void ResetRadios();
-void SpecialMiniKits_Reset(WORLDINFO_s *);
 void SuperCounters_FixUpGizmos(WORLDINFO_s *);
 void AITriggerSetSysReset(AITRIGGERSETSYS_s *);
 void AITriggerSysAutoSetUp(WORLDINFO_s *, AITRIGGERSETSYS_s *);
@@ -635,19 +635,6 @@ void AddSurfaceDebris(GameObject_s *object) {
     } while (--count != 0);
 }
 
-extern NUMTX NuRndr_DebrisMtx;
-extern NUVEC4 NuRndr_DebrisPlane;
-extern nunativedebrisdata_s *g_ParticleGroup;
-extern void *g_pVBData;
-extern u32 g_CurrentVBVertexCount;
-extern u32 g_FrameVertexCount;
-extern u32 g_VBMaxVertexCount;
-extern u32 g_CurrentDebriVBIndex;
-extern i32 g_UseSysMemVB;
-extern i32 NuDebrisRendererNextBuffer();
-extern void NuRndrParticleSetRepeat(NUVEC *position);
-void AddParticleGroupToDisplayList(nunativedebrisdata_s *group);
-
 void bgprocIsFreezing() {
 }
 
@@ -953,7 +940,6 @@ extern "C" {
 
 extern "C" void DebReAlloc2(debkeydatatype_s *);
 extern "C" void DebReAlloc(debkeydatatype_s *, i32);
-extern "C" void LinkDmaParticalSets(dma_particle_chunk_s **, i32);
 void RemoveChunkFromRenderStack(particlechunkrendertype_s *, particlechunkrendertype_s **);
 void DebrisReleaseControlStackLock(void);
 
@@ -1375,7 +1361,7 @@ void DisplayListCreateDynMtlList(variptr_u *buffer, variptr_u buffer_end) {
     NUDLIST_MANAGER *manager = &global_dlist_manager;
     NUDLDLISTSCENE *scene = &manager->dyn_mtl_dlist;
 
-    NuDisplayListCreate(reinterpret_cast<nudisplayscene_s *>(scene), buffer, buffer_end, 0x400, 0x80, 0, 0, 0x80, 0, 0);
+    NuDisplayListCreate(scene, buffer, buffer_end, 0x400, 0x80, 0, 0, 0x80, 0, 0);
     scene->nsort_pris = 0;
     scene->name = const_cast<char *>("Dynamic Material Display Scene");
 
@@ -1415,8 +1401,6 @@ void DisplayListCreateDynMtlList(variptr_u *buffer, variptr_u buffer_end) {
 }
 
 extern "C" {
-    extern PartHeader **DmaDebTypes;
-    extern i32 freeDmaDebType;
     extern i32 EDPP_MAX_TYPES;
     void edppDeleteEffect(i32);
 }

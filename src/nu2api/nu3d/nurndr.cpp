@@ -110,78 +110,8 @@ void NuRndrInitGeneric() {
 void NuRndrGradRect2diZ(i32, i32, i32, i32, i32 *, numtl_s *, i32) {
 }
 
-extern NUMTX NuRndr_DebrisMtx;
-extern NUVEC4 NuRndr_DebrisPlane;
-void NuRndrParticleSetRepeat(nuvec_s *position);
-
-void NuRndrParticleDraw(variptr_u *, PartHeader *header, uv1debdata *data, float time, numtx_s *matrix, i32 *,
-                        float clip_distance, i32 mode, numtl_s *, float, float) {
-    dma_particle_s *particle = reinterpret_cast<dma_particle_chunk_s *>(data)->particles;
-    for (i32 index = 0; index != 32; ++index, ++particle) {
-        f32 age = time - particle->start_time;
-        u32 frame = static_cast<u32>(particle->inverse_lifetime * age);
-        if (frame > 62) {
-            continue;
-        }
-        u32 next_frame = frame + 1;
-        f32 fraction = particle->inverse_lifetime * age - static_cast<f32>(frame);
-        debris_particle_frame_s *first = &header->frames[frame];
-        debris_particle_frame_s *second = &header->frames[next_frame];
-        NUVEC position;
-        position.x = particle->position.x + particle->momentum.x * age;
-        position.y = particle->position.y + particle->momentum.y * age + header->gravity * age * age * 0.945f;
-        position.z = particle->position.z + particle->momentum.z * age;
-        NUVEC rotated;
-        rotated.x = position.x * matrix->m00 + position.y * matrix->m10 + position.z * matrix->m20;
-        rotated.y = position.x * matrix->m01 + position.y * matrix->m11 + position.z * matrix->m21;
-        rotated.z = position.x * matrix->m02 + position.y * matrix->m12 + position.z * matrix->m22;
-        NuRndr_DebrisMtx.m30 = rotated.x + matrix->m30;
-        NuRndr_DebrisMtx.m31 = rotated.y + matrix->m31;
-        NuRndr_DebrisMtx.m32 = rotated.z + matrix->m32;
-        if (mode == 6 || mode == 7) {
-            NuRndrParticleSetRepeat(reinterpret_cast<NUVEC *>(&NuRndr_DebrisMtx.m30));
-        }
-        f32 distance = NuRndr_DebrisPlane.w +
-                       (NuRndr_DebrisMtx.m32 * NuRndr_DebrisPlane.z +
-                        (NuRndr_DebrisMtx.m30 * NuRndr_DebrisPlane.x + NuRndr_DebrisMtx.m31 * NuRndr_DebrisPlane.y));
-        if (clip_distance > distance) {
-            continue;
-        }
-        NUVEC offset;
-        offset.x = first->position.x * (1.0f - fraction) + second->position.x * fraction;
-        offset.y = first->position.y * (1.0f - fraction) + second->position.y * fraction;
-        offset.z = first->position.z * (1.0f - fraction) + second->position.z * fraction;
-        NUVEC extent;
-        extent.x = first->extent.x * (1.0f - fraction) + second->extent.x * fraction;
-        extent.y = first->extent.y * (1.0f - fraction) + second->extent.y * fraction;
-        extent.z = first->extent.z * (1.0f - fraction) + second->extent.z * fraction;
-        NUVEC texture_offset;
-        texture_offset.x = first->texture_offset.x * (1.0f - fraction) + second->texture_offset.x * fraction;
-        texture_offset.y = first->texture_offset.y * (1.0f - fraction) + second->texture_offset.y * fraction;
-        texture_offset.z = first->texture_offset.z * (1.0f - fraction) + second->texture_offset.z * fraction;
-        NuVecMtxTransform(&offset, &offset, &NuRndr_DebrisMtx);
-        NuVecMtxTransform(&extent, &extent, &NuRndr_DebrisMtx);
-        NuVecMtxTransform(&texture_offset, &texture_offset, &NuRndr_DebrisMtx);
-        // The original ends here without submitting geometry. Its subsequent
-        // colour conversions only write dead stack locals.
-    }
-}
 
 void NuRndrRectUV2dNoScale(float, float, float, float, float, float, float, float, i32, numtl_s *) {
-}
-
-void NuRndrParticleSetRepeat(nuvec_s *position) {
-    NUVEC repeat = {
-        (position->x - NuRndrDebBase.x) / NuRndrDebRange.x,
-        (position->y - NuRndrDebBase.y) / NuRndrDebRange.y,
-        (position->z - NuRndrDebBase.z) / NuRndrDebRange.z,
-    };
-    repeat.x -= static_cast<f32>(static_cast<i32>(repeat.x + 65536.0f) - 65536);
-    repeat.y -= static_cast<f32>(static_cast<i32>(repeat.y + 65536.0f) - 65536);
-    repeat.z -= static_cast<f32>(static_cast<i32>(repeat.z + 65536.0f) - 65536);
-    position->x = NuRndrDebBase.x + repeat.x * NuRndrDebRange.x;
-    position->y = NuRndrDebBase.y + repeat.y * NuRndrDebRange.y;
-    position->z = NuRndrDebBase.z + repeat.z * NuRndrDebRange.z;
 }
 
 void NuRndrCalcRandEllipsePos(nuvec4_s *position, numtx_s *matrix, nuvec_s *axes) {

@@ -4,7 +4,7 @@
 #include "nu2api/numath/numtx.h"
 #include "decomp.h"
 
-struct nudldlistscene_s;
+struct nudisplayscene_s;
 struct nugscn_s;
 struct ani3_animheader_s;
 struct nuanimdata2_s;
@@ -85,7 +85,7 @@ struct nuhgobjshadowgroup_s {
 
 struct nuhgobj_s {
     u8 data[0x110];
-    nudldlistscene_s *display_list; // 0x110
+    nudisplayscene_s *display_list; // 0x110
     u8 data_0x114[0x54];
     i32 joint_count;              // 0x168
     nuhgobjjoint_s *joints;       // 0x16c

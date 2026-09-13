@@ -42,9 +42,6 @@ i32 CircleLevel(LEVELDATA_s *level) {
 void CurrentStart(GameObject_s *, i32, i32) {
 }
 
-void CDataFromName(char *) {
-}
-
 void NewRumble(nupad_s *, f32, i32);
 void NewRumbleAllPlayers(f32, f32, i32, i32);
 

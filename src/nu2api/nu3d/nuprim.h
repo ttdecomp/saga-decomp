@@ -23,14 +23,13 @@ extern "C" {
 
     void NuPrimSetCoordinateSystem(NUPRIMSCALEMODE scale_mode);
 
-    // Immediate-mode stream state shared between nuprim.cpp and nurndr_plain.cpp.
+    // Immediate-mode stream state shared by the Android primitive unit and
+    // drawing callers across the renderer.
     // The original bss holds these adjacent: g_NuPrim_StreamBufferPtr @0x99b540
     // (points at the VARIPTR cursor of the current display-list vertex buffer),
     // g_NuPrim_VertexCount @0x99b544.
     extern VARIPTR *g_NuPrim_StreamBufferPtr;
     extern i32 g_NuPrim_VertexCount;
-    extern u16 *g_NuPrim_PendingVertexCount;
-    extern u16 g_NuPrim_ActivePrimType;
     extern char g_NuPrim_NeedsHalfUVs;
     extern char g_NuPrim_NeedsOverbrightening;
 

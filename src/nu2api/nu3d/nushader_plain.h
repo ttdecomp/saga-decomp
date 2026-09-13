@@ -51,6 +51,11 @@ bool LoadShaderSource(char **source, i32 *size, u32 key, bool pixel_stage);
 bool LookupPreloadedShaderObject(u32 key, u32 **shader, LoadedUniqueShaderRecord *records, u32 count);
 
 extern void *g_shaderManager;
+extern char g_shaderSaveFolder[256];
+extern "C" void (*g_glConstantSetterTable[4])(u32 location, i32 count, const void *values);
+
+extern "C" void NuShaderManagerDestroy(void);
+extern "C" void NuShaderManagerSetShaderSaveFolder(const char *folder);
 
 extern "C" NUSHADEROBJECT *NuShaderManagerGetShaderById(i32 id);
 extern "C" void NuShaderManagerReleaseShader(NUSHADEROBJECT *shader);

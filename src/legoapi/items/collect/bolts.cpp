@@ -8,6 +8,7 @@
 #include "legoapi/core/config/cheat.h"
 #include "legoapi/gizmos/fx/gizmopickups.h"
 #include "legoapi/items/objects/gameobjects.h"
+#include "legoapi/items/collect/bolts.h"
 #include "decomp.h"
 #include "nu2api/nucore/nustring.h"
 #include "legoapi/core/input/qrand.h"
@@ -21,6 +22,7 @@
 #include "legoapi/characters/core/players.h"
 #include "legoapi/gizmo/base/gizmo.h"
 #include "legoapi/gizmo/base/GizBlowupObjectInterface.h"
+#include "legoapi/gizmo/object/gizmoblowups.h"
 #include <string.h>
 
 extern BOLT_s Bolt[32];
@@ -63,7 +65,6 @@ BOLT_s *Bolt_Alloc() {
     return &Bolt[index];
 }
 
-extern i32 addbolt_nosfx;
 extern i32 addbolt_newsfx;
 extern NUVEC addbolt_newpos;
 f32 BOLT_SHOOTFLASHTIME = 0.1f;
@@ -71,9 +72,6 @@ f32 Bolt_ObjTargetPosYAdjust(GameObject_s *);
 void FindAnglesXY(NUVEC *, u16 *, u16 *);
 void CalculateInterceptVector(NUVEC *, NUVEC *, NUVEC *, f32, NUVEC *, NUVEC *);
 void GameAudio_PlaySfxById(i32, NUVEC *, i32, i32);
-i16 LEGOACT_SHOOTBACK = -1;
-i16 LEGOACT_SHOOTLEFT = -1;
-i16 LEGOACT_SHOOTRIGHT = -1;
 
 void Bolt_Shoot(GameObject_s *object, i32 type_id, i32 fire_flags) {
     BOLTTYPE_s *type = BoltType_FindByID(type_id, WORLD);
@@ -582,11 +580,9 @@ i32 Bolt_HitGameObjects(BOLT_s *bolt, NUVEC *points, NUVEC *minimum, NUVEC *maxi
 void Bolt_HitCustomFn_LSW(BOLT_s *, nuvec_s *) {
 }
 
-i32 LEGOCONTEXT_BLOCK = -1;
-i16 LEGOACT_DEACTIVATED = -1;
 i32 addbolt_nosfx;
 BOLT_s *objhitobj_bolt;
-extern i32 LEGOCONTEXT_HOLD, i_temp_xrot;
+extern i32 i_temp_xrot;
 extern f32 DEACTIVATEDTIME;
 i32 Player_HasDeflectBolts(GameObject_s *);
 i32 CannotKill(GameObject_s *);

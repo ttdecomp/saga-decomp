@@ -121,8 +121,8 @@ class NuThreadManager {
 
     NuThread *CreateThread(void (*thread_fn)(void *), void *fn_arg, i32 priority, const char *name, i32 stack_size,
                            NUTHREADCAFECORE cafe_core, NUTHREADXBOX360CORE xbox360_core);
-    void CreateThreadSuspended(void (*thread_fn)(void *), void *fn_arg, i32 priority, const char *name, i32 stack_size,
-                               NUTHREADCAFECORE cafe_core, NUTHREADXBOX360CORE xbox360_core);
+    NuThread *CreateThreadSuspended(void (*thread_fn)(void *), void *fn_arg, i32 priority, const char *name,
+                                    i32 stack_size, NUTHREADCAFECORE cafe_core, NUTHREADXBOX360CORE xbox360_core);
 };
 
 class NuCriticalSection {

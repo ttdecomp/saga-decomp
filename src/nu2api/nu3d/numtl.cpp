@@ -338,9 +338,6 @@ void NuMtlUpdate(NUMTL *mtl) {
 void NuMtlAddEx(numtl_s *, i32) {
 }
 
-void NuMtlInsert(numtl_s *, i32) {
-}
-
 // original 0x29bc50 — refresh the material's shader desc, (re)acquire its
 // shader objects and rebuild the platform vertex declaration.
 void NuMtlUpdatePS(numtl_s *mtl) {

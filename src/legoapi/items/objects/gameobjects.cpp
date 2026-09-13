@@ -1,4 +1,5 @@
 #include "legoapi/items/objects/gameobjects.h"
+#include "legoapi/gizmos/object/gizbuildits.h"
 #include "legoapi/audio/audio.h"
 #include "legoapi/gizmos/transport/grapples.h"
 #include "legoapi/gizmos/fx/gizmopickups.h"
@@ -48,6 +49,7 @@
 #include "nu2api/numusic/sfx.h"
 #include "nu2api/nucore/numemory.h"
 #include "nu2api/nu3d/nuportal.h"
+#include "nu2api/nu3d/android/nutimebar_plain.h"
 #include "nu2api/nu3d/nucamera.h"
 #include "legoapi/audio/sfx.h"
 #include "nu2api/nuandroid/ios_graphics.h"
@@ -107,12 +109,7 @@ static f32 Condition_IAmAPartyCharacter(AISYS_s *, AISCRIPTPROCESS_s *, AIPACKET
     return 0.0f;
 }
 
-// NuCore profiling timebars (nucore_plain.cpp): NuTimeBarCreateSet returns a
-// deferred-subsystem stub handle; the slot functions are no-op stubs.
 extern "C" {
-    void *NuTimeBarCreateSet(i32);
-    void _NuTimeBarSlotBegin(void *, i32, char const *);
-    u32 _NuTimeBarSlotEnd(void *, i32);
     void AddToAIGroup(AIGROUP_s *group, APIOBJECT_s *object);
     extern NUVEC plr_lastpos;
     extern i16 id_BAT;
@@ -5731,7 +5728,6 @@ extern "C" f32 AnimDuration(i32, i32, f32, f32, i32);
 f32 SpeederChaseATATInOutMul(NUVEC *, NUVEC *);
 void PlayJumpSfx(GameObject_s *, i32);
 void ReleaseForce(GameObject_s *, i32);
-void ReleaseBuildIt(GameObject_s *, i32);
 void ReleasePush(GameObject_s *);
 void Player_ResetContexts(PLAYERPACKET_s *);
 void SetWeaponIn(GameObject_s *);

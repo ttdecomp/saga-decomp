@@ -35,7 +35,6 @@ extern AREADATA *BOUNTYHUNTERPURSUIT_ADATA;
 extern AREADATA *DOGFIGHT_ADATA;
 extern AREADATA *PODSPRINT_ADATA;
 extern AREADATA *GUNSHIP_ADATA;
-extern i32 LEGOCONTEXT_GLIDE;
 extern "C" void AddVariableShotDebrisEffectTimed1(i32, NUVEC *, i32, f32, i16, i16, NUMTX *);
 void TorpedoHitTarget(BOLT_s *);
 void GameCam_Judder(GAMECAMERA_s *, f32, i32, NUVEC *);

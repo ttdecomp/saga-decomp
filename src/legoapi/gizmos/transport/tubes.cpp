@@ -15,7 +15,6 @@
 extern void GameAudio_PlaySfx(i32 sfx_id, NUVEC *position, i32 flags, i32 volume);
 extern i32 GameAudio_GetPlrSfxBits(void *object);
 
-i32 LEGOCONTEXT_TUBE = -1;
 
 i32 ObjInTube(GameObject_s *object) {
     if (LEGOCONTEXT_TUBE != -1 && object->character_context == LEGOCONTEXT_TUBE) {

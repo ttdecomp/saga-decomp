@@ -307,7 +307,7 @@ struct nuanimbuff_s;
 struct nuanimdata_s;
 struct nucolour3_s;
 struct nudisplaylistitem_s;
-struct nudisplayscene_s;
+struct nurenderscene_s;
 struct nufile_device_s;
 struct nufpar_s;
 struct nufpcomjmp_s;
@@ -1575,6 +1575,7 @@ enum GIZMOPICKUP_TYPE_FLAGS : u8 {
     GIZMOPICKUP_TYPE_DRAW_Y_ROTATION = 0x02,
     GIZMOPICKUP_TYPE_MINIKIT_DETECTOR = 0x04,
     GIZMOPICKUP_TYPE_RED_BRICK_DETECTOR = 0x08,
+    GIZMOPICKUP_TYPE_COLLISION_FILTER = 0x10,
     GIZMOPICKUP_TYPE_CHALLENGE_MODE_FILTER = 0x20,
     GIZMOPICKUP_TYPE_FLAG_40 = 0x40,
 };
@@ -3140,7 +3141,7 @@ struct minitrooperteam_s {};
 struct nuanimbuff_s;
 struct nucolour3_s;
 struct nudisplaylistitem_s;
-struct nudisplayscene_s;
+struct nurenderscene_s;
 struct nufile_device_s;
 struct nufpar_s;
 struct nufpcomjmp_s;
@@ -5244,7 +5245,7 @@ struct ThingManager {
     i32 count;          // 0x0c
     u32 field_0x10;     // 0x10 high-water cursor (written by the ctor / AllocPool)
     i32 field_0x14;     // 0x14 AddThingAfterThis reservation, folded in by the next AddThing
-    void *timebar;      // 0x18 NuTimeBarCreateSet handle (profiling, stubbed)
+    i32 timebar;        // 0x18 NuTimeBarCreateSet index
     u32 field_0x1c;
     i32 ed_timing_state; // 0x20 editor timing selection state
 };

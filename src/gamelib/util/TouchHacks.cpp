@@ -25,7 +25,6 @@ extern i32 BonusArea;
 extern "C" i16 id_GRABCONTROL, id_WICKET, id_EWOK;
 extern "C" i16 id_ATST, id_ATST_LOWRES;
 extern "C" i16 id_WATTO, id_GONKDROID;
-extern i16 LEGOACT_SLAM;
 
 bool TouchHacks::AiPlayerTakeDamageOnKillRescue(GameObject_s &) {
     return TouchControlsActive;

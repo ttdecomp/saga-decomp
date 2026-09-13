@@ -785,7 +785,6 @@ static __used__ void GameMsg_EndDelay_Game(GAMEMESSAGE_s *) {
 static __used__ void GameMsg_Draw_MiniKitDetector(GAMEMESSAGE_s *, nuvec_s *, float) {
 }
 
-i16 LEGOACT_PUSH = -1;
 pushblock_s *NearestPushBlock(WORLDINFO_s *, nuvec_s *, f32);
 
 i32 Push_UpdateHints(HINT_s *) {

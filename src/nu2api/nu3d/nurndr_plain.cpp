@@ -4,22 +4,16 @@
 // nurndr_plain.cpp — Host "plain" renderer backend.
 //
 // This TU is the host replacement for the PS2 rendering TU (nurndr).
-// It owns three things the rest of the engine expects to exist:
+// It owns renderer scene/present paths and primitive drawing helpers:
 //
 //   1. Scene lifecycle  — NuRndrBeginScene / NuRndrClear / NuRndrEndScene
-//      builds the current `nudisplayscene_s` (0x218 bytes in the original BSS)
+//      builds the current `nurenderscene_s` (0x218 bytes in the original BSS)
 //      and queues it into a 16-slot ring consumed by the render thread.
 //
-//   2. Immediate-mode 2D — NuPrim2DBegin / NuPrim2DAddXYZ / NuPrim2DEnd.
-//      Vertices are streamed directly into the display-list vertex buffer
-//      (`display_list_buffer`).  Type 4 (quad) is expanded to two triangles
-//      (6 vertices) word-wise so both full-float and half-float UV layouts
-//      work without a branch.
+//   2. Primitive drawing helpers that call the immediate-mode API in
+//      android/nuprim_android.c, including quad expansion there.
 //
-//   3. Frame present   — NuRndrSwapScreen / NuRndrSwapScreenEx.  Flushes
-//      debris, swaps the display-list and stream buffers, kicks the render
-//      thread, then paces the game thread until the application status
-//      leaves the "running" state (or the host render fence completes).
+//   3. Frame present   — moved to the original android/nurndr_android.c TU.
 //
 // All other entry points from the original TU are retained as link stubs
 // until their subsystems are transcribed.  Their signatures are not yet
@@ -27,6 +21,7 @@
 
 #include <float.h>
 #include <string.h>
+#include "nu2api/nu3d/nuprim_internal.h"
 #include "nu2api/numath/nufloat.h"
 #include "nu2api/numath/nutrig.h"
 #include "nu2api/numath/nuvec.h"
@@ -52,6 +47,7 @@
 #include "nu2api/nu3d/nushader.h"
 #include "nu2api/nucore/nuapi.h"
 #include "nu2api/nuandroid/ios_graphics.h"
+#include "nu2api/nu3d/android/nuptl_android.h"
 
 extern "C" void NuLgtLaserDraw(i32 paused);
 void NuLgtArcLaserDraw(i32 paused);
@@ -67,13 +63,13 @@ extern "C" {
     i32 PS2_REZ_H = 720;
     // Scene currently being built.  Size is 0x218 bytes; original lives in BSS
     // and is referenced as a plain object by all render/present code.
-    struct nudisplayscene_s currentScene = {0};
+    struct nurenderscene_s currentScene = {0};
 
     // Deferred ring: NuRndrEndScene copies the completed scene here; the render
     // thread drains it.  Stride is 0x218, 16 slots (0x2180 bytes total) in the
     // original.
     i32 sceneParametersCount = 0;
-    struct nudisplayscene_s sceneParameters[kSceneRingCapacity] = {0};
+    struct nurenderscene_s sceneParameters[kSceneRingCapacity] = {0};
 
     // Shared renderer state block (original BSS @0x119b900, 0x1b0 bytes).
     NUGLOBALRNDRSTATE render_state = {};
@@ -81,60 +77,17 @@ extern "C" {
 
 // Swap/present pacing flags (original BSS).
 volatile bool g_isBlockedInSwapScreen = false;
-extern i32 rndr_blend_shape_deformer_wt_cnt;
-extern i32 rndr_blend_shape_deformer_wt_ptrs_cnt;
 
 // ---------------------------------------------------------------------------
 // Immediate-mode 2D stream state
 // ---------------------------------------------------------------------------
 
-// Globals shared with nuprim.cpp (see nuprim.h for the canonical declarations).
+// Vertex count shared with the primitive implementation (see nuprim.h).
 i32 g_NuPrim_VertexCount;
-
-// File-local bookkeeping for the in-flight prim.  These mirror the original
-// TU statics at 0x99b60c (vertex-count pointer) and 0x628cc0 (prim type).
-u16 *g_NuPrim_PendingVertexCount = nullptr;
-u16 g_NuPrim_ActivePrimType = 0;
 
 // Display-list cursor for the 2D stream.  Defined in nudlist.cpp.
 extern VARIPTR *display_list_buffer;
 
-// Per-TU copy of NuDisplayListAddItem.  The original nurndr TU carries its
-// own copy at 0x29cc6c alongside the nudlist one; behaviour is identical.
-static nudisplaylistitem_s *AddDisplayListItem(nudisplaylist_s *list, u8 type, void *next) {
-    nudisplaylistitem_s *item = list->items;
-    item->type = type;
-    item->id = 3; // CALL
-    item->next = next;
-    list->items = (nudisplaylistitem_s *)((u8 *)list->items + 0x10);
-    return (nudisplaylistitem_s *)((u8 *)list->items - 0x10);
-}
-
-// ---------------------------------------------------------------------------
-// Prim vertex layout
-// ---------------------------------------------------------------------------
-
-// Immediate-mode vertex: {x,y,z, colour, u,v}.  Full UVs are f32[2],
-// half UVs are f16[2] packed at the same offsets.  Stride is always 0x18.
-// Copied word-wise during quad expansion so both layouts are handled
-// without branching.
-struct PrimVertexRaw {
-    f32 x, y, z;
-    u32 color;
-    u32 uv[2];
-};
-static_assert(sizeof(PrimVertexRaw) == 0x18, "PrimVertex stride must be 0x18");
-
-// Header emitted at the start of each prim stream chunk.  The vertex count
-// lives at +0xa and is patched by NuPrim2DEnd.
-struct PrimStreamHeader {
-    u32 prim_type;
-    u32 pad0;
-    u16 pad1;
-    u16 vertex_count; // patched on End
-    u32 pad2;
-};
-static_assert(sizeof(PrimStreamHeader) == 0x10, "PrimStreamHeader must be 0x10");
 
 // ---------------------------------------------------------------------------
 // Forward declarations for C-visible helpers
@@ -148,114 +101,12 @@ extern "C" {
     void DisplayListUpdateRenderState(void *list, void *state);
     void NuDisplayListLinkMtl(nudisplaylist_s *list, NUMTL *mtl);
     VARIPTR *NuDisplayListLinkItems(nudisplaylist_s *list, i32 count);
-    nudisplaylist_s *NuDisplayListGet2dList(void);
 }
 
-void NuDebrisRendererFlushBuffers(void);
-
-extern "C" {
-    void NuRndrSwapStreamBuffers(void);
-    void NuRenderThreadPrepareRender(void);
-    void NuRenderThreadStartRender(void);
-    void NuShaderManagerBindShader(NUSHADEROBJECT *shader);
-    void NuDisplayListCheckBuffer(void);
-    void NuDisplayListResetBuffer(void);
-    void NuRenderThreadLock(void);
-    void NuRenderThreadUnlock(void);
-}
 
 // ---------------------------------------------------------------------------
 // Immediate-mode 2D API
 // ---------------------------------------------------------------------------
-
-extern "C" void NuPrim2DAddXYZ(float x, float y, float z) {
-    PrimVertexRaw *vtx = (PrimVertexRaw *)g_NuPrim_StreamBufferPtr->addr;
-    vtx->x = NuPrim_XBias + NuPrim_XScale * x;
-    vtx->y = NuPrim_YBias + NuPrim_YScale * y;
-    vtx->z = z;
-    g_NuPrim_StreamBufferPtr->addr += sizeof(PrimVertexRaw);
-    g_NuPrim_VertexCount++;
-
-    // Quad expansion (prim type 4): every pair of AddXYZ calls becomes a
-    // 6-vertex quad (two triangles).  The expansion is done word-wise so
-    // both full-float and half-float UV encodings are preserved without
-    // needing to know which is active.  See original 0x29d235..0x29d395.
-    if (g_NuPrim_ActivePrimType == 4 && (g_NuPrim_VertexCount & 1) == 0) {
-        u32 *words = (u32 *)(usize)(g_NuPrim_StreamBufferPtr->addr - 0x30);
-        g_NuPrim_StreamBufferPtr->addr += 0x60;
-        g_NuPrim_VertexCount += 4;
-
-        memcpy(&words[12], &words[6], 0x18);
-        memcpy(&words[18], &words[12], 0x18);
-        words[24] = words[0];
-        words[25] = words[7];
-        words[26] = words[8];
-        words[27] = words[9];
-        words[28] = words[4];
-        words[29] = words[11];
-        words[6] = words[12];
-        words[7] = words[1];
-        words[8] = words[2];
-        words[9] = words[3];
-        words[10] = words[16];
-        words[11] = words[5];
-        memcpy(&words[30], &words[0], 0x18);
-    }
-}
-
-extern "C" SAGA_HOST_WEAK void NuPrim2DBegin(u32 prim_type, u32 /*vtx_fmt*/, NUMTL *mtl) {
-    if (mtl == nullptr) {
-        mtl = numtl_defaultmtl2d;
-    }
-
-    g_NuPrim_NeedsOverbrightening = mtl->tex_id != 0;
-    g_NuPrim_NeedsHalfUVs = mtl->shader_desc.vtx_desc.has_half_uvs;
-
-    VARIPTR *buf = NuDisplayListGetBuffer();
-
-    nudisplaylist_s *list;
-    if (mtl->display_list != nullptr) {
-        list = mtl->display_list;
-        u8 *base = *(u8 **)list;
-        base[0x74] |= 2;
-        i32 bit = (base[0x75] >> 7) & 1;
-        u8 *slot = *(u8 **)((u8 *)base + 8 + (0x14 + bit) * 4);
-        i32 cnt = ((i32 *)list)[1];
-        i32 byte_idx = cnt >= 0 ? (cnt + 7) >> 3 : (~cnt + 9) >> 3;
-        u8 mask = (u8)(1 << (((i32 *)list)[1] & 7));
-        slot[(usize)byte_idx] |= mask;
-    } else {
-        list = NuDisplayListGet2dList();
-        NuDisplayListLinkMtl(list, mtl);
-    }
-
-    RndrStateSetConstAlphaTint(0, 0, 0.0f, nullptr, nullptr);
-    DisplayListUpdateRenderState(list, &render_state);
-    NuDisplayListLinkItems(list, 1);
-
-    g_NuPrim_StreamBufferPtr = display_list_buffer;
-
-    auto *hdr = (PrimStreamHeader *)display_list_buffer->addr;
-    hdr->prim_type = prim_type;
-    hdr->vertex_count = 0;
-    display_list_buffer->addr += sizeof(PrimStreamHeader);
-
-    g_NuPrim_PendingVertexCount = &hdr->vertex_count;
-    g_NuPrim_ActivePrimType = (u16)prim_type;
-    g_NuPrim_VertexCount = 0;
-
-    AddDisplayListItem(list, 0x93, hdr);
-}
-
-extern "C" void NuPrim2DEnd(void) {
-    *g_NuPrim_PendingVertexCount = (u16)g_NuPrim_VertexCount;
-    g_NuPrim_VertexCount = 0;
-}
-
-extern "C" void NuPrim3DEnd(void) {
-    *g_NuPrim_PendingVertexCount = (u16)g_NuPrim_VertexCount;
-    g_NuPrim_VertexCount = 0;
-}
 
 // ---------------------------------------------------------------------------
 // Scene lifecycle
@@ -332,51 +183,6 @@ extern "C" void NuRndrEndSceneEx(i32) {
 }
 
 // ---------------------------------------------------------------------------
-// Frame present / swap
-// ---------------------------------------------------------------------------
-
-// Original 0x2967db — swap display-list and stream buffers, kick the render
-// thread, then pace the game thread until the app leaves the running state.
-extern "C" SAGA_HOST_WEAK i32 NuRndrSwapScreen(i32 /*mode*/) {
-    NuRenderThreadLock();
-    rndr_blend_shape_deformer_wt_cnt = 0x3f00;
-    rndr_blend_shape_deformer_wt_ptrs_cnt = 0x800;
-    NuRenderThreadPrepareRender();
-    NuShaderManagerBindShader(0);
-    NuDebrisRendererFlushBuffers();
-    NuDisplayListSwapBuffersEndFrame();
-    NuRndrSwapStreamBuffers();
-    NuDisplayListSwapBuffersBeginFrame();
-    NuDisplayListCheckBuffer();
-    NuDisplayListResetBuffer();
-    NuRenderThreadUnlock();
-    NuRenderThreadStartRender();
-
-    // Status 1 suspends presentation until the lifecycle makes the app active.
-    // On Android this is released by the activity lifecycle
-    // (nativeSetSurface / nativeOnPause flip NUAPPLICATIONSTATUS).
-    for (;;) {
-        NuApplicationState *state = NuCore::GetApplicationState();
-        if (state->GetStatus() != 1) {
-            break;
-        }
-        g_isBlockedInSwapScreen = 1;
-        NuThreadSleep(1);
-    }
-    g_isBlockedInSwapScreen = 0;
-
-    return 1;
-}
-
-// Original 0x296888
-extern "C" i32 NuRndrSwapScreenEx(i32 mode, void (*callback)(void)) {
-    if (callback != nullptr) {
-        callback();
-    }
-    return NuRndrSwapScreen(mode);
-}
-
-// ---------------------------------------------------------------------------
 // Link stubs — retained for compatibility, not yet implemented
 // ---------------------------------------------------------------------------
 //
@@ -385,34 +191,6 @@ extern "C" i32 NuRndrSwapScreenEx(i32 mode, void (*callback)(void)) {
 // subsystem so it is obvious what is still missing.
 
 // Scene / GScn
-// Original 0x2fe1a1. Display-list lightmap packets retain scene-local texture
-// indices after loading, so fix them alongside the material texture ids.
-extern "C" void NuGScnFixupTIDsPS(NUGSCN *scene) {
-    if (scene->display_list == NULL) {
-        return;
-    }
-
-    for (i32 i = 0; i < scene->display_list->nitems; ++i) {
-        NUDISPLAYLISTITEM *item = &scene->display_list->items[i];
-        if (item->type == 0xb0) {
-            i32 *packet = static_cast<i32 *>(item->next);
-            if (packet[0] == 2) {
-                packet[0] = 1;
-                for (i32 texture = 0; texture < 3; ++texture) {
-                    packet[texture + 2] = NuGScnFixupTID(scene, packet[texture + 2]);
-                }
-            }
-            packet[1] = NuGScnFixupTID(scene, packet[1]);
-        } else if (item->type == 0xae || item->type == 0xaf) {
-            i32 *packet = static_cast<i32 *>(item->next);
-            if (packet != NULL) {
-                for (i32 texture = 0; texture < 3; ++texture) {
-                    packet[texture] = NuGScnFixupTID(scene, packet[texture]);
-                }
-            }
-        }
-    }
-}
 using NUGSCNVIDEOMEMFN = void (*)(NUGSCN *);
 
 NUGSCNVIDEOMEMFN gscene_to_video_mem;
@@ -422,31 +200,6 @@ extern "C" void NuGScnFromVideoMem(NUGSCNVIDEOMEMFN callback) {
     video_mem_to_gscene = callback;
 }
 extern "C" void NuGScnReadForMultiRender(void) {
-}
-extern "C" void NuGScnRestoreTIDsPS(NUGSCN *scene) {
-    if (scene->display_list == NULL) {
-        return;
-    }
-
-    for (i32 i = 0; i < scene->display_list->nitems; ++i) {
-        NUDISPLAYLISTITEM *item = &scene->display_list->items[i];
-        if (item->type == 0xb0) {
-            i32 *packet = static_cast<i32 *>(item->next);
-            if (packet[0] == 2) {
-                for (i32 texture = 0; texture < 3; ++texture) {
-                    packet[texture + 2] = NuGScnRestoreTID(scene, packet[texture + 2]);
-                }
-            }
-            packet[1] = NuGScnRestoreTID(scene, packet[1]);
-        } else if (item->type == 0xae || item->type == 0xaf) {
-            i32 *packet = static_cast<i32 *>(item->next);
-            if (packet != NULL) {
-                for (i32 texture = 0; texture < 3; ++texture) {
-                    packet[texture] = NuGScnRestoreTID(scene, packet[texture]);
-                }
-            }
-        }
-    }
 }
 extern "C" void NuGScnRndr(NUGSCN *scene) {
     if (scene->additional_scenes != NULL && scene->rendered_additional_scene_count > 0) {
@@ -476,8 +229,6 @@ extern "C" void NuMtlAnimateSetSpeedScale(f32 speed_scale) {
 }
 extern "C" void NuMtlAnimateShaderMtlTextures(void) {
 }
-extern "C" void NuMtlCopy(void) {
-}
 static void NuMtlCreate3D(void) {
 }
 extern "C" void NuMtlCreateBuff(void) {
@@ -490,8 +241,6 @@ extern "C" void NuMtlFindVariantMtl(void) {
 extern "C" void NuMtlFindVariantMtlFromDesc(void) {
 }
 extern "C" void NuMtlRegisterForOverride(void) {
-}
-extern "C" void NuMtlSetRenderPlane(void) {
 }
 static void NuMtlSetRenderStatesPS(void) {
 }
@@ -1213,90 +962,6 @@ extern "C" void NuRndrLineStrip2di(i32 *positions, f32 *uvs, i32 count, i32 colo
     }
     NuPrim2DEnd();
 }
-void BuildDebrisVerts(PartHeader *, uv1debdata *, numtl_s *, f32, numtx_s *, i32, f32, f32, f32, f32);
-void AddParticleGroupToDisplayList(nunativedebrisdata_s *);
-
-extern NUMTX NuRndr_DebrisMtx;
-extern NUMTX *NuRndr_DebrisRotMtxPtr;
-extern NUVEC4 NuRndr_DebrisPlane;
-extern nunativedebrisdata_s *g_ParticleGroup;
-extern void *g_debrisUploadBuffer;
-extern void *g_pVBData;
-extern u32 g_CurrentDebriVBIndex;
-extern i32 g_UseSysMemVB;
-extern u32 g_CurrentVBVertexCount;
-extern void *g_lastPartEffect;
-
-extern "C" void NuRndrParticleGroup(uv1debdata *chunks, PartHeader *header, NUMTL *material, f32 time, NUMTX *matrix,
-                                    i32 particle_type, f32 a, f32 b, f32 c, f32 near_clip) {
-    if (header == NULL) {
-        g_lastPartEffect = NULL;
-        return;
-    }
-    if (material == NULL || material->particle_type_tag == -105) {
-        return;
-    }
-
-    if (header != g_lastPartEffect) {
-        if (material->attribs.unknown_2_1_2 != 2 || material->attribs.unknown_2_4 == 0) {
-            material->attribs.unknown_2_1_2 = 2;
-            material->attribs.unknown_2_4 = 1;
-            NuMtlUpdate(material);
-        }
-        if (NuRndr_DebrisRotMtxPtr == NULL) {
-            NuMtxCalcDebrisFaceOn(&NuRndr_DebrisMtx);
-        } else {
-            NuRndr_DebrisMtx = *NuRndr_DebrisRotMtxPtr;
-        }
-
-        NUCAMERA camera;
-        NuCameraGet(&camera);
-        NuRndr_DebrisPlane.x = camera.mtx.m20;
-        NuRndr_DebrisPlane.y = camera.mtx.m21;
-        NuRndr_DebrisPlane.z = camera.mtx.m22;
-        NuRndr_DebrisPlane.w =
-            -(camera.mtx.m30 * camera.mtx.m20 + camera.mtx.m31 * camera.mtx.m21 + camera.mtx.m32 * camera.mtx.m22);
-        header->last_render_time = time;
-
-        VARIPTR *buffer = NuDisplayListGetBuffer();
-        g_ParticleGroup = static_cast<nunativedebrisdata_s *>(buffer->void_ptr);
-        buffer->addr += sizeof(nunativedebrisdata_s);
-        g_ParticleGroup->vertex_buffer_index = static_cast<u8>(g_CurrentDebriVBIndex);
-        g_ParticleGroup->use_system_memory_vb = g_UseSysMemVB;
-        g_ParticleGroup->first_vertex = static_cast<i32>(g_CurrentVBVertexCount);
-        g_ParticleGroup->vertex_count = 0;
-        g_ParticleGroup->material = material;
-        if (g_pVBData == NULL) {
-            g_pVBData = g_debrisUploadBuffer;
-        }
-        AddParticleGroupToDisplayList(g_ParticleGroup);
-        g_lastPartEffect = header;
-    }
-
-    dma_particle_chunk_s *chunk = reinterpret_cast<dma_particle_chunk_s *>(chunks);
-    i32 done = 0;
-    i32 count = 0;
-    while (done == 0) {
-        i32 command = static_cast<i8>(chunk->command);
-        dma_particle_chunk_s *next = chunk->next;
-        switch (command) {
-            case 0x4e:
-                if (next != NULL) {
-                    BuildDebrisVerts(header, reinterpret_cast<uv1debdata *>(chunk), material, time, matrix,
-                                     particle_type, a, b, c, near_clip);
-                    chunk = next;
-                }
-                break;
-            case 0x52:
-                BuildDebrisVerts(header, reinterpret_cast<uv1debdata *>(chunk), material, time, matrix, particle_type,
-                                 a, b, c, near_clip);
-                done = 1;
-                break;
-        }
-        if (++count > 0x100)
-            break;
-    }
-}
 
 extern "C" void NuRndrRect(f32 x, f32 y, f32 z, f32 width, f32 height, f32 u0, f32 v0, f32 u1, f32 v1, i32 colour,
                            NUMTL *material) {
@@ -1535,9 +1200,6 @@ extern "C" void NuRndrSetGlobalMinMipLevel(i32 level) {
 }
 extern "C" void NuRndrSetGlobalMipMapBias(f32 bias) {
     g_mipmapbias = bias;
-}
-extern "C" void NuRndrSetParticleRotation(NUMTX *rotation) {
-    NuRndr_DebrisRotMtxPtr = rotation;
 }
 extern "C" void NuRndrStateSetSpecularLight(const NUMTX *matrix, const NUCOLOUR3 *colour) {
     if (matrix != nullptr) {

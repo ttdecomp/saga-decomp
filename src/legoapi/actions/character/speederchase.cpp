@@ -36,7 +36,6 @@ extern i16 id_GAMORREANGUARD;
 i32 ComboOpponent_Behind;
 f32 ComboOpponent_Range2;
 f32 PlayerOpponent_Range2;
-i16 LEGOACT_PUNCH_BEHIND = -1;
 i32 SpecialMove_Check(GameObject_s *, GameObject_s *);
 u32 SpecialMove_GetFlags(i32, u32);
 

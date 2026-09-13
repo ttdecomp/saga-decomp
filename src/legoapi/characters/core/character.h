@@ -13,6 +13,13 @@ struct CHARFIXUP {
 typedef struct CHARFIXUP CHARFIXUP;
 
 struct GameObject_s;
+struct ANIMREDIRECT;
+struct ANIMLIST_s;
+extern "C" i16 id_GRABCONTROL;
+extern "C" i16 id_JEDISTARFIGHTERYELLOWEP3;
+extern "C" i16 id_JEDISTARFIGHTERREDEP3;
+extern "C" i16 id_TIEINTERCEPTOR;
+i32 RedirectAnim(char *path, ANIMREDIRECT *redirects, ANIMLIST_s *animation_list, char *directory);
 struct BLADE_s {
     i16 model;
     i16 glow_model;
@@ -577,6 +584,7 @@ extern "C" {
 #ifdef __cplusplus
 
 i32 CharIDFromName(char *name);
+CHARACTERDATA *CDataFromName(char *name);
 
 extern "C" {
 #endif

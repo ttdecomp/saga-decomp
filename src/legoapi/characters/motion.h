@@ -8,10 +8,18 @@ extern float DIEAIRSPEED;
 extern float DIEAIRJUMPSPEED;
 
 #include "decomp.h"
+#include "legoapi/characters/motion/animation_ids.h"
+#include "legoapi/characters/motion/contexts.h"
 #include "legoapi/legoapi_types.h"
 #include "nu2api/nucore/numechptr.hpp"
 
 // Character motion / animation / camera helpers (module legoapi/characters).
+void Move_BEAST(GameObject_s *object);
+void GameCam_Blend(GAMECAMERA_s *camera, f32 duration, f32 curve, i32 mode);
+void GameCam_Judder(GAMECAMERA_s *camera, f32 amount, i32 axis, NUVEC *source);
+void SetHeadTarget(GameObject_s *object, NUVEC *position, i8 priority, f32 time, f32 minimum_delay, f32 maximum_delay);
+void PushAway(NUVEC *position, f32 radius, NUVEC *minimum, NUVEC *maximum, GameObject_s *object,
+              GameObject_s *excluded, f32 strength, u32 flags);
 i32 SetObjTarget(GameObject_s *object, GameObject_s *target);
 i32 SetPartTarget(GameObject_s *object, PART_s *target);
 PART_s *TargetPart(GameObject_s *, NUVEC *, NUVEC *, f32, f32, i32, i32);
@@ -23,40 +31,18 @@ i32 GetShootDirection_LSW(GameObject_s *, NUVEC *);
 extern CHARPIVOT CharPivot_LSW[32];
 void CharPivot_Init(CHARPIVOT *table);
 void CharPivot_Check(GameObject_s *object, NUVEC *velocity);
-extern i32 LEGOCONTEXT_TUBE;
 i32 ObjInTube(GameObject_s *object);
 i32 MovingBackwards(GameObject_s *object);
 i32 Conveyor_AdjustSpeed(NUVEC *velocity);
-extern i32 LEGOCONTEXT_PUSHSPINNER;
-extern i32 LEGOCONTEXT_PUSHOBSTACLE;
-extern i16 LEGOACT_WALLSHUFFLE_LEFT;
-extern i16 LEGOACT_WALLSHUFFLE_RIGHT;
-extern i16 LEGOACT_WALLSHUFFLE_IDLE;
-extern i16 LEGOACT_HANG_MOVE;
 extern f32 LEDGETERRAINLOOKAHEAD;
 i32 Hang_SetTargetMom(GameObject_s *object);
 i32 LedgeTerrain_SetTargetMom(GameObject_s *object);
 i32 WallShuffle_SetTargetMom(GameObject_s *object, u16 input_angle);
 f32 PushingTowardsAngle(u16 input_angle, u16 direction);
-extern i16 LEGOACT_CLIMB_IDLE;
-extern i16 LEGOACT_CLIMB_UP;
-extern i16 LEGOACT_CLIMB_DOWN;
-extern i16 LEGOACT_CLIMB_LEFT;
-extern i16 LEGOACT_CLIMB_RIGHT;
-extern i16 LEGOACT_MAGNET_WALK_METAL;
-extern i16 LEGOACT_IDLE;
-extern i16 LEGOACT_WALK;
-extern i32 LEGOCONTEXT_CLIMB;
-extern i32 LEGOCONTEXT_LEDGETERRAIN;
-extern i16 LEGOACT_LEDGE_GRAB;
-extern i16 LEGOACT_LEDGE_IDLE;
-extern i16 LEGOACT_LEDGE_LEFT;
-extern i16 LEGOACT_LEDGE_RIGHT;
 extern f32 MAGNETOFFSET;
 i32 Climb_SetTargetMom(GameObject_s *object, u16 input_angle);
 i32 Glide_SetTargetMom(GameObject_s *object);
 i32 Slide_SetTargetMom(GameObject_s *object, u16 input_angle, f32 input_speed);
-extern i16 LEGOACT_SUPERCARRY_WALK;
 i32 SuperCarry_SetTargetMom(GameObject_s *object, f32 input_speed);
 i32 SuperCarry_YRotation(GameObject_s *object, u16 input_angle);
 i32 TightRope_SetTargetMom(GameObject_s *object);
@@ -108,8 +94,6 @@ void PodKeyReset(void);
 void StartLaunch(GameObject_s *object);
 void PodLoseSpeed(GameObject_s *obj, i32 type, i32 unknown);
 void DrawMeleeTargets(i16 *targets, char *icon, float *a, i32 count);
-extern i32 LEGOCONTEXT_BIGJUMP;
-extern i16 LEGOACT_COMBOJUMP;
 extern void (*BigJump_EndOfLandFn)(GameObject_s *);
 extern i32 (*BigJump_JumpActionFn)(GameObject_s *);
 extern i32 (*BigJump_LandActionFn)(GameObject_s *);

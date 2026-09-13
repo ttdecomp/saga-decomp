@@ -82,6 +82,7 @@ typedef struct nuglobalrndrstate_s {
 
 extern "C" {
     extern NUGLOBALRNDRSTATE render_state;
+    void RndrStateSetConstAlphaTint(i32 alpha_enabled, i32 tint_enabled, f32 alpha, const NUCOLOUR3 *tint, NUMTL *mtl);
     void NuRndrStateInit(void);
     i32 NuRndrStateGetFogEnabled(void);
     void RndrStateSetReflection(i32 reflection);

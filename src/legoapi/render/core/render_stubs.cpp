@@ -16,53 +16,13 @@
 
 #include <string.h>
 
-static f32 EvaluateDebrisCurve(const debris_float_key_s (&keys)[8], f32 time) {
-    for (i32 i = 0; i < 7; ++i) {
-        if (keys[i].time <= time && time <= keys[i + 1].time) {
-            const f32 duration = keys[i + 1].time - keys[i].time;
-            if (time == keys[i].time || duration == 0.0f) {
-                return keys[i].value;
-            }
-            const f32 t = (time - keys[i].time) / duration;
-            return keys[i].value + (keys[i + 1].value - keys[i].value) * t;
-        }
-    }
-    return 0.0f;
-}
-
-static u8 ClampDebrisColour(f32 value) {
-    value += value;
-    return static_cast<u8>(value > 255.0f ? 255.0f : value);
-}
-
-static u32 EvaluateDebrisColour(const debinftype *effect, f32 time) {
-    f32 red = 0.0f;
-    f32 green = 0.0f;
-    f32 blue = 0.0f;
-    for (i32 i = 0; i < 7; ++i) {
-        const debris_colour_key_s &first = effect->colour_keys[i];
-        const debris_colour_key_s &second = effect->colour_keys[i + 1];
-        if (first.time <= time && time <= second.time) {
-            const f32 duration = second.time - first.time;
-            const f32 t = time == first.time || duration == 0.0f ? 0.0f : (time - first.time) / duration;
-            red = first.red + (static_cast<i32>(second.red) - first.red) * t;
-            green = first.green + (static_cast<i32>(second.green) - first.green) * t;
-            blue = first.blue + (static_cast<i32>(second.blue) - first.blue) * t;
-            break;
-        }
-    }
-    const u8 alpha = static_cast<u8>(EvaluateDebrisCurve(effect->alpha_keys, time));
-    return static_cast<u32>(alpha) << 24 | static_cast<u32>(ClampDebrisColour(red)) |
-           static_cast<u32>(ClampDebrisColour(green)) << 8 | static_cast<u32>(ClampDebrisColour(blue)) << 16;
-}
-
 struct numtl_s;
 typedef struct numtl_s NUMTL;
 
 extern "C" {
 
     extern NUGLOBALRNDRSTATE render_state;
-    extern nudisplayscene_s currentScene;
+    extern nurenderscene_s currentScene;
 
     void *NuVisiEvaluate(NUGSCN *scene, void *visibility_context);
 
@@ -287,7 +247,7 @@ extern "C" {
     void DisplayListPrintItemPS(void) {
     }
 
-    // DisplayListSetAlphaPS is fully transcribed in nu3d/nudlist.cpp (original 0x29b8c0 / 0x29b77e).
+    // DisplayListSetAlphaPS lives in nu3d/android/nudlist_android.c (original 0x29b8c0).
     void DisplayListSetFxItemParamPS(void *, i32, f32, i32) {
     }
 
@@ -366,123 +326,9 @@ extern "C" {
     void FmvTimePS(void) {
     }
 
-    void GenericDebinfoDmaTypeUpdate(debinftype *effect) {
-        extern PartHeader **DmaDebTypes;
-        extern i32 EDPP_MAX_DMADEBTYPES;
-        extern i32 freeDmaDebType;
-
-        if (effect == NULL) {
-            return;
-        }
-        if (effect->native_data == NULL) {
-            if (freeDmaDebType >= EDPP_MAX_DMADEBTYPES) {
-                return;
-            }
-            effect->native_data = DmaDebTypes[freeDmaDebType++];
-        }
-
-        if (NuStrCmp(effect->name, "FLY") == 0 && static_cast<u32>(effect->texture_u0) == 0x8003c &&
-            static_cast<u32>(effect->texture_v0) == 0x80100 && static_cast<u32>(effect->texture_u1) == 0x8005e &&
-            static_cast<u32>(effect->texture_v1) == 0x80082) {
-            for (u32 i = 0; i < 8; ++i) {
-                effect->width_keys[i].value = effect->height_keys[i].value;
-                effect->height_keys[i].value += effect->height_keys[i].value;
-                effect->alpha_keys[i].value *= 1.5f;
-                effect->rotation_keys[i].value *= 1.5f;
-            }
-            effect->texture_u0 = static_cast<f32>(static_cast<u32>(effect->texture_u0) & ~0x1ffU) + 63.75f;
-            effect->texture_v0 = static_cast<f32>(static_cast<u32>(effect->texture_v0) & ~0x1ffU) + 127.5f;
-            effect->texture_u1 = static_cast<f32>(static_cast<u32>(effect->texture_u1) & ~0x1ffU) + 95.625f;
-            effect->texture_v1 = static_cast<f32>(static_cast<u32>(effect->texture_v1) & ~0x1ffU) + 191.25f;
-        }
-        PartHeader *header = effect->native_data;
-        header->gravity = effect->field_0a0;
-        header->texture_u0 = static_cast<f32>(static_cast<i32>(effect->texture_u0) & 0x1ff) / 255.0f;
-        header->texture_v0 = static_cast<f32>(static_cast<i32>(effect->texture_v0) & 0x1ff) / 255.0f;
-        header->texture_u1 = static_cast<f32>(static_cast<i32>(effect->texture_u1) & 0x1ff) / 255.0f;
-        header->texture_v1 = static_cast<f32>(static_cast<i32>(effect->texture_v1) & 0x1ff) / 255.0f;
-
-        for (i32 frame_index = 0; frame_index < 64; ++frame_index) {
-            const f32 time = static_cast<f32>(frame_index) / 64.0f;
-            const f32 width = EvaluateDebrisCurve(effect->width_keys, time);
-            const f32 height = EvaluateDebrisCurve(effect->height_keys, time);
-            const f32 rotation = EvaluateDebrisCurve(effect->rotation_keys, time);
-            const f32 sine = NU_SIN_LUT(rotation);
-            const f32 cosine = NU_SIN_LUT(rotation + 16384.0f);
-            const f32 wave_x = effect->field_0b4 * NU_SIN_LUT(effect->field_0b0 * time * 65536.0f);
-            const f32 wave_y = effect->field_0bc * NU_SIN_LUT(effect->field_0b8 * time * 65536.0f);
-
-            debris_particle_frame_s &frame = header->frames[frame_index];
-            frame.position.x = (-cosine * (width * 0.25f) - sine * (height * 0.25f) + wave_x) / 2048.0f;
-            frame.position.y = (sine * (width * 0.25f) - cosine * (height * 0.25f) + wave_y) / 2048.0f;
-            frame.position.z = 0.0f;
-            frame.texture_offset.x = (cosine * (width * 0.25f) - sine * (height * 0.25f) + wave_x) / 2048.0f;
-            frame.texture_offset.y = (-sine * (width * 0.25f) - cosine * (height * 0.25f) + wave_y) / 2048.0f;
-            frame.texture_offset.z = 0.0f;
-            frame.extent.x = (cosine * (width * 0.25f) + sine * (height * 0.25f) + wave_x) / 2048.0f;
-            frame.extent.y = (-sine * (width * 0.25f) + cosine * (height * 0.25f) + wave_y) / 2048.0f;
-            frame.extent.z = 0.0f;
-            frame.colour = EvaluateDebrisColour(effect, time);
-        }
-    }
 
     void Initialise_PS(NUGSCN *scene) {
         scene->instance_visibility_flags = PortalVisiFlags;
-    }
-
-    PartHeader *CreateDmaPartEffectList(void *memory, i32 *size) {
-        u8 *cursor = reinterpret_cast<u8 *>(ALIGN(reinterpret_cast<usize>(memory), 0x10));
-        u8 *start = cursor;
-        PartHeader *header = reinterpret_cast<PartHeader *>(cursor);
-        debris_particle_frame_s *frame = header->frames;
-        frame += 64;
-        cursor = reinterpret_cast<u8 *>(frame);
-        *size = cursor - start;
-        return reinterpret_cast<PartHeader *>(start);
-    }
-
-    dma_particle_chunk_s *CreateDmaParticleSet(void *memory, i32 *size) {
-        dma_particle_chunk_s *chunk = static_cast<dma_particle_chunk_s *>(memory);
-        u8 *cursor = static_cast<u8 *>(memory);
-        chunk->command = 0x52;
-        chunk->next = NULL;
-        cursor += 0x10;
-        reinterpret_cast<u32 *>(cursor)[1] = 0;
-        reinterpret_cast<u32 *>(cursor)[2] = 0;
-        reinterpret_cast<u32 *>(cursor)[3] = 0;
-        reinterpret_cast<u32 *>(cursor)[4] = 0;
-        cursor += 0x10;
-        for (i32 i = 0; i < 32; ++i) {
-            dma_particle_s *particle = reinterpret_cast<dma_particle_s *>(cursor);
-            particle->position.x = 1.0f;
-            particle->position.y = 2.0f;
-            particle->position.z = 3.0f;
-            particle->momentum.x = 4.0f;
-            particle->momentum.y = 5.0f;
-            particle->momentum.z = 6.0f;
-            particle->start_time = -1.0f;
-            particle->inverse_lifetime = 128.0f;
-            cursor += sizeof(*particle);
-        }
-        *reinterpret_cast<u32 *>(cursor) = 0;
-        cursor += sizeof(u32);
-        *size = cursor - reinterpret_cast<u8 *>(chunk);
-        return chunk;
-    }
-
-    dma_particle_chunk_s *CreateDmaParticleSetGlass(void *memory, i32 *size) {
-        return CreateDmaParticleSet(memory, size);
-    }
-
-    void LinkDmaParticalSets(dma_particle_chunk_s **chunks, i32 count) {
-        dma_particle_chunk_s *chunk = chunks[count - 1];
-        chunk->command = 0x52;
-        chunk->next = NULL;
-        for (i32 i = count - 2; i >= 0; --i) {
-            chunk = chunks[i];
-            chunk->command = 0x4e;
-            chunk->next = chunks[i + 1];
-        }
     }
 
     // Original @0x3cd56e. Build the hierarchy render-part list selected by
