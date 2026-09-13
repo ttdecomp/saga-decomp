@@ -252,3 +252,26 @@ also has two exactly matched frame-counter functions. `TBOPENFN` and
 definitions could regress the exact neighbors without a real matching gain.
 Before revisiting, reconstruct those bodies and use a proper timing header for
 cross-TU declarations instead of scattered local `extern` declarations.
+
+## Measured reconstruction pilots
+
+- `legoapi/items/objects/cable.cpp` was compiled at the default `-O0`, while
+  the original has optimized frameless bodies and `UpdateCables` has the
+  stack-realignment shape associated with `-O3` vectorization. Setting only
+  this source to `-O3` raised whole-binary fuzzy matching from 44.5299% to
+  44.5714%: nine functions improved, none regressed, and `InitCables` plus
+  `DestroyCable` became exact.
+- The original `gizforce.cpp` local-symbol block contains the SFX data,
+  `GizForce_FindBestForceTarget`'s 6144-byte function-local array,
+  `GizForce_Throw`'s function-local vector, and the registration static. Its
+  text run interleaves functions formerly split between
+  `gizmos/traps/gizforce.cpp` and `gizmo/gizmos/gizmos_gizforce.cpp`; the
+  separate `gizmo/object/gizforce.cpp` belongs to a different address region.
+  The two files were merged without changing their bodies or `-O3` setting.
+  Matching then measured 44.5710%: all 15 pre-existing exact force functions
+  remained exact, `GizForceSFX_returnsfx` improved 99.43% to 99.93%, while
+  `GizmoForce_GetOutput` fell 55.30% to 48.26% and
+  `GizForce_FindBestForceTarget` fell 33.04% to 32.99%. The `GetOutput`
+  objdiff shows changed branch/boolean-result codegen; resolve that from the
+  function's actual control flow, not an optimization or attribute shortcut.
+  Target build, symbol coverage, checks, and 120-frame Map smoke passed.

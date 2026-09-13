@@ -13,6 +13,9 @@ build:target --per_file_copt=^src/editor/edpath\.cpp$@-O2
 build:target --per_file_copt=^src/java/android\.cpp$@-O2
 # Original OBB lookup uses optimized inlined strlen/strcat and omits leaf frames.
 build:target --per_file_copt=^src/gamelib/util/AndroidOBBUtils\.cpp$@-O3
+# The original cable bodies are optimized; UpdateCables also has the -O3
+# vectorized stack-realignment pattern.
+build:target --per_file_copt=^src/legoapi/items/objects/cable\.cpp$@-O3
 # The allocator has no vectorizable code; -O2 and -O3 emit the same measured
 # bodies, including nine exact constructors/destructor helpers.
 build:target --per_file_copt=^src/gamelib/util/VirtualStackAllocator\.cpp$@-O2
@@ -148,7 +151,6 @@ build:target --per_file_copt=^src/legoapi/world/levels/episodeVI\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/world/levels/hub\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/world/levels/lego_city\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/world/levels/episode\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_gizforce\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_teleport\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_gizbuildits\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_gizactions\.cpp$@-O3

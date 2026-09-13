@@ -4,6 +4,7 @@
 
 struct GAMEPAD_s;
 struct GameObject_s;
+struct nupad_s;
 
 // Gamepad system (module legoapi/core/input, gamepads.cpp).
 
@@ -37,6 +38,7 @@ i32 ReadPad(i32 port);
 void ReadPads();
 i32 NoPad(i32 port, i32 require_game_input);
 void PadOutPause(i32 port, struct WORLDINFO_s *world);
+void NewRumble(nupad_s *pad, f32 strength, i32 mode);
 
 extern "C" i32 Controller_IsConnected();
 extern "C" bool TestForController();
