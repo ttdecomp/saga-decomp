@@ -193,8 +193,6 @@ namespace {
 
 } // namespace
 
-static i32 NuTimeBar_EngineEnabled;
-static i32 NuTimeBar_GpuFrameOutEnabled;
 static i32 clip_special_objects = 1;
 
 using NUHGOBJVIDEOMEMFN = void (*)(nuhgobj_s *);
@@ -4015,12 +4013,6 @@ extern "C" {
         ++render_state.state.vertex_groups_id;
     }
 
-    void NuTimeBarSlotLastValue(void) {
-    }
-    void NuTimeBarSlotLastValueMicroseconds(void) {
-    }
-    void NuTimeBarSlotSetEx(void) {
-    }
 
     // ---------------------------------------------------------------------------
     // Light / wind / particles / debris
@@ -5312,38 +5304,13 @@ extern "C" {
     }
     void NuHtmlVBarGraph(void) {
     }
-    // Profiling timebar sets are a deferred subsystem (the real one is
-    // NuTimeBarCreateSet @0x2d7450 -> CreateSetEx @0x2d73f0 -> CreateTimeBar
-    // @0x2a9860). Consumers only ever hand the returned handle to the
-    // NuTimeBarSlot* stubs, so NULL behaves like profiling disabled.
-    void *NuTimeBarCreateSet(i32) {
-        return NULL;
-    }
-    void NuTimeBarCreateSetEx2(void) {
-    }
-    void NuTimeBarDestroySet(void) {
-    }
-    void NuTimeBarEnable(i32 enabled) {
-        NuTimeBar_EngineEnabled = enabled;
-    }
-    void NuTimeBarIndicateGpuFrameOut(i32 enabled) {
-        NuTimeBar_GpuFrameOutEnabled = enabled;
-    }
     void NuTimeBarInit(void) {
         VARIPTR unused = {};
         NuTimeBarInitEx(NULL, unused);
     }
-    extern "C++" {
-        static i32 NuTimeBar_PeakReset;
-    }
-    void NuTimeBarResetPeaks(void) {
-        NuTimeBar_PeakReset = 1;
-    }
     void NuTimeBarSetRender(i32) {
     }
     void NuTimeBarSetRenderHorizontal(void) {
-    }
-    void NuTimeBarSetScaleY(void) {
     }
 
     // ---------------------------------------------------------------------------

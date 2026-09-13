@@ -57,9 +57,6 @@ static void NuIOSBindVAO(u32 vao) {
     }
 }
 
-extern u32 g_DebriVB[8];
-extern void *g_DebriSysMemVB[2][64];
-extern u32 g_readBufferIndex;
 
 // ---------------------------------------------------------------------------
 // Cross-TU imports.
@@ -222,23 +219,6 @@ extern "C" {
     }
 
     static void NuIOS_BindVertexAttributes(isize dataAddr, usize baseVertex);
-}
-
-void NuIOSDLDebrisCallback(void *data) {
-    nunativedebrisdata_s *packet = static_cast<nunativedebrisdata_s *>(data);
-    if (packet->vertex_count == 0) {
-        return;
-    }
-    g_boundVertexFormat = ptrToUsize(g_nuDebrisVertexFormat);
-    if (packet->use_system_memory_vb == 0) {
-        NuIOSBindVAO(0);
-        glBindBuffer(GL_ARRAY_BUFFER, g_DebriVB[g_readBufferIndex * 4 + packet->vertex_buffer_index]);
-        NuIOS_BindVertexAttributes(0, 0);
-    } else {
-        NuIOS_BindVertexAttributesImmediate(
-            0, PtrToArgInt(g_DebriSysMemVB[g_readBufferIndex][packet->vertex_buffer_index]));
-    }
-    glDrawArrays(GL_TRIANGLES, packet->first_vertex, packet->vertex_count);
 }
 
 extern "C" {

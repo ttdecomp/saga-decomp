@@ -1375,3 +1375,111 @@ attributes or pragmas.
 Across the material, thread, background-process, and texture-helper units,
 the target report rises from the preceding commit's 44.9237% to 44.9592%:
 20 functions improve, seven become exact, and none regress.
+
+### TimeBar shared-state run
+
+The original `0x2d7410`–`0x2d7a28` run contains the TimeBar creation,
+destruction, slot, and enable routines together. The low-scoring stubs in
+`nucore_plain.cpp` were disconnected from the file-local set list and state
+already reconstructed in `nutimebar_plain.cpp`. Moving only that contiguous
+run into the existing `-O2` TimeBar owner restores direct access to the
+original local state and avoids a linker-only bridge. The earlier
+`NuTimeBarInitEx` and adjacent near-exact slot functions stay in place.
+
+Disassembly review also corrected several runtime semantics, not just
+matching: `NuTimeBarCreateSet` forwards a colour-array pointer and returns an
+integer set ID; full capacity overwrites set slot 15 instead of indexing
+past the 16-entry list; heap-owned sets use the engine's allocation/free
+manager with the original `"Main"` name; and `NuTimeBarSlotSetEx` applies a
+special conversion for slot 6 of set -1. The original `DestroySet` has no
+null guard and always clears its list entry, while the raw-microsecond query
+reads the selected accumulator without an initialization guard. Those
+behaviors were preserved rather than covered with defensive branches that
+would change the original ABI or control flow.
+
+The measured TimeBar interval raises the whole-binary score from 44.9592%
+to 44.9746%: six functions improve and `NuTimeBarCreateSet` becomes exact.
+One unrelated `NuThreadInitPS` fuzzy score shifts from 99.98% to 99.74%
+because the original `"Main"` allocator literal changes linked PIC
+displacements; its instruction sequence and control flow are unchanged.
+The faithful allocator is retained rather than altering unrelated source
+to chase that link-layout artifact. Target/WASM/native builds, lint, four
+repository checks, and a 120-frame Cantina smoke test pass.
+
+### Android debris renderer owner
+
+All three reconstructed debris-buffer functions embed the original
+`nu3d/android/nuptl_android.c` source path in their GL critical-section
+calls. The original local-symbol block ends in
+`_GLOBAL__sub_I_nuptl_android.c` and contains its own six `VuVec` objects,
+GL buffer state, and local vertex-attribute helpers. Renaming the current
+`nuptl_flush.cpp` implementation to that original `.c` basename, compiling
+it as C++ as its mangled functions and initializer require, and restoring
+the local vector constructors makes the named initializer exact. The
+three existing buffer-function scores do not regress.
+
+The original TU is larger than those three functions. It also contains a
+second set of TU-local vertex-attribute helpers around `0x296ba4` and the
+debris display-list callback at `0x29848f`; these are distinct from the
+near-exact `0x293xxx` geometry helpers in `nuiosdl_gl.cpp`. Moving the
+callback with its own three ordinary bind helpers into `nuptl_android.c`
+restores that ownership without changing the geometry renderer's copies.
+The callback and the three buffer functions are the only consumers of the
+debris GL-buffer and system-memory arrays and read-buffer index, so these
+three globals can now have their original file-local linkage. Their
+declarations reach callers through `nuptl_android.h`; the remaining renderer
+state is still shared with functions in other current files. Those broader
+ownership edges need their own measured migration, not substitute getters
+invented for matching.
+
+The measured combined TimeBar and debris-renderer interval raises the
+whole-binary score from 44.9592% to 44.9873%. The debris callback improves
+from 59.61% to 83.26%, its three original-local bind helpers rise from zero
+to 85–88%, the buffer functions gain about six or seven percentage points
+each, and the original named initializer becomes exact. The one unrelated
+`NuThreadInitPS` PIC-displacement shift described above remains; no debris
+function regresses. These gains come from correcting the actual source and
+local ownership, not altering ABI or optimizer behavior for a score.
+Target, WASM, and native builds, all three lint variants, the four repository
+checks, complete symbol coverage (13,425/13,425), and a 120-frame Cantina
+fixture smoke test pass after the callback and header migration.
+
+The next contiguous setup run in the same original unit contains
+`CreateDmaParticleSet`, `CreateDmaParticleSetGlass`,
+`CreateDmaPartEffectList`, and `LinkDmaParticalSets` at
+`0x2985ab`–`0x298749`. These four unchanged bodies moved from the generic
+render catch-all into `nuptl_android.c` in original address order. Their
+actual callers now include `nuptl_android.h` instead of keeping private
+link-time declarations. All four match scores—including the two already
+exact functions—and the whole-binary 44.9873% score are unchanged. The move
+corrects source ownership and the header boundary without disguising the
+two bodies that still need code reconstruction.
+
+The preceding particle packet run is also in this owner: the original
+addresses place `NuRndrSetParticleRotation` at `0x297248`,
+`NuRndrParticleGroup` at `0x297262`, `BuildDebrisVerts` at `0x29765c`, and
+`AddParticleGroupToDisplayList` at `0x298394`, before the debris callback.
+The current definitions were dispersed among the generic renderer, a support
+stub file, and the gameplay particle file despite sharing this TU's debris
+matrix, camera plane, particle packet, and vertex-buffer state. Their
+unchanged bodies now reside in original order in `nuptl_android.c`, with
+actual cross-unit calls declared in `nuptl_android.h` and the remaining
+`NuRndrParticleSetRepeat` declaration in its real renderer header.
+
+Moving the rotation setter alone raises its score from 64.75% to 77.25%.
+Moving the packet path then raises `NuRndrParticleGroup` from 27.74% to
+78.43% and `AddParticleGroupToDisplayList` from 9.93% to 34.77%; the vertex
+builder and callback retain their scores. Overall matching reaches
+44.9990% from the preceding 44.9873%, without an exact-match loss. Two
+unmodified functions remaining in `nurndr_plain.cpp` have small fuzzy-score
+declines (`NuRndrCircle` 9.76% to 8.11%, `NuRndrSphereMtx` 93.16% to
+92.86%). Their byte-level cause is not proven; the structurally evidenced,
+net-positive move is retained without claiming they are relocation-only.
+The final source passes target, WASM, and native builds, all three lint
+variants, the four repository checks, symbol coverage (13,425/13,425),
+and repeated 120-frame Map/Cantina fixture smokes. One rebuilt smoke attempt
+did stop in the existing `MovePlayer` → `NuAtan2D` path on a `nutrig.cpp:77`
+UBSan table-index error; three subsequent rebuilt runs loaded Map and
+advanced all 120 frames. The intermittent sanitizer failure is recorded as
+an unresolved runtime observation, not claimed to be caused or fixed by
+this TU move.

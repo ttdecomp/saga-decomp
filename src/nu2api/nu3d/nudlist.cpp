@@ -17,6 +17,7 @@
 // `render_buffer` toggle drive the per-frame visibility updates.
 
 #include "nu2api/nu3d/nudlist.h"
+#include "nu2api/nu3d/android/nuptl_android.h"
 
 #include "decomp.h"
 #include "nu2api/nu3d/nutex.h"
@@ -111,7 +112,6 @@ void NuIOSDLSkinMtxCallback(void *);
 void NuIOSDLCameraCallback(void *);
 void NuIOSDLKonstCallback(void *);
 void NuIOSDLFogCallback(void *);
-void NuIOSDLDebrisCallback(void *);
 void NuIOSDLVertexGroupsCallback(void *);
 void NuIOSDLVertexOffsetsCallback(void *);
 void NuIOSDLReflectionCallback(void *);

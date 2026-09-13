@@ -240,6 +240,7 @@ build:target --per_file_copt=^src/legoapi/render/fx/parts\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/render/light/shadow\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/render/light/surfaces\.cpp$@-O3
 build --per_file_copt=^src/nu2api/nu3d/glutils\.c$@-x,c++,-std=gnu++11
+build --per_file_copt=^src/nu2api/nu3d/android/nuptl_android\.c$@-x,c++,-std=gnu++11
 build:target --per_file_copt=^src/nu2api/nu3d/glutils\.c$@-O0
 build:target --per_file_copt=^src/nu2api/nucore/nuvideo_dump\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/render/fx/parts_control\.cpp$@-O3

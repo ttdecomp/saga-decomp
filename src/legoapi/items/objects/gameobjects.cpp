@@ -49,6 +49,7 @@
 #include "nu2api/numusic/sfx.h"
 #include "nu2api/nucore/numemory.h"
 #include "nu2api/nu3d/nuportal.h"
+#include "nu2api/nu3d/android/nutimebar_plain.h"
 #include "nu2api/nu3d/nucamera.h"
 #include "legoapi/audio/sfx.h"
 #include "nu2api/nuandroid/ios_graphics.h"
@@ -108,12 +109,7 @@ static f32 Condition_IAmAPartyCharacter(AISYS_s *, AISCRIPTPROCESS_s *, AIPACKET
     return 0.0f;
 }
 
-// NuCore profiling timebars (nucore_plain.cpp): NuTimeBarCreateSet returns a
-// deferred-subsystem stub handle; the slot functions are no-op stubs.
 extern "C" {
-    void *NuTimeBarCreateSet(i32);
-    void _NuTimeBarSlotBegin(void *, i32, char const *);
-    u32 _NuTimeBarSlotEnd(void *, i32);
     void AddToAIGroup(AIGROUP_s *group, APIOBJECT_s *object);
     extern NUVEC plr_lastpos;
     extern i16 id_BAT;

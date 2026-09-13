@@ -52,6 +52,7 @@
 #include "nu2api/nu3d/nushader.h"
 #include "nu2api/nucore/nuapi.h"
 #include "nu2api/nuandroid/ios_graphics.h"
+#include "nu2api/nu3d/android/nuptl_android.h"
 
 extern "C" void NuLgtLaserDraw(i32 paused);
 void NuLgtArcLaserDraw(i32 paused);
@@ -1160,90 +1161,6 @@ extern "C" void NuRndrLineStrip2di(i32 *positions, f32 *uvs, i32 count, i32 colo
     }
     NuPrim2DEnd();
 }
-void BuildDebrisVerts(PartHeader *, uv1debdata *, numtl_s *, f32, numtx_s *, i32, f32, f32, f32, f32);
-void AddParticleGroupToDisplayList(nunativedebrisdata_s *);
-
-extern NUMTX NuRndr_DebrisMtx;
-extern NUMTX *NuRndr_DebrisRotMtxPtr;
-extern NUVEC4 NuRndr_DebrisPlane;
-extern nunativedebrisdata_s *g_ParticleGroup;
-extern void *g_debrisUploadBuffer;
-extern void *g_pVBData;
-extern u32 g_CurrentDebriVBIndex;
-extern i32 g_UseSysMemVB;
-extern u32 g_CurrentVBVertexCount;
-extern void *g_lastPartEffect;
-
-extern "C" void NuRndrParticleGroup(uv1debdata *chunks, PartHeader *header, NUMTL *material, f32 time, NUMTX *matrix,
-                                    i32 particle_type, f32 a, f32 b, f32 c, f32 near_clip) {
-    if (header == NULL) {
-        g_lastPartEffect = NULL;
-        return;
-    }
-    if (material == NULL || material->particle_type_tag == -105) {
-        return;
-    }
-
-    if (header != g_lastPartEffect) {
-        if (material->attribs.unknown_2_1_2 != 2 || material->attribs.unknown_2_4 == 0) {
-            material->attribs.unknown_2_1_2 = 2;
-            material->attribs.unknown_2_4 = 1;
-            NuMtlUpdate(material);
-        }
-        if (NuRndr_DebrisRotMtxPtr == NULL) {
-            NuMtxCalcDebrisFaceOn(&NuRndr_DebrisMtx);
-        } else {
-            NuRndr_DebrisMtx = *NuRndr_DebrisRotMtxPtr;
-        }
-
-        NUCAMERA camera;
-        NuCameraGet(&camera);
-        NuRndr_DebrisPlane.x = camera.mtx.m20;
-        NuRndr_DebrisPlane.y = camera.mtx.m21;
-        NuRndr_DebrisPlane.z = camera.mtx.m22;
-        NuRndr_DebrisPlane.w =
-            -(camera.mtx.m30 * camera.mtx.m20 + camera.mtx.m31 * camera.mtx.m21 + camera.mtx.m32 * camera.mtx.m22);
-        header->last_render_time = time;
-
-        VARIPTR *buffer = NuDisplayListGetBuffer();
-        g_ParticleGroup = static_cast<nunativedebrisdata_s *>(buffer->void_ptr);
-        buffer->addr += sizeof(nunativedebrisdata_s);
-        g_ParticleGroup->vertex_buffer_index = static_cast<u8>(g_CurrentDebriVBIndex);
-        g_ParticleGroup->use_system_memory_vb = g_UseSysMemVB;
-        g_ParticleGroup->first_vertex = static_cast<i32>(g_CurrentVBVertexCount);
-        g_ParticleGroup->vertex_count = 0;
-        g_ParticleGroup->material = material;
-        if (g_pVBData == NULL) {
-            g_pVBData = g_debrisUploadBuffer;
-        }
-        AddParticleGroupToDisplayList(g_ParticleGroup);
-        g_lastPartEffect = header;
-    }
-
-    dma_particle_chunk_s *chunk = reinterpret_cast<dma_particle_chunk_s *>(chunks);
-    i32 done = 0;
-    i32 count = 0;
-    while (done == 0) {
-        i32 command = static_cast<i8>(chunk->command);
-        dma_particle_chunk_s *next = chunk->next;
-        switch (command) {
-            case 0x4e:
-                if (next != NULL) {
-                    BuildDebrisVerts(header, reinterpret_cast<uv1debdata *>(chunk), material, time, matrix,
-                                     particle_type, a, b, c, near_clip);
-                    chunk = next;
-                }
-                break;
-            case 0x52:
-                BuildDebrisVerts(header, reinterpret_cast<uv1debdata *>(chunk), material, time, matrix, particle_type,
-                                 a, b, c, near_clip);
-                done = 1;
-                break;
-        }
-        if (++count > 0x100)
-            break;
-    }
-}
 
 extern "C" void NuRndrRect(f32 x, f32 y, f32 z, f32 width, f32 height, f32 u0, f32 v0, f32 u1, f32 v1, i32 colour,
                            NUMTL *material) {
@@ -1482,9 +1399,6 @@ extern "C" void NuRndrSetGlobalMinMipLevel(i32 level) {
 }
 extern "C" void NuRndrSetGlobalMipMapBias(f32 bias) {
     g_mipmapbias = bias;
-}
-extern "C" void NuRndrSetParticleRotation(NUMTX *rotation) {
-    NuRndr_DebrisRotMtxPtr = rotation;
 }
 extern "C" void NuRndrStateSetSpecularLight(const NUMTX *matrix, const NUCOLOUR3 *colour) {
     if (matrix != nullptr) {

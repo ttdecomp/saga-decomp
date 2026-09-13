@@ -430,61 +430,6 @@ extern "C" {
         scene->instance_visibility_flags = PortalVisiFlags;
     }
 
-    PartHeader *CreateDmaPartEffectList(void *memory, i32 *size) {
-        u8 *cursor = reinterpret_cast<u8 *>(ALIGN(reinterpret_cast<usize>(memory), 0x10));
-        u8 *start = cursor;
-        PartHeader *header = reinterpret_cast<PartHeader *>(cursor);
-        debris_particle_frame_s *frame = header->frames;
-        frame += 64;
-        cursor = reinterpret_cast<u8 *>(frame);
-        *size = cursor - start;
-        return reinterpret_cast<PartHeader *>(start);
-    }
-
-    dma_particle_chunk_s *CreateDmaParticleSet(void *memory, i32 *size) {
-        dma_particle_chunk_s *chunk = static_cast<dma_particle_chunk_s *>(memory);
-        u8 *cursor = static_cast<u8 *>(memory);
-        chunk->command = 0x52;
-        chunk->next = NULL;
-        cursor += 0x10;
-        reinterpret_cast<u32 *>(cursor)[1] = 0;
-        reinterpret_cast<u32 *>(cursor)[2] = 0;
-        reinterpret_cast<u32 *>(cursor)[3] = 0;
-        reinterpret_cast<u32 *>(cursor)[4] = 0;
-        cursor += 0x10;
-        for (i32 i = 0; i < 32; ++i) {
-            dma_particle_s *particle = reinterpret_cast<dma_particle_s *>(cursor);
-            particle->position.x = 1.0f;
-            particle->position.y = 2.0f;
-            particle->position.z = 3.0f;
-            particle->momentum.x = 4.0f;
-            particle->momentum.y = 5.0f;
-            particle->momentum.z = 6.0f;
-            particle->start_time = -1.0f;
-            particle->inverse_lifetime = 128.0f;
-            cursor += sizeof(*particle);
-        }
-        *reinterpret_cast<u32 *>(cursor) = 0;
-        cursor += sizeof(u32);
-        *size = cursor - reinterpret_cast<u8 *>(chunk);
-        return chunk;
-    }
-
-    dma_particle_chunk_s *CreateDmaParticleSetGlass(void *memory, i32 *size) {
-        return CreateDmaParticleSet(memory, size);
-    }
-
-    void LinkDmaParticalSets(dma_particle_chunk_s **chunks, i32 count) {
-        dma_particle_chunk_s *chunk = chunks[count - 1];
-        chunk->command = 0x52;
-        chunk->next = NULL;
-        for (i32 i = count - 2; i >= 0; --i) {
-            chunk = chunks[i];
-            chunk->command = 0x4e;
-            chunk->next = chunks[i + 1];
-        }
-    }
-
     // Original @0x3cd56e. Build the hierarchy render-part list selected by
     // the caller's bit mask.
     i32 MakeLayerList_Index(CHARACTERMODEL_s *model, i16 *layers, u32 mask) {

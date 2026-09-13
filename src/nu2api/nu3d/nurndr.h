@@ -55,6 +55,7 @@ extern i32 g_backingHeight;
 #ifdef __cplusplus
 
 void NuRndrStreamInit(i32 stream_buffer_size, VARIPTR *buffer);
+void NuRndrParticleSetRepeat(NUVEC *position);
 void NuLightBurnoutEffect(i32 mode, f32 threshold, f32 intensity, f32 flare);
 // axes[0] is the center; axes[1..3] are the three shape basis vectors.
 void NuRndrCalcRandEllipsePos(struct nuvec4_s *position, NUMTX *matrix, NUVEC *axes);

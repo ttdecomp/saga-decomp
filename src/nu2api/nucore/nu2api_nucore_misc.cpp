@@ -716,7 +716,7 @@ void NuIOS_RestoreInAppPurchases() {
 void NuCameraTransformScissorClip(nuvec_s *, nuvec_s *, i32, numtx_s *) {
 }
 
-// NuDebrisRendererFlushBuffers is transcribed in android/nuptl_flush.cpp (original 0x296f35).
+// NuDebrisRendererFlushBuffers is transcribed in android/nuptl_android.c (original 0x296f35).
 
 // Original 0x294d93. The packet stores a count followed by up to eight vec4
 // vertex-offset entries for semantic 0x50.

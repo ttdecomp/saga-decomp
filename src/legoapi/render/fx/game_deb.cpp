@@ -4,6 +4,7 @@
 #include "nu2api/nu3d/nutex.h"
 #include "nu2api/nu3d/glutils.h"
 #include "nu2api/nu3d/numtl.h"
+#include "nu2api/nu3d/android/nuptl_android.h"
 #include "nu2api/nucore/nustring.h"
 #include "nu2api/nucore/common.h"
 #include "nu2api/numath/nurand.h"
@@ -786,9 +787,6 @@ extern "C" {
     void DebrisProcessTimeSlip(void);
     extern i32 debris_suspended;
 
-    dma_particle_chunk_s *CreateDmaParticleSet(void *, i32 *);
-    dma_particle_chunk_s *CreateDmaParticleSetGlass(void *, i32 *);
-    PartHeader *CreateDmaPartEffectList(void *, i32 *);
     void DebrisTrashableSetup(VARIPTR *, VARIPTR *);
 
     void DebrisSetup2(VARIPTR *, VARIPTR, VARIPTR *, VARIPTR, char *, i32, i32, i32, i32);

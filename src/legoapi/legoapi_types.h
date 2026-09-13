@@ -5245,7 +5245,7 @@ struct ThingManager {
     i32 count;          // 0x0c
     u32 field_0x10;     // 0x10 high-water cursor (written by the ctor / AllocPool)
     i32 field_0x14;     // 0x14 AddThingAfterThis reservation, folded in by the next AddThing
-    void *timebar;      // 0x18 NuTimeBarCreateSet handle (profiling, stubbed)
+    i32 timebar;        // 0x18 NuTimeBarCreateSet index
     u32 field_0x1c;
     i32 ed_timing_state; // 0x20 editor timing selection state
 };

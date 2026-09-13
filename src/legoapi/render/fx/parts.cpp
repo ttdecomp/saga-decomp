@@ -15,6 +15,7 @@
 #include "legoapi/world/area.h"
 #include "legoapi/characters/core/players.h"
 #include "nu2api/nu3d/nuportal.h"
+#include "nu2api/nu3d/android/nuptl_android.h"
 #include "legoapi/characters/core/character.h"
 #include "legoapi/items/base/apiobject.h"
 #include "legoapi/core/input/gamepads.h"
@@ -166,7 +167,6 @@ extern "C" {
     i32 CreateScaledEffect(i32, f32);
     i32 NuCameraClipTestExtentsAxisAligned(NUVEC *, NUVEC *, f32);
     void NuVecAddScale(NUVEC *, NUVEC *, NUVEC *, f32);
-    void LinkDmaParticalSets(dma_particle_chunk_s **, i32);
     void AddVariableShotDebrisEffectTimed3(i32, NUVEC *, NUVEC *, i32, f32, NUMTX *, NUMTX *);
     void AddVariableShotDebrisEffectTimed5(i32, NUVEC *, NUVEC *, NUVEC *, i32, f32, NUMTX *, NUMTX *, i16, u8);
 }

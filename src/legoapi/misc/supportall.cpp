@@ -1,5 +1,6 @@
 #include "nu2api/nu3d/nuprim.h"
 #include "nu2api/nu3d/nuvport.h"
+#include "nu2api/nu3d/android/nuptl_android.h"
 #include "nu2api/numath/nuvec.h"
 #include "legoapi/core/config/cheat.h"
 #include <string.h>
@@ -644,7 +645,6 @@ extern u32 g_CurrentDebriVBIndex;
 extern i32 g_UseSysMemVB;
 extern i32 NuDebrisRendererNextBuffer();
 extern void NuRndrParticleSetRepeat(NUVEC *position);
-void AddParticleGroupToDisplayList(nunativedebrisdata_s *group);
 
 void bgprocIsFreezing() {
 }
@@ -951,7 +951,6 @@ extern "C" {
 
 extern "C" void DebReAlloc2(debkeydatatype_s *);
 extern "C" void DebReAlloc(debkeydatatype_s *, i32);
-extern "C" void LinkDmaParticalSets(dma_particle_chunk_s **, i32);
 void RemoveChunkFromRenderStack(particlechunkrendertype_s *, particlechunkrendertype_s **);
 void DebrisReleaseControlStackLock(void);
 

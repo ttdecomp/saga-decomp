@@ -4,6 +4,7 @@
 #include <GLES2/gl2.h>
 
 i32 NuGScnUploadGfxDataFromFilePS(VARIPTR *buf, VARIPTR buf_end, i32 file);
+extern u32 g_lastBoundVAO;
 
 #ifdef __cplusplus
 extern "C" {
