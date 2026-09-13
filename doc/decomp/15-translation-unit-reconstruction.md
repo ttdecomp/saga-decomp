@@ -973,3 +973,156 @@ to 99.97% and `VisitPages` from 12.31% to exact. The thread, pool, and
 manager batch reaches 44.725765% overall, with seven improved functions
 and no regressions. The four checks, zero-missing-symbol check, target and
 WASM builds, and 120-frame Cantina smoke test pass.
+
+### Memory-manager debug, context, and large-bin methods
+
+The original `NuMemoryManager.cpp` text run provides a coherent set of
+low-scoring debug methods. Reconstructing the flag-gated backtrace copy,
+packed context field, name/context setters, and block validator makes seven
+of these methods exact. The original extended header has 32 backtrace slots
+followed by a count at offset `0x8c`; both debug accessors return a count or
+context ID, correcting their former `void` declarations. `UnTouchAllBlocks`
+now walks each page's block headers and clears the touch flag on allocated
+blocks, reaching 91.82%.
+
+`PushContext` allocates a 16-byte context followed by its name, records the
+used-block count, and links it above the current context. Its original
+allocation label contains the embedded `nu2api.2013/numemory/NuMemoryManager.cpp`
+path and source line 1627. That recovered source-location metadata is kept
+as program data, not a forced link or compiler option; the body reaches
+92.87%.
+
+The three linked-list large-bin sorting methods were empty stubs. Their
+reconstructed merge sort uses ascending block size, takes the right list on
+ties, and repairs backward links after sorting. The merge is exact; the
+recursive splitter reaches 93.15% and the outer sort 66.68%. These remaining
+instruction differences are not claimed to be solved. The whole batch raises
+matching from 44.725765% to 44.7572%, with 11 improved functions, seven
+newly exact, and no regressions.
+
+### Pool construction and animation-data owner
+
+The original `NuMemoryPool` constructor initializes a recursive mutex,
+stores its handler, block size, and debug name, clears its 0x400-byte bin
+region, and links the pool into a global list. Those fields now have names
+in the canonical header; the trailing page-statistics fields are identified
+in the next checkpoint. The 0x440-byte target allocation size is preserved.
+The constructor is exact. `NuMemory`'s three pool factories, two destroy paths, and MEM2-to-MEM1
+page transfer now use the original returns, argument order, and source-location
+allocation labels: four are exact, two exceed 99.8%. The pool destructor
+unlinks itself and destroys its mutex, reaching 75.23%; its called page-release
+routine is addressed in the next checkpoint. Both global visitor walks are
+static as their one-argument ABI shows, and both now match exactly. The pool's two linked-list
+merges are exact; the recursive sorts reach 90.98% each.
+
+Six animation-data definitions previously collected in
+`nu2api_nucore_misc.cpp` now live in the existing `nuanim.cpp` owner. The
+public and internal cross-TU declarations are in headers, not local linker-only
+`extern`s. Two animation bodies improve from this move, while an unchanged
+neighboring `NuHGobjEvalAnimBlend2Root_3` slips 89.10% to 88.92% from the
+new code layout; no behavioral change or safe source correction was found.
+The ANI3 size walk and pointer relocation are now genuine bodies in that
+owner, reaching exact and 99.69% respectively. Overall matching rises from
+44.7572% to 44.8024%: 31 functions improve, 17 become exact, and the one
+minor neighboring regression is recorded rather than concealed. Target and
+WASM builds, four checks, zero-missing-symbol coverage, and a 120-frame
+Cantina smoke test pass.
+
+### Pool page lifecycle and Android online owner
+
+The original pool's trailing words at offsets `0x424`–`0x42c` record visited,
+released, and recycled page counts; the page-release body also clears the
+words at `0x434`–`0x43c`. The constructor's 0x440-byte object size is
+unchanged. `ReleaseAllPages` now follows the original force-release and
+free-byte accounting path exactly. `ReleaseUnreferencedPages` locks the pool,
+sorts pages and all 256 free lists by address, counts free blocks per page,
+then releases or recycles fully free pages through the handler. It reaches
+58.72%, with its remaining code-generation differences still open.
+
+`PageAlloc` now returns the pointer indicated by the original ABI and
+updates the page offset and allocation count. Its page-selection loop is
+counterintuitive: when the head lacks space, the original skips later pages
+that *do* fit and rotates the first later page that also lacks space before
+asking the handler to allocate another page. The reconstruction preserves
+that observed control flow rather than substituting a conventional first-fit
+allocator. The body reaches 35.38%; this low score is explicitly unfinished.
+
+The original `_GLOBAL__sub_I_nuonline_android.cpp` and a contiguous
+`0x274620`–`0x2749e0` text run identify the Android NuOnline unit. Its
+profile functions and PS wrappers now share `nuonline_android.cpp` at `-O3`,
+while the distinct generic `nuonline.cpp` owner remains separate. Four PS
+wrappers become exact. Two presence-mode wrappers slip from exact to 97.11%
+after the owner/optimization change. A separate BSS/data audit found six
+local `VuVec_*` objects immediately after the online globals. Including the
+real `nuvuvec.hpp` header in this owner emits those six objects and recovers
+the original static initializer to 99.35% without fabricating an initializer
+or adding a per-function compiler override. Immediately before the vectors,
+the original BSS also has `g_signinUIFinishedDisplaying` (4 bytes) and
+`g_changedSettings`, `g_changedProfiles`, `g_signedinProfiles` (16 bytes
+each). Their exact element types and use sites still need mapping before
+adding source definitions.
+
+This combined checkpoint rises from 44.7258% to 44.8228%: 39 functions
+improve, 22 become exact, and three small regressions remain visible (the two
+online wrappers and the unchanged animation neighbor). The target and WASM
+builds, four checks, zero-missing-symbol audit, and 120-frame Cantina smoke
+test pass.
+
+### Cutscene locator-animation owner
+
+Four locator-animation bodies now share `nugcutscene_anim.cpp` in their
+original address order: `NuGCutLocatorCalcMtx_3`, `NuGCutLocatorCalcMtx`,
+`NuGCutLocatorIsVisble_3`, and `NuGCutLocatorIsVisble`. The three
+function-local filter arrays in the `_3` visibility routine move with their
+owner, and the cross-TU APIs are declared in `nugcutscene.h`. The recovered
+unit retains `-O2`. Target matching is exactly neutral at 44.8209% before
+the independent online initializer recovery, with
+no function-score changes; this is a structural correction, not a claimed
+body improvement.
+
+The adjacent `NuATanf`/`NuATan2f` pair is another possible Android float
+unit, but both bodies are already exact in their current owner. Their
+original initializer bears a `.c` filename while the callable symbols are
+C++-mangled, so the compilation-language boundary needs stronger evidence
+before relocating them.
+
+### NuQT helper unit
+
+The original ELF has eleven contiguous quadtree routines at
+`0x261783`–`0x2626f4`. The first helper phase creates a dedicated
+`nuqt.cpp`/`nuqt.h` owner with the evidenced 0x38-byte header and 12-byte
+entry layout. `ElOverlaps`, `RemoveData`, and `AddNode` now have real bodies
+there instead of attribute-retained placeholders in unrelated RTL/Ogg files.
+The two address-fix helpers also move out of `nuquat.cpp` and remain exact.
+The Y-axis comparisons in `ElOverlaps` use the original field order; neutral
+dimension names avoid asserting a conventional min/max order not supported by
+the observed code.
+
+This phase raises matching from 44.8228% to 44.8301% with no regressions:
+`AddNode` is exact, `RemoveData` is 99.76%, and `ElOverlaps` is 96.13%.
+The public NuQT bodies and the larger insertion helpers remain unfinished;
+in particular, the original `InsertData` appears to have a null-destination
+edge case requiring a separate correctness audit before implementation. The
+target and WASM builds, four checks, zero-missing-symbol audit, and 120-frame
+Cantina smoke test pass.
+
+### DDS-functions owner
+
+The original `NuDDSFunctions.cpp` initializer and six local vector constants
+accompany the contiguous `NuDDSGetTextureDescription`,
+`NuDDSSetTextureDescription`, `NuDDSGetMipLevel`, and `NuDDSGetSize` text run
+at `0x52a260`–`0x52ac90`. The four definitions now live together in
+`nu3d/NuDDSFunctions.cpp` at `-O3`, with API declarations in `nutex.h`.
+Including the real vector header recovers the static initializer to 99.35%.
+The existing texture-description body remains at 82.13%; the other three
+bodies initially remained low-scoring stubs. `NuDDSGetSize` now follows the
+original description/mip query, palette adjustment, and header-size addition,
+raising that wrapper from 6.46% to 82.40%. Its return type is `i32`, as the
+original return register shows. Correct runtime size results still depend on
+reconstructing `NuDDSGetMipLevel`, which remains a stub; neither it nor
+`NuDDSSetTextureDescription` is claimed as implemented.
+
+The unit move and size wrapper raise overall matching from 44.8301% to
+44.8362% with no
+function regressions. The target and WASM builds, four checks, zero-missing-
+symbol audit, and 120-frame Cantina smoke test pass.

@@ -325,7 +325,7 @@ void NuMemoryManager::ConvertToUsedBlock(FreeHeader *header, u32 alignment, u32 
             ExtendedDebugHeader *extended = (ExtendedDebugHeader *)header;
 
             memset(&extended->extended_info, 0, sizeof(ExtendedDebugInfo));
-            extended->unknown = 0;
+            extended->backtrace_count = 0;
         }
     }
 }
@@ -1093,7 +1093,16 @@ void NuMemoryManager::IErrorHandler::CloseDump(NuMemoryManager *manager, u32 id)
 void NuMemoryManager::IErrorHandler::Dump(NuMemoryManager *manager, u32 id, const char *msg) {
 }
 
-void NuMemoryManager::ClearBlockDebugContext(void *) {
+void NuMemoryManager::ClearBlockDebugContext(void *ptr) {
+    if ((m_flags & MEM_MANAGER_DEBUG) == 0) {
+        return;
+    }
+
+    ValidateAddress(ptr, __FUNCTION__);
+    DebugHeader *header = reinterpret_cast<DebugHeader *>(reinterpret_cast<usize>(ptr) - m_headerSize);
+    ValidateBlockIsAllocated(&header->block_header, __FUNCTION__);
+    ValidateBlockEndTags(&header->block_header, __FUNCTION__);
+    header->flags.ctx_id = 0;
 }
 
 void NuMemoryManager::DumpBlock(u32, NuSymbolQuery *, NuMemoryManager::Header *, u32, u32, u32) {
@@ -1119,10 +1128,27 @@ u32 NuMemoryManager::GetBlockAlignment(void *ptr) {
     return 2u << ((header->value & 0x78000000) >> 27);
 }
 
-void NuMemoryManager::GetBlockDebugBackTrace(void *, void **) {
+u32 NuMemoryManager::GetBlockDebugBackTrace(void *ptr, void **out) {
+    if ((m_flags & MEM_MANAGER_EXTENDED_DEBUG) == 0) {
+        return 0;
+    }
+
+    ValidateAddress(ptr, __FUNCTION__);
+    ExtendedDebugHeader *header = reinterpret_cast<ExtendedDebugHeader *>(reinterpret_cast<usize>(ptr) - m_headerSize);
+    memcpy(out, &header->extended_info, header->backtrace_count * sizeof(void *));
+    return header->backtrace_count;
 }
 
-void NuMemoryManager::GetBlockDebugContext(void *) {
+u32 NuMemoryManager::GetBlockDebugContext(void *ptr) {
+    if ((m_flags & MEM_MANAGER_DEBUG) == 0) {
+        return 0;
+    }
+
+    ValidateAddress(ptr, __FUNCTION__);
+    DebugHeader *header = reinterpret_cast<DebugHeader *>(reinterpret_cast<usize>(ptr) - m_headerSize);
+    ValidateBlockIsAllocated(&header->block_header, __FUNCTION__);
+    ValidateBlockEndTags(&header->block_header, __FUNCTION__);
+    return header->flags.ctx_id;
 }
 
 SAGA_HOST_WEAK u32 NuMemoryManager::GetBlockSize(void *ptr) {
@@ -1205,19 +1231,93 @@ bool NuMemoryManager::IsZombie() {
     return is_zombie;
 }
 
-void NuMemoryManager::MergeLargeBinSegments(NuMemoryManager::FreeHeader *, NuMemoryManager::FreeHeader *) {
+NuMemoryManager::FreeHeader *NuMemoryManager::MergeLargeBinSegments(FreeHeader *a, FreeHeader *b) {
+    FreeHeader *head = NULL;
+    FreeHeader *tail = NULL;
+    while (a != NULL && b != NULL) {
+        if (BLOCK_SIZE(a->block_header.value) < BLOCK_SIZE(b->block_header.value)) {
+            if (tail != NULL) {
+                tail->next = a;
+            } else {
+                head = a;
+            }
+            tail = a;
+            a = a->next;
+        } else {
+            if (tail != NULL) {
+                tail->next = b;
+            } else {
+                head = b;
+            }
+            tail = b;
+            b = b->next;
+        }
+    }
+
+    while (a != NULL || b != NULL) {
+        if (a != NULL) {
+            if (tail != NULL) {
+                tail->next = a;
+            } else {
+                head = a;
+            }
+            tail = a;
+            a = a->next;
+        } else {
+            if (tail != NULL) {
+                tail->next = b;
+            } else {
+                head = b;
+            }
+            tail = b;
+            b = b->next;
+        }
+    }
+    tail->next = NULL;
+    return head;
 }
 
-void NuMemoryManager::PushContext(char const *) {
+void NuMemoryManager::PushContext(const char *name) {
+    pthread_mutex_lock(&mutex);
+
+    Context *context = static_cast<Context *>(
+        _BlockAlloc(strlen(name) + sizeof(Context) + 1, 4, 0,
+                    "i:/SagaTouch-Android_9176564/nu2api.2013/numemory/NuMemoryManager.cpp:1627", 0));
+    context->used_block_count = stats.used_block_count;
+    context->next = cur_ctx;
+    context->id = cur_ctx->id + 1;
+    context->name = reinterpret_cast<char *>(context + 1);
+    strcpy(context->name, name);
+    cur_ctx = context;
+
+    pthread_mutex_unlock(&mutex);
 }
 
 void NuMemoryManager::ReleaseExternalPage(void *) {
 }
 
-void NuMemoryManager::SetBlockDebugContext(void *, u32) {
+void NuMemoryManager::SetBlockDebugContext(void *ptr, u32 ctx_id) {
+    if (ptr == NULL || (m_flags & MEM_MANAGER_DEBUG) == 0) {
+        return;
+    }
+
+    ValidateAddress(ptr, __FUNCTION__);
+    DebugHeader *header = reinterpret_cast<DebugHeader *>(reinterpret_cast<usize>(ptr) - m_headerSize);
+    ValidateBlockIsAllocated(&header->block_header, __FUNCTION__);
+    ValidateBlockEndTags(&header->block_header, __FUNCTION__);
+    header->flags.ctx_id = ctx_id;
 }
 
-void NuMemoryManager::SetBlockDebugName(void *, char const *) {
+void NuMemoryManager::SetBlockDebugName(void *ptr, const char *name) {
+    if (ptr == NULL || (m_flags & MEM_MANAGER_DEBUG) == 0) {
+        return;
+    }
+
+    ValidateAddress(ptr, __FUNCTION__);
+    DebugHeader *header = reinterpret_cast<DebugHeader *>(reinterpret_cast<usize>(ptr) - m_headerSize);
+    ValidateBlockIsAllocated(&header->block_header, __FUNCTION__);
+    ValidateBlockEndTags(&header->block_header, __FUNCTION__);
+    header->name = name;
 }
 
 void NuMemoryManager::SetOverrideCategory(u16 category) {
@@ -1228,16 +1328,74 @@ void NuMemoryManager::SetOverrideCategoryBGThread(u16 category) {
     override_category_bg_thread = category;
 }
 
-void NuMemoryManager::SortLargeBin(u32) {
+void NuMemoryManager::SortLargeBin(u32 index) {
+    FreeHeader *sentinel = &large_bins[index];
+    FreeHeader *first = sentinel->next;
+    if (first == NULL) {
+        return;
+    }
+
+    u32 count = 0;
+    for (FreeHeader *node = first; node != NULL; node = node->next) {
+        ++count;
+    }
+    sentinel->next = SortLargeBinSegment(first, count);
+    for (FreeHeader *node = sentinel; node->next != NULL; node = node->next) {
+        node->next->prev = node;
+    }
 }
 
-void NuMemoryManager::SortLargeBinSegment(NuMemoryManager::FreeHeader *, u32) {
+NuMemoryManager::FreeHeader *NuMemoryManager::SortLargeBinSegment(FreeHeader *head, u32 count) {
+    if (count <= 1) {
+        return head;
+    }
+
+    u32 left_count = count / 2;
+    u32 right_count = count - left_count;
+    FreeHeader *left_end = head;
+    FreeHeader *right = NULL;
+    for (u32 i = 0; i < left_count; ++i) {
+        right = left_end->next;
+        if (i + 1 < left_count) {
+            left_end = right;
+        }
+    }
+    left_end->next = NULL;
+    FreeHeader *sorted_left = SortLargeBinSegment(head, left_count);
+    FreeHeader *sorted_right = SortLargeBinSegment(right, right_count);
+    return MergeLargeBinSegments(sorted_left, sorted_right);
 }
 
 void NuMemoryManager::UnTouchAllBlocks() {
+    if ((m_flags & MEM_MANAGER_DEBUG) == 0) {
+        return;
+    }
+
+    for (Page *page = pages; page != NULL; page = page->next) {
+        Header *end = reinterpret_cast<Header *>(page->end);
+        for (Header *header = page->first_header; end != header;) {
+            if ((header->value & ALLOC_MASK) != 0) {
+                DebugHeader *debug = reinterpret_cast<DebugHeader *>(header);
+                debug->flags.unknown &= ~1u;
+            }
+            ValidateBlockEndTags(header, "UntouchAllDebugBlocks");
+            header = reinterpret_cast<Header *>(reinterpret_cast<usize>(header) + BLOCK_SIZE(header->value));
+        }
+    }
 }
 
-void NuMemoryManager::ValidateBlock(void *) {
+void NuMemoryManager::ValidateBlock(void *ptr) {
+    if (ptr == NULL) {
+        return;
+    }
+
+    ValidateAddress(ptr, __FUNCTION__);
+    Header *header = reinterpret_cast<Header *>(reinterpret_cast<usize>(ptr) - m_headerSize);
+    ValidateBlockIsAllocated(header, __FUNCTION__);
+    ValidateBlockEndTags(header, __FUNCTION__);
+    if ((m_flags & MEM_MANAGER_DEBUG) != 0) {
+        ValidateBlockDeferredContent(header, __FUNCTION__);
+    }
 }
 
 void NuMemoryManager::ValidateBlockDeferredContent(NuMemoryManager::Header *, char const *) {

@@ -31,6 +31,7 @@ class NuMemoryPool {
   public:
     class IVisitor {
       public:
+        virtual void Visit(NuMemoryPool *pool) = 0;
         virtual ~IVisitor() = default;
     };
 
@@ -46,15 +47,15 @@ class NuMemoryPool {
     u32 GetPagedBytes();
     FreeBlock volatile *InterlockedPop(FreeBlock volatile **out_head);
     void InterlockedPush(FreeBlock volatile **head, void *block);
-    void Merge(FreeBlock volatile *a, FreeBlock volatile *b);
-    void Merge(Page *a, Page *b);
-    void MergeSort(FreeBlock volatile *list, u32 count);
-    void MergeSort(Page *list, u32 count);
-    void PageAlloc(u32 size, const char *name);
+    FreeBlock volatile *Merge(FreeBlock volatile *a, FreeBlock volatile *b);
+    Page *Merge(Page *a, Page *b);
+    FreeBlock volatile *MergeSort(FreeBlock volatile *list, u32 count);
+    Page *MergeSort(Page *list, u32 count);
+    void *PageAlloc(u32 size, const char *name);
     void ReleaseAllPages();
     void ReleaseUnreferencedPages();
     void ReleaseUnreferencedPages_OLD();
-    void VisitPools(IVisitor *visitor);
+    static void VisitPools(IVisitor *visitor);
 
   private:
     static NuMemoryPool *m_firstPool;
@@ -62,7 +63,8 @@ class NuMemoryPool {
 
     NuMemoryPool *next;
     const char *name;
-    u8 reserved_0x08[8];
+    IEventHandler *event_handler;
+    u32 block_size;
     u32 free_bytes;
     u32 large_block_bytes;
     Page *pages;
@@ -70,6 +72,13 @@ class NuMemoryPool {
     volatile bool page_list_stable;
     u8 reserved_0x41d[3];
     pthread_mutex_t mutex;
+    u32 visited_page_count;
+    u32 released_page_count;
+    u32 recycled_page_count;
+    u32 unknown_0x430;
+    u32 unknown_0x434;
+    u32 unknown_0x438;
+    u32 unknown_0x43c;
 
     static void InterlockedAdd(volatile u32 *augend, u32 addend);
     static void InterlockedSub(volatile u32 *minuend, u32 subtrahend);

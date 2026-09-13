@@ -24,6 +24,12 @@ struct NUGCUTLOCATOR_s {
     u8 pad_5c[8];
 };
 
+void NuGCutLocatorCalcMtx_3(NUGCUTLOCATOR_s *locator, numtx_s *mtx, f32 frame);
+i32 NuGCutLocatorIsVisble_3(NUGCUTLOCATOR_s *locator, f32 frame, f32 *scale, f32 *rate);
+extern "C" i32 NuGCutLocatorCalcMtx(NUGCUTLOCATOR_s *locator, f32 frame, NUMTX *mtx, nuanimtime_s *time);
+extern "C" i32 NuGCutLocatorIsVisble(NUGCUTLOCATOR_s *locator, f32 frame, nuanimtime_s *time, f32 *scale,
+                                      f32 *rate);
+
 struct NUGCUTLOCATORTYPE_s {
     char *name;
     u8 flags;

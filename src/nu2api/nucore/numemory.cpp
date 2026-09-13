@@ -181,22 +181,50 @@ NuMemoryManager *NuMemory::CreateMemoryManager(NuMemoryManager::IEventHandler *e
     return manager;
 }
 
-void NuMemory::CreateDynamicMemoryPool(u32, char const *) {
+NuMemoryPool *NuMemory::CreateDynamicMemoryPool(u32 size, const char *name) {
+    NuMemoryPool *pool = static_cast<NuMemoryPool *>(GetThreadMem()->_BlockAlloc(
+        sizeof(NuMemoryPool), 4, 0, "i:/SagaTouch-Android_9176564/nu2api.2013/numemory/numemory.cpp:539", 0));
+    new (pool) NuMemoryPool(dynamic_pool_event_handler, size, name);
+    return pool;
 }
 
-void NuMemory::CreateFixedMemoryPool(u32, u32, char const *) {
+NuMemoryPool *NuMemory::CreateFixedMemoryPool(u32 size, u32 block_size, const char *name) {
+    NuMemoryPool *pool = static_cast<NuMemoryPool *>(GetThreadMem()->_BlockAlloc(
+        sizeof(NuMemoryPool), 4, 0, "i:/SagaTouch-Android_9176564/nu2api.2013/numemory/numemory.cpp:517", 0));
+    new (pool) NuMemoryPool(fixed_pool_event_handler, block_size, name);
+    if (size != 0) {
+        void *page = GetThreadMem()->_BlockAlloc(
+            size, block_size, 0, "i:/SagaTouch-Android_9176564/nu2api.2013/numemory/numemory.cpp:521", 0);
+        pool->AddPage(page, size);
+    }
+    return pool;
 }
 
-void NuMemory::CreateMemoryPool(NuMemoryPool::IEventHandler *, u32, char const *) {
+NuMemoryPool *NuMemory::CreateMemoryPool(NuMemoryPool::IEventHandler *handler, u32 size, const char *name) {
+    NuMemoryPool *pool = static_cast<NuMemoryPool *>(GetThreadMem()->_BlockAlloc(
+        sizeof(NuMemoryPool), 4, 0, "i:/SagaTouch-Android_9176564/nu2api.2013/numemory/numemory.cpp:531", 0));
+    new (pool) NuMemoryPool(handler, size, name);
+    return pool;
 }
 
-void NuMemory::DestroyMemoryManager(NuMemoryManager *) {
+void NuMemory::DestroyMemoryManager(NuMemoryManager *manager) {
+    manager->~NuMemoryManager();
+    GetThreadMem()->BlockFree(manager, 0);
 }
 
-void NuMemory::DestroyMemoryPool(NuMemoryPool *) {
+void NuMemory::DestroyMemoryPool(NuMemoryPool *pool) {
+    pool->~NuMemoryPool();
+    GetThreadMem()->BlockFree(pool, 0);
 }
 
-void NuMemory::MoveFreeMem2IntoMem1() {
+u32 NuMemory::MoveFreeMem2IntoMem1() {
+    u32 size = mem2_manager->CalculateLargestFragmentSize();
+    if (size != 0) {
+        void *page = mem2_manager->_BlockAlloc(
+            size, 4, 0, "i:/SagaTouch-Android_9176564/nu2api.2013/numemory/numemory.cpp:487", 0);
+        mem1_manager->AddPage(page, size, false);
+    }
+    return size;
 }
 
 void NuMemory::SetSoakTestMode() {

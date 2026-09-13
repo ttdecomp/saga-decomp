@@ -385,38 +385,3 @@ void NuQuatSlerp_Accurate(NUQUAT *out, NUQUAT *from, NUQUAT *to, f32 t) {
     out->z = from->z * from_factor + to_prime.z * to_factor;
     out->w = from->w * from_factor + to_prime.w * to_factor;
 }
-
-struct nuqtentry_s {
-    i16 count;
-    i16 field_02;
-    u8 *data;
-    u32 field_08;
-};
-
-struct nuqthdr_s {
-    u32 field_00[5];
-    nuqtentry_s *entries;
-    i32 entry_count;
-    u32 field_1c;
-    u8 *data;
-};
-
-static void NuQTFixAddress(nuqthdr_s *header) {
-    uintptr_t base = (uintptr_t)header;
-    header->entries = (nuqtentry_s *)((u8 *)header->entries + base);
-    header->data = header->data + base;
-    for (i32 index = 0; index < header->entry_count; ++index) {
-        if (header->entries[index].count > 0)
-            header->entries[index].data = header->entries[index].data + base;
-    }
-}
-
-static void NuQTUnfixAddress(nuqthdr_s *header) {
-    uintptr_t base = -(uintptr_t)header;
-    for (i32 index = 0; index < header->entry_count; ++index) {
-        if (header->entries[index].count > 0)
-            header->entries[index].data = header->entries[index].data + base;
-    }
-    header->entries = (nuqtentry_s *)((u8 *)header->entries + base);
-    header->data = header->data + base;
-}

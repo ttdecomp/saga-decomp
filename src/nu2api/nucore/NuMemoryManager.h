@@ -84,7 +84,7 @@ class NuMemoryManager {
         ExtendedDebugInfo extended_info;
 
         // Type uncertain.
-        i32 unknown;
+        u32 backtrace_count;
     };
 
     struct Page {
@@ -98,7 +98,7 @@ class NuMemoryManager {
     };
 
     struct Context {
-        const char *name;
+        char *name;
         u32 id;
 
         // Type uncertain.
@@ -214,8 +214,8 @@ class NuMemoryManager {
     void FindAndTouchMatchingBlocks(DebugHeader *header, u32 *a, u32 b);
     u32 GetAllocatedBytes();
     u32 GetBlockAlignment(void *ptr);
-    void GetBlockDebugBackTrace(void *ptr, void **out);
-    void GetBlockDebugContext(void *ptr);
+    u32 GetBlockDebugBackTrace(void *ptr, void **out);
+    u32 GetBlockDebugContext(void *ptr);
     u32 GetBlockSize(void *ptr);
     u32 GetCategoryAllocatedBytes(u16 category);
     u32 GetCurrentContextID() const;
@@ -228,7 +228,7 @@ class NuMemoryManager {
     u32 GetPagedBytes();
     static u32 GetSmallBinSize(u32 index);
     bool IsZombie();
-    void MergeLargeBinSegments(FreeHeader *a, FreeHeader *b);
+    FreeHeader *MergeLargeBinSegments(FreeHeader *a, FreeHeader *b);
     void PushContext(const char *name);
     void ReleaseExternalPage(void *ptr);
     void SetBlockDebugContext(void *ptr, u32 ctx_id);
@@ -236,11 +236,11 @@ class NuMemoryManager {
     void SetOverrideCategory(u16 category);
     void SetOverrideCategoryBGThread(u16 category);
     void SortLargeBin(u32 index);
-    void SortLargeBinSegment(FreeHeader *header, u32 index);
+    FreeHeader *SortLargeBinSegment(FreeHeader *header, u32 count);
     void UnTouchAllBlocks();
     void ValidateBlock(void *ptr);
     void ValidateBlockDeferredContent(Header *header, const char *caller);
-    void VisitManagers(IVisitor *visitor);
+    static void VisitManagers(IVisitor *visitor);
     void VisitPages(IPageVisitor *visitor);
     void _MultiBlockAlloc(u32 a, u32 b, u32 c, void **out, u32 e, const char *name, u16 flags);
 

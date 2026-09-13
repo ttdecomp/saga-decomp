@@ -51,10 +51,6 @@ extern "C" {
 
 void rtlSwapSetEndianess(rtlset *);
 
-static __used__ int ElOverlaps(nuqtdim_s *, nuqtdim_s *) {
-    return 0;
-}
-
 static __used__ rtl_s *GetNextRTL(void *, rtl_s *, char *, int *) {
     return nullptr;
 }

@@ -31,7 +31,7 @@ class NuMemory {
         u8 unknown_00[0x104];
     };
 
-    class FixedPoolEventHandler : NuMemoryPool::IEventHandler {
+    class FixedPoolEventHandler : public NuMemoryPool::IEventHandler {
       public:
         FixedPoolEventHandler() {
         }
@@ -46,7 +46,7 @@ class NuMemory {
         u32 unknown;
     };
 
-    class DynamicPoolEventHandler : NuMemoryPool::IEventHandler {
+    class DynamicPoolEventHandler : public NuMemoryPool::IEventHandler {
       public:
         DynamicPoolEventHandler() {
         }
@@ -69,12 +69,12 @@ class NuMemory {
 
     NuMemoryManager *CreateMemoryManager(NuMemoryManager::IEventHandler *event_handler, const char *name);
 
-    void CreateMemoryPool(NuMemoryPool::IEventHandler *event_handler, u32 size, const char *name);
-    void CreateFixedMemoryPool(u32 size, u32 block_size, const char *name);
-    void CreateDynamicMemoryPool(u32 size, const char *name);
+    NuMemoryPool *CreateMemoryPool(NuMemoryPool::IEventHandler *event_handler, u32 size, const char *name);
+    NuMemoryPool *CreateFixedMemoryPool(u32 size, u32 block_size, const char *name);
+    NuMemoryPool *CreateDynamicMemoryPool(u32 size, const char *name);
     void DestroyMemoryPool(NuMemoryPool *pool);
     void DestroyMemoryManager(NuMemoryManager *manager);
-    void MoveFreeMem2IntoMem1();
+    u32 MoveFreeMem2IntoMem1();
     void SetSoakTestMode();
 
   private:
