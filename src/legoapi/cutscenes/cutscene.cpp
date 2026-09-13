@@ -724,7 +724,6 @@ extern "C" i32 LookupDebrisEffectPageOnly(char *, i32);
 extern "C" {
     extern i32 NuGCutDebFixUp_SearchAllPages;
     extern NUGCUTLOCATORFNENTRY_s *locatorfns;
-    extern i32 (*LookupLocatorVfxFn)(char *);
     extern i32 (*NuCutSceneSFXFixUp)(usize);
 }
 void NuGCutRigidCalcMtx(NUGCUTRIGID_s *, f32, numtx_s *);
@@ -883,11 +882,46 @@ static void NuGCutSceneFixPtrs_Title(NUGCUTSCENE_s *cutscene, isize anim_delta) 
     }
 }
 
+extern "C" void NuGCutSceneSysInit(NUGCUTLOCATORFNENTRY_s *locator_functions) {
+    background_cutscene_instances = NULL;
+    active_cutscene_instances = NULL;
+    locatorfns = locator_functions;
+}
+
+void NuGCutSceneSysInitVfx(NUGCUTLOOKUPLOCATORVFXFN lookup, NUGCUTTRIGGERLOCATORVFXFN trigger,
+                          NUGCUTRELEASELOCATORVFXFN release, NUGCUTUPDATELOCATORVFXFN update) {
+    LookupLocatorVfxFn = lookup;
+    TriggerLocatorVfxFn = trigger;
+    ReleaseLocatorVfxFn = release;
+    UpdateLocatorVfxFn = update;
+}
+
+void NuGCutSceneRemapFocusIdToLocaterNum(NUGCUTSCENE_s *cutscene, VARIPTR *buffer) {
+    if (cutscene->version <= 4 || cutscene->camera_system == NULL ||
+        cutscene->camera_system->focus_state_animation == NULL || cutscene->locator_system == NULL) {
+        return;
+    }
+
+    buffer->addr = ALIGN(buffer->addr, 2);
+    cutscene->focus_camera_indices = reinterpret_cast<u16 *>(buffer->void_ptr);
+    NUGCUTLOCATORSYS_s *system = cutscene->locator_system;
+    for (u32 i = 0; i < system->locator_count; ++i) {
+        NUGCUTLOCATOR_s *locator = &system->locators[i];
+        if ((system->types[locator->type_index].flags & 8) != 0) {
+            *reinterpret_cast<u16 *>(buffer->void_ptr) = static_cast<u16>(i);
+            buffer->void_ptr = reinterpret_cast<u16 *>(buffer->void_ptr) + 1;
+        }
+    }
+}
+
 extern "C" {
 
     i32 NuGCutDebFixUp_SearchAllPages = 0;
     NUGCUTLOCATORFNENTRY_s *locatorfns = NULL;
-    i32 (*LookupLocatorVfxFn)(char *) = NULL;
+    NUGCUTUPDATELOCATORVFXFN UpdateLocatorVfxFn = NULL;
+    NUGCUTRELEASELOCATORVFXFN ReleaseLocatorVfxFn = NULL;
+    NUGCUTTRIGGERLOCATORVFXFN TriggerLocatorVfxFn = NULL;
+    NUGCUTLOOKUPLOCATORVFXFN LookupLocatorVfxFn = NULL;
     i32 (*NuCutSceneSFXFixUp)(usize) = NULL;
     NUGCUTSCENE_s *NuGCutSceneLoad(char *name, VARIPTR *buf, VARIPTR *buf_end, i32 flags) {
         char path[1036];
@@ -982,6 +1016,33 @@ extern "C" {
         buf->addr += bytes;
         return cutscene;
     }
+
+    // Original 0x433910: fix a version-10+ cutscene already resident at
+    // its final address, then remap its focus-camera indices.
+    NUGCUTSCENE_s *NuGCutSceneLoadAddr(NUGCUTSCENE_s *cutscene, i32 loaded_size, VARIPTR *buffer) {
+        if (cutscene->version <= 9) {
+            return NULL;
+        }
+        cutscene->loaded_size = loaded_size;
+        isize anim_delta = reinterpret_cast<isize>(cutscene) - cutscene->relocation_delta;
+        cutscene->string_delta = reinterpret_cast<isize>(cutscene) - cutscene->string_delta;
+        cutscene->relocation_delta = anim_delta;
+        if ((cutscene->flags & 8) != 0) {
+            NuGCutSceneFixPtrs_Title(cutscene, 0);
+        } else {
+            NuGCutSceneFixPtrs_Title(cutscene, anim_delta);
+        }
+        NuGCutSceneRemapFocusIdToLocaterNum(cutscene, buffer);
+        cutscene->string_delta = 0;
+        return cutscene;
+    }
+
+    void NuGCutSceneDestroy(NUGCUTSCENE_s *cutscene) {
+        if (cutscene->character_system != NULL && NuCutSceneDestroyCharacters != NULL) {
+            NuCutSceneDestroyCharacters(cutscene);
+        }
+    }
+
     void NuGCutSceneFixUp(NUGCUTSCENE_s *cutscene, NUGSCN *scene, i32 flags, i8 area) {
         if (cutscene == NULL) {
             return;
@@ -1461,7 +1522,6 @@ extern "C" {
 void instNuGCutSceneEndButNotSystems(instNUGCUTSCENE_s *instance);
 void instNuGCutSceneResetCamLock(instNUGCUTSCENE_s *instance);
 extern "C" void DebFreeInstantly(i32 *handle);
-extern "C" void (*ReleaseLocatorVfxFn)(i32);
 
 static __used__ void instNuGCutRigidSysEnd(instNUGCUTSCENE_s *instance, float frame) {
     NUGCUTRIGIDSYS_s *system = instance->cutscene->rigid_system;

@@ -27,6 +27,8 @@
 #include "nu2api/nu3d/nurndrstat.h"
 #include "nu2api/nu3d/numtl.h"
 
+#include <cfloat>
+
 extern i32 numtl_renderplane;
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -136,23 +138,37 @@ void NuDisplaySceneUnclip(NUDLDLISTSCENE *scene) {
     }
 }
 
+// Original 0x2f11f0: reset the scene's per-object near/far clip ranges.
+extern "C" void NuInvalidateClipRanges(NUDLDLISTSCENE *scene) {
+    for (i32 index = 0; index < scene->nclip_objects; ++index) {
+        if (scene->lod_ranges[index] != 0.0f) {
+            scene->lod_ranges[index] = FLT_MAX;
+        }
+        scene->far_clip_ranges[index] = FLT_MAX;
+    }
+}
+
 extern "C" void NuDisplayListExecute(nudisplaylistitem_s *item, const nudl_handler_fn *item_table) {
     // `item_table` points at the entry for type 0x80.
     for (;;) {
-        // Walk the linear run until a NEXT links elsewhere.
-        while (item->id != kItemId_Next) {
-            if (item->id == kItemId_Call) {
-                auto handler = item_table[static_cast<u32>(item->type) - kItemType_Mtl];
-                if (handler) {
-                    handler(item->next);
-                }
-            } else if (item->id != kItemId_Cnt) {
-                // RET (and any unexpected id >=2 other than CALL) terminates.
-                return;
-            }
+        switch (item->id) {
+        case kItemId_Next:
+            item = static_cast<nudisplaylistitem_s *>(item->next);
+            break;
+        case kItemId_Cnt:
             ++item;
+            break;
+        case kItemId_Call: {
+            auto handler = item_table[static_cast<u32>(item->type) - kItemType_Mtl];
+            if (handler)
+                handler(item->next);
+            ++item;
+            break;
         }
-        item = static_cast<nudisplaylistitem_s *>(item->next);
+        default:
+            // RET (and any unexpected id >=2 other than CALL) terminates.
+            return;
+        }
     }
 }
 
@@ -411,35 +427,39 @@ extern "C" NUDLDLISTSCENE *NuDisplaySceneClone(NUDLDLISTSCENE *source, VARIPTR *
     return scene;
 }
 
-// NuDisplaySceneAdd @ 0x2f9e30
+// NuDisplaySceneAdd @ 0x2e9e30
 extern "C" void NuDisplaySceneAdd(NUDLDLISTSCENE *scene) {
     NuThreadCriticalSectionBegin(global_dlist_manager.loading_critical_section);
 
     global_dlist_manager.dlists[global_dlist_manager.ndisplay_lists++] = scene;
     ResetSceneBeforeFrame(scene, /*gated=*/false);
 
-    NUSORTPRI *sort_list = global_dlist_manager.sort_list;
-    for (i32 i = 0; i < scene->nsort_pris; ++i) {
-        NUSORTPRI *sort_pri = &scene->sort_pris[i];
-        if (numtl_renderplane != 0) {
-            sort_pri->sort_pri += numtl_renderplane * 0x20000;
-        }
+    if (scene->nsort_pris > 0) {
+        NUSORTPRI *sort_list = global_dlist_manager.sort_list;
+        i32 used_count = global_dlist_manager.nused_sort_pris;
+        for (i32 i = 0; i < scene->nsort_pris; ++i) {
+            NUSORTPRI *sort_pri = &scene->sort_pris[i];
+            if (numtl_renderplane != 0) {
+                sort_pri->sort_pri += numtl_renderplane * 0x20000;
+            }
 
-        NUSORTPRI *previous = nullptr;
-        NUSORTPRI *current = sort_list;
-        while (current != nullptr && current->sort_pri < sort_pri->sort_pri) {
-            previous = current;
-            current = current->sys_next;
+            NUSORTPRI *previous = nullptr;
+            NUSORTPRI *current = sort_list;
+            while (current != nullptr && current->sort_pri < sort_pri->sort_pri) {
+                previous = current;
+                current = current->sys_next;
+            }
+            sort_pri->sys_next = current;
+            if (previous == nullptr) {
+                sort_list = sort_pri;
+            } else {
+                previous->sys_next = sort_pri;
+            }
+            ++used_count;
         }
-        sort_pri->sys_next = current;
-        if (previous == nullptr) {
-            sort_list = sort_pri;
-        } else {
-            previous->sys_next = sort_pri;
-        }
-        ++global_dlist_manager.nused_sort_pris;
+        global_dlist_manager.sort_list = sort_list;
+        global_dlist_manager.nused_sort_pris = used_count;
     }
-    global_dlist_manager.sort_list = sort_list;
 
     if (scene->material_animations != nullptr) {
         scene->material_animations->next = global_dlist_manager.mtlanim_list;
@@ -453,7 +473,7 @@ extern "C" void NuDisplaySceneAdd(NUDLDLISTSCENE *scene) {
     NuThreadCriticalSectionEnd(global_dlist_manager.loading_critical_section);
 }
 
-// NuDisplaySceneDestroy @ 0x2f9fd0
+// NuDisplaySceneDestroy @ 0x2e9fd0
 extern "C" void NuDisplaySceneDestroy(NUDLDLISTSCENE *scene) {
     if (scene == nullptr) {
         return;
@@ -675,10 +695,14 @@ extern "C" SAGA_HOST_WEAK void NuDisplayListDrawRenderScene(i32 render_scene_id)
     NuThreadCriticalSectionBegin(mgr->loading_critical_section);
     nudisplaylistrenderscene_s *rs = mgr->safe_render_scenes[render_scene_id];
     if (rs) {
-        for (i32 i = 0; i < rs->nsort_pris; ++i) {
+        const i32 nsort_pris = rs->nsort_pris;
+        for (i32 i = 0; i < nsort_pris; ++i) {
             nusortpri_s *sp = rs->sort_pris[i];
             NuDisplayListCaptureSortPriority(sp);
             NuDisplayListDrawItems(sp->items);
+            // Callbacks can update the slot; the original reloads it before
+            // drawing the next priority or the 2D tail.
+            rs = mgr->safe_render_scenes[render_scene_id];
         }
         NuDisplayListDrawItems(&rs->render_2d_first);
         mgr->safe_render_scenes[render_scene_id] = nullptr;

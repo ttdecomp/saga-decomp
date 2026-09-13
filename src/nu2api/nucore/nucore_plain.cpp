@@ -7,8 +7,6 @@ extern "C" {
     i32 NuLgtLaserOldCnt;
 }
 #include "nu2api/nucore/nuonline.h"
-struct NUGCUTLOCATORFNENTRY_s;
-extern "C" NUGCUTLOCATORFNENTRY_s *locatorfns;
 //
 // This file provides the C-callable export table that the original binary
 // exposes from its single large nucore translation unit. Every symbol below
@@ -4830,16 +4828,6 @@ extern "C" {
         }
     }
 #undef NUGCUT_CURVE_VALUE
-    void NuGCutSceneDestroy(NUGCUTSCENE_s *cutscene) {
-        if (cutscene->character_system != NULL && NuCutSceneDestroyCharacters != NULL) {
-            NuCutSceneDestroyCharacters(cutscene);
-        }
-    }
-    void NuGCutSceneLoadAddr(void) {
-    }
-    void NuGCutSceneSysInit(NUGCUTLOCATORFNENTRY_s *locator_functions) {
-        locatorfns = locator_functions;
-    }
     void NuGCutSetCutAudioStream(i32 stream) {
         NuGCutAudioStream = stream;
     }
@@ -5129,15 +5117,6 @@ extern "C" {
     void NuOcclusionManagerSetOccluderScreenSpaceThreshold(f32 threshold) {
         g_OcclusionManager.unknown_15c = threshold;
     }
-    void NuInvalidateClipRanges(nudisplayscene_s *scene) {
-        for (i32 index = 0; index < scene->nclip_objects; ++index) {
-            if (scene->lod_ranges[index] != 0.0f) {
-                scene->lod_ranges[index] = FLT_MAX;
-            }
-            scene->far_clip_ranges[index] = FLT_MAX;
-        }
-    }
-
     // ---------------------------------------------------------------------------
     // Viewport
     // ---------------------------------------------------------------------------

@@ -611,6 +611,19 @@ void NuIOSDLTransformCallback(void *arg) {
     world->m23 = shadow_factor;
 }
 
+// Original 0x2948ce: publish the deferred world matrix without the
+// per-instance opacity and shadow-factor words embedded in the packet.
+void NuIOSDLDeferredTransformCallback(void *arg) {
+    auto *world = static_cast<NUMTX *>(arg);
+    const f32 opacity = world->m33;
+    const f32 shadow_factor = world->m23;
+    world->m33 = 1.0f;
+    world->m23 = 0.0f;
+    NuRenderContextSetWorld(world);
+    world->m33 = opacity;
+    world->m23 = shadow_factor;
+}
+
 // original 0x294935, 258 bytes — dynamic special transforms are stored transposed in
 // the render stream. Restore the ordinary world matrix before publishing it
 // to the shader state.
@@ -632,6 +645,19 @@ void NuIOSDLTransformParamsCallback(void *arg) {
     Nu360SetObjectShadowFactor(shadow_factor);
 
     Nu360SetObjectShadowFactor(shadow_factor);
+    stream_matrix->m33 = 1.0f;
+    stream_matrix->m32 = 0.0f;
+    NuRenderContextSetWorld_transpose(stream_matrix);
+    stream_matrix->m33 = opacity;
+    stream_matrix->m32 = shadow_factor;
+}
+
+// Original 0x294a37: the deferred-params packet stores its shadow factor
+// in m32 and requires the transposing world-state setter.
+void NuIOSDLDeferredTransformParamsCallback(void *arg) {
+    auto *stream_matrix = static_cast<NUMTX *>(arg);
+    const f32 opacity = stream_matrix->m33;
+    const f32 shadow_factor = stream_matrix->m32;
     stream_matrix->m33 = 1.0f;
     stream_matrix->m32 = 0.0f;
     NuRenderContextSetWorld_transpose(stream_matrix);

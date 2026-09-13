@@ -8,6 +8,19 @@ struct nugscn_s;
 typedef struct nugscn_s NUGSCN;
 struct NUGCUTRIGID_s;
 struct instNUGCUTSCENE_s;
+struct VuMtx;
+
+typedef i32 (*NUGCUTLOOKUPLOCATORVFXFN)(const char *);
+typedef i32 (*NUGCUTTRIGGERLOCATORVFXFN)(i32, VuMtx *);
+typedef void (*NUGCUTRELEASELOCATORVFXFN)(i32);
+typedef void (*NUGCUTUPDATELOCATORVFXFN)(i32, VuMtx *);
+
+extern "C" NUGCUTLOOKUPLOCATORVFXFN LookupLocatorVfxFn;
+extern "C" NUGCUTTRIGGERLOCATORVFXFN TriggerLocatorVfxFn;
+extern "C" NUGCUTRELEASELOCATORVFXFN ReleaseLocatorVfxFn;
+extern "C" NUGCUTUPDATELOCATORVFXFN UpdateLocatorVfxFn;
+void NuGCutSceneSysInitVfx(NUGCUTLOOKUPLOCATORVFXFN lookup, NUGCUTTRIGGERLOCATORVFXFN trigger,
+                            NUGCUTRELEASELOCATORVFXFN release, NUGCUTUPDATELOCATORVFXFN update);
 
 void EvaluateJointOrientationMtx(nugscn_s *scene, i32 joint_index, numtx_s *matrix);
 
@@ -376,6 +389,9 @@ extern "C" void NuSetCutSceneRequestSFXFn(NUGCUTSCENEREQUESTSFXFN function);
 extern "C" void NuSetCutSceneSFXFixUpFn(NUGCUTSCENESFXFIXUPFN function);
 extern "C" void NuSetCutSceneSFXUpdateFn(NUGCUTSCENESFXUPDATEFN function);
 void NuGCutSceneRemapFocusIdToLocaterNum(NUGCUTSCENE_s *cutscene, VARIPTR *buffer);
+extern "C" NUGCUTSCENE_s *NuGCutSceneLoadAddr(NUGCUTSCENE_s *cutscene, i32 loaded_size, VARIPTR *buffer);
+extern "C" void NuGCutSceneDestroy(NUGCUTSCENE_s *cutscene);
+extern "C" void NuGCutSceneSysInit(NUGCUTLOCATORFNENTRY_s *locator_functions);
 extern "C" void instNuGCutSceneCreateCamTgtArray(instNUGCUTSCENE_s *instance, i32 count, VARIPTR *buffer);
 extern "C" i32 instNuGCutSceneAddCamTgt(instNUGCUTSCENE_s *instance, NUVEC *target, f32 start_frame, f32 duration,
                                         i8 target_index);

@@ -476,9 +476,6 @@ void NuGCutRigidCalcMtx_3(NUGCUTRIGID_s *rigid, float frame, numtx_s *mtx) {
 }
 
 
-void NuGCutSceneSysInitVfx(i32 (*)(char const *), i32 (*)(i32, VuMtx *), void (*)(i32), void (*)(i32, VuMtx *)) {
-}
-
 // NuIOSDLGeom2DCallback is transcribed in android/nuiosdl_gl.cpp (original 0x29d1a0).
 
 i32 NuIOS_GetInAppProduct(i32, NuIOS_InAppProduct *) {
@@ -562,8 +559,6 @@ i32 NuIOS_IsProductPurchased(char *) {
 void NuGCutRigidForceInstanced(NUGCUTSCENE_s *) {
 }
 
-void NuIOSDLReflectionCallback(void *) {
-}
 
 i32 NuIOS_GetInAppProductByID(char *, NuIOS_InAppProduct *) {
     return 0;
@@ -656,8 +651,6 @@ i32 NuIOS_PurchaseInAppProductByNum(i32) {
     return 0;
 }
 
-void NuIOSDLDeferredTransformCallback(void *) {
-}
 
 i32 NuIOS_AreInAppPurchasesAvailable() {
     return 0;
@@ -800,28 +793,6 @@ void NuDynamicLightTestShadowExtrusions(nudynamiclight_s *, _vuv_s const *, _vuv
 
 void NuRenderContextForceSamplerStatePS(i32, d3dsamplerstate_u const *) {
 }
-
-void NuGCutSceneRemapFocusIdToLocaterNum(NUGCUTSCENE_s *cutscene, variptr_u *buffer) {
-    if (cutscene->version <= 4 || cutscene->camera_system == NULL ||
-        cutscene->camera_system->focus_state_animation == NULL || cutscene->locator_system == NULL) {
-        return;
-    }
-
-    buffer->addr = ALIGN(buffer->addr, 2);
-    cutscene->focus_camera_indices = reinterpret_cast<u16 *>(buffer->void_ptr);
-    NUGCUTLOCATORSYS_s *system = cutscene->locator_system;
-    for (u32 i = 0; i < system->locator_count; ++i) {
-        NUGCUTLOCATOR_s *locator = &system->locators[i];
-        if ((system->types[locator->type_index].flags & 8) != 0) {
-            *reinterpret_cast<u16 *>(buffer->void_ptr) = static_cast<u16>(i);
-            buffer->void_ptr = reinterpret_cast<u16 *>(buffer->void_ptr) + 1;
-        }
-    }
-}
-
-void NuIOSDLDeferredTransformParamsCallback(void *) {
-}
-
 
 f32 NuATanf(f32 value) {
     return atanf(value);

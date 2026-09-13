@@ -9,6 +9,7 @@
 #include <GLES2/gl2.h>
 #include "legoapi/legoapi_types.h"
 #include "nu2api/nu3d/android/nuiosdl_gl.h"
+#include "nu2api/nu3d/android/nudlist_callbacks.h"
 #include "nu2api/nu3d/android/nutex_ios_ex.h"
 #include "nu2api/nu3d/android/nutex_android.h"
 #include "nu2api/nu3d/nushader.h"
@@ -214,7 +215,6 @@ enum : u32 {
 };
 
 extern "C" void NuMtlSetRenderStatesPS(numtl_s *mtl) {
-    u8 alpha_ref_byte = mtl->attribs.alpha_ref;
     bool isDebris = (mtl->shader_desc.vtx_desc.flags & 0x100000) != 0;
 
     if (!isDebris) {
@@ -223,7 +223,7 @@ extern "C" void NuMtlSetRenderStatesPS(numtl_s *mtl) {
             if (alphaSel == 5) {
                 g_alphaFunc = 5; // GEQUAL
                 g_alphaTestEnabled = 1;
-                g_alphaRef = alpha_ref_byte;
+                g_alphaRef = mtl->attribs.alpha_ref;
             } else {
                 g_alphaFunc = 6; // GREATER
                 g_alphaTestEnabled = 1;
@@ -265,14 +265,14 @@ extern "C" void NuMtlSetRenderStatesPS(numtl_s *mtl) {
             glDisable(GL_BLEND);
             g_alphaTestEnabled = 1;
             g_alphaFunc = 5;
-            g_alphaRef = alpha_ref_byte;
+            g_alphaRef = mtl->attribs.alpha_ref;
             break;
         default:
             break;
     }
 
     g_lastAlphaBlend = blend;
-    g_lastAlphaRef = alpha_ref_byte;
+    g_lastAlphaRef = mtl->attribs.alpha_ref;
 
     NuIOS_SetCullMode(mtl->attribs.cull_mode);
 }
@@ -343,35 +343,7 @@ void NuIOSDLMtlCallback(void *arg) {
     const bool isDebris = (variantFlags & 0x10) != 0;
     const bool isFaceOn = (variantFlags & 0x20) != 0;
 
-    if (!isDebris) {
-        if (!isFaceOn) {
-            // ---- Standard material ----
-            if (shaderId != 0) {
-                g_boundShader = 0;
-                glUseProgram(0);
-                g_currentShaderProgram = nullptr;
-                NuShaderManagerBindShader(shaderId);
-                // BindShader may clobber the format; restore it.
-                NuIOS_SetVertexFormat(ptrToUsize(mtl->vertex_decl));
-            }
-        } else {
-            // ---- Face-on / billboard ----
-            NuShaderManagerBindShader(0);
-            g_boundVertexFormat = ptrToUsize(g_nuFaceOnVertexFormat);
-
-            char decalSel = FaceOnDecalSelector(mtl);
-            NUSHADERPROGRAM *program = (decalSel == '\0') ? g_faceonProgram : g_faceonDecalProgram;
-
-            g_boundShader = program != nullptr ? program->program : 0;
-            glUseProgram(g_boundShader);
-            g_currentShaderProgram = program;
-
-            NUNATIVETEX *tex = NuTexGetNative(mtl->tex_id);
-            if (tex != nullptr) {
-                NuTexSetTextureWithStagePS(tex, 0);
-            }
-        }
-    } else {
+    if (isDebris) {
         // ---- Debris ----
         if (DebrisGlassSelector(mtl) == kGlassDebrisMarker) {
             if (NuIOSDLMtlCallback_refractionRT == 0) {
@@ -397,8 +369,8 @@ void NuIOSDLMtlCallback(void *arg) {
         for (i32 index = 0; index < program->parameter_count; ++index) {
             const NUSHADERPROGRAMPARAMETER *parameter = &program->parameters[index];
             if (parameter->register_index == static_cast<u16>(kParamViewProj)) {
-                const u32 location = parameter->location_and_setter & 0x0fff;
-                const u32 setter = parameter->location_and_setter >> 12;
+                const u32 location = parameter->location;
+                const u32 setter = parameter->setter;
                 g_glConstantSetterTable[setter](location, 4, g_renderContext_viewProj);
                 break;
             }
@@ -406,8 +378,8 @@ void NuIOSDLMtlCallback(void *arg) {
         for (i32 index = 0; index < program->parameter_count; ++index) {
             const NUSHADERPROGRAMPARAMETER *parameter = &program->parameters[index];
             if (parameter->register_index == static_cast<u16>(kParamView)) {
-                const u32 location = parameter->location_and_setter & 0x0fff;
-                const u32 setter = parameter->location_and_setter >> 12;
+                const u32 location = parameter->location;
+                const u32 setter = parameter->setter;
                 g_glConstantSetterTable[setter](location, 4, g_renderContext_view);
                 break;
             }
@@ -415,8 +387,8 @@ void NuIOSDLMtlCallback(void *arg) {
         for (i32 index = 0; index < program->parameter_count; ++index) {
             const NUSHADERPROGRAMPARAMETER *parameter = &program->parameters[index];
             if (parameter->register_index == static_cast<u16>(kParamKonstColourA)) {
-                const u32 location = parameter->location_and_setter & 0x0fff;
-                const u32 setter = parameter->location_and_setter >> 12;
+                const u32 location = parameter->location;
+                const u32 setter = parameter->setter;
                 g_glConstantSetterTable[setter](location, 1, nu2api::g_shaderUniforms[72].data.values);
                 break;
             }
@@ -424,8 +396,8 @@ void NuIOSDLMtlCallback(void *arg) {
         for (i32 index = 0; index < program->parameter_count; ++index) {
             const NUSHADERPROGRAMPARAMETER *parameter = &program->parameters[index];
             if (parameter->register_index == static_cast<u16>(kParamTerminator)) {
-                const u32 location = parameter->location_and_setter & 0x0fff;
-                const u32 setter = parameter->location_and_setter >> 12;
+                const u32 location = parameter->location;
+                const u32 setter = parameter->setter;
                 g_glConstantSetterTable[setter](location, 1, nu2api::g_shaderUniforms[71].data.values);
                 break;
             }
@@ -441,9 +413,44 @@ void NuIOSDLMtlCallback(void *arg) {
             NUNATIVETEX *tex = NuTexGetNative(mtl->tex_id);
             NuTexSetTextureWithStagePS(tex, 0);
         }
+    } else if (isFaceOn) {
+        // ---- Face-on / billboard ----
+        NuShaderManagerBindShader(0);
+        g_boundVertexFormat = ptrToUsize(g_nuFaceOnVertexFormat);
+
+        char decalSel = FaceOnDecalSelector(mtl);
+        NUSHADERPROGRAM *program = (decalSel == '\0') ? g_faceonProgram : g_faceonDecalProgram;
+
+        g_boundShader = program != nullptr ? program->program : 0;
+        glUseProgram(g_boundShader);
+        g_currentShaderProgram = program;
+
+        NUNATIVETEX *tex = NuTexGetNative(mtl->tex_id);
+        if (tex != nullptr) {
+            NuTexSetTextureWithStagePS(tex, 0);
+        }
+    } else {
+        // ---- Standard material ----
+        if (shaderId != 0) {
+            g_boundShader = 0;
+            glUseProgram(0);
+            g_currentShaderProgram = nullptr;
+            NuShaderManagerBindShader(shaderId);
+            // BindShader may clobber the format; restore it.
+            NuIOS_SetVertexFormat(ptrToUsize(mtl->vertex_decl));
+        }
     }
 
     NuRenderContextSetZFunc(mtl->attribs.z_mode);
     g_renderingReflection = 0;
     NuMtlSetRenderStatesPS(mtl);
+}
+
+// Original 0x29c9b0: reflection changes the cull winding of the material
+// currently bound by the display-list material callback.
+void NuIOSDLReflectionCallback(void *arg) {
+    g_renderingReflection = *static_cast<i32 *>(arg);
+    if (g_renderContext_materialInUse != nullptr) {
+        NuIOS_SetCullMode(g_renderContext_materialInUse->attribs.cull_mode);
+    }
 }

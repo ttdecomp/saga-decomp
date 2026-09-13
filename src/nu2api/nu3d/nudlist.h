@@ -324,6 +324,7 @@ extern "C" {
     typedef void (*nudl_handler_fn)(void *data);
 
     // Transcribed functions (original addresses in nudlist.cpp comments).
+    void NuInvalidateClipRanges(NUDLDLISTSCENE *scene);
     void NuDisplayListExecute(nudisplaylistitem_s *item, const nudl_handler_fn *item_table);
     void NuDisplayListDrawItems(nudisplaylistitem_s *items);
     void NuDisplayListDrawRenderScene(i32 render_scene_id);

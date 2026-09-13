@@ -66,10 +66,8 @@ extern "C" {
     void instNuGCutSceneStart(instNUGCUTSCENE_s *);
     void instNuGCutSceneStop(instNUGCUTSCENE_s *);
     void instNuGCutSceneDestroy(instNUGCUTSCENE_s *);
-    void NuGCutSceneDestroy(NUGCUTSCENE_s *);
     void NuGCutSceneSysRender(i32);
     void NuGCutSceneSysUpdate(i32, i32, f32);
-    void NuGCutSceneSysInit(NUGCUTLOCATORFNENTRY_s *);
     extern NUGCUTLOCATORFNENTRY_s cutscene_locatorfns[];
 }
 

@@ -1875,7 +1875,7 @@ fixture smoke passed 120 healthy frames on this attempt; the original
 The original ordinary-text run contains `NuDisplaySceneUnclip` at
 `0x2f1180` (112 bytes), followed without intervening local symbols by
 `InvalidateClipRanges`, `NuDisplayListExecute`, `DefaultMtl`,
-`NuMtlUpdate`, and `NuDisplaySceneClone`. This supports the existing O3
+`NuMtlUpdate`, and `NuDisplaySceneClone`. This supports the existing O2
 display-list core owner in `nudlist.cpp`; the exact original filename is
 still unproven. The former empty stub lived in the unrelated catch-all
 `nu2api_nucore_misc.cpp`.
@@ -1969,3 +1969,283 @@ all four repository checks, and the extra-symbol baseline. Original
 text-symbol coverage is 13,425/13,425 with zero missing. The rebuilt
 Map/Cantina fixture passed 120 healthy frames on this attempt; the
 original movement/trig sanitizer flake remains documented above.
+
+### Display-list clip-range and executor continuation
+
+The original display-list core sequence directly joins
+`NuDisplaySceneUnclip` at `0x2f1180`, `NuInvalidateClipRanges` at
+`0x2f11f0`, and `NuDisplayListExecute` at `0x2f1230`. The already-exact
+clip-range reset still lived in the catch-all `nucore_plain.cpp`, despite
+using the real 0x90-byte display-list scene and falling between the two
+functions owned by `nudlist.cpp`. Moving its unchanged body into that core
+owner, with its exported declaration in `nudlist.h`, leaves the target
+whole-binary score at 45.174390%, the body exact, and every other score
+unchanged in `/tmp/invalidate_move.json`.
+
+The executor's original 78-byte control flow distinguishes NEXT (follow
+the link), CNT (advance 16 bytes), CALL (dispatch a non-null handler by
+type), and all other IDs (return). The old nested loop expressed this
+behavior but scored 26.77%. Expressing the same four outcomes as one
+ordinary switch causes GCC to emit the original case ordering and raises
+the body to 82.07% in `/tmp/execute_full_switch_trial.json`. The overall
+score reaches 45.175297%, with no other score changes or exact loss. The
+remaining difference is chiefly register allocation for the handler table
+and the associated prologue; no dummy use or attribute was added to force
+it. Target/WASM/native builds, all three lint modes, four repository
+checks, 13,425/13,425 original text-symbol coverage, and the rebuilt
+120-frame Map/Cantina smoke pass on this source.
+
+### Android material callback control flow
+
+The original `NuIOSDLMtlCallback(void*)` at `0x29c480` is a 1,321-byte
+member of the `numtl_android.cpp` material run. It selects the debris,
+face-on, or ordinary shader path, binds the corresponding vertex format
+and textures, uploads four debris shader constants, and finishes with
+the material Z and render states. Its former source already implemented
+those behaviors, but nested the ordinary/face-on path first even though
+the original compiler lays out debris as the fall-through path. The
+four parameter searches also manually shifted a packed word; the real
+`NUSHADERPROGRAMPARAMETER` type provides the 12-bit location and 4-bit
+setter fields directly. Using those fields and restoring debris-first
+branch order preserves the behavior and follows the original body shape.
+
+Against the frozen pre-callback `/tmp/execute_full_switch_trial.json`
+report (45.175297%), the address-keyed callback rises 13.371795→
+78.464745%; the final whole-binary score is 45.193504%. Its current
+body is 1,303 bytes, 18 shorter than the original, with remaining
+register-allocation and parameter-loop code-generation differences.
+Every other scored address is unchanged and the exact-match count
+remains 4,474. Target, WASM, and native/smoke builds pass, as do all
+three lint modes, four repository checks, and the extra-symbol baseline.
+Original text-symbol coverage is 13,425/13,425 with zero missing. The
+rebuilt Map/Cantina fixture advanced 120 healthy frames on this run;
+the original movement/trig sanitizer flake remains documented above.
+
+### Display-scene add and core optimization calibration
+
+`NuDisplaySceneAdd` at `0x2e9e30` (416 bytes) is part of the display-scene
+run, alongside Destroy at `0x2e9fd0`. Its original code checks the
+sort-priority count before loading the manager's list/count, inserts each
+priority into ascending order, then writes the updated manager fields
+after the positive-count loop. The previous source wrote the count in
+each iteration and wrote the list even for an empty scene. Deferring
+those writes preserves the resulting state and raises Add from 58.669567%
+to 59.173912% in `/tmp/scene_add_deferred_writes.json`; the whole score
+moves 45.193504→45.193546%, with no other scored-body change. The two
+source comments mislabeling Add/Destroy as `0x2f9e30`/`0x2f9fd0` were
+corrected to their actual `0x2e...` addresses.
+
+The original binary also contains two collected
+`DisplayListBeforeFrame(...).constprop` clones, which makes the core TU's
+optimization level worth testing. A whole-file `nudlist.cpp` `-O3` trial
+raised eight other functions and the aggregate to 45.201054%, but
+regressed Add sharply from 59.173912% to 33.017390%. Repeating the trial
+with Add's former source still gave 32.356520%, so the loss was not caused
+by the deferred-write edit. The exact original file boundary/optimization
+is not proven by the collected clone addresses, and a net-positive total
+does not justify silently keeping this large individual regression. The
+file remains at its calibrated `-O2`; the final restored report exactly
+reproduces 45.193546% and all per-function scores. Target/WASM/native
+builds, all three lint modes, four checks, 13,425/13,425 original text
+symbols, and the rebuilt 120-frame Map/Cantina smoke pass on this source.
+
+### Render-scene callback reload
+
+The original `NuDisplayListDrawRenderScene` at `0x2ed1a0` is 168 bytes.
+It caches the initial sort-priority count but reloads the render-scene
+slot after the capture/draw callbacks on every iteration, then draws
+the current slot's 2D tail and clears that slot. The former source held
+the scene pointer and read its count through the loop; callbacks could
+change the slot, so this is a real behavioral as well as code-shape
+correction. The normal source now retains the cached count and refreshes
+the pointer after each callback pair. Against
+`/tmp/render_states_field_trial.json`, its score rises 69.551020→
+98.775510% and its emitted size remains the original 168 bytes.
+
+The shared whole score rises 45.193947→45.194190%. The untouched
+`NuDisplayListSwapBuffersEndFrame` gains 26.850550→26.883516%, while
+`DisplayListLinkDynamicMtls` drops 22.403890→21.241419%. Comparing the
+large helper's old/new disassemblies found the same 824 instruction
+positions but 12 changed mnemonic/register choices; this secondary loss
+is genuine TU-wide codegen churn, not merely a relocated call operand.
+No change to that helper or matching-only code was introduced. The
+combined frozen-source gate with the following material unit passed
+target/WASM/native builds, all three lint modes, four checks, complete
+13,425/13,425 text-symbol coverage, and the rebuilt 120-frame
+Map/Cantina smoke.
+
+### Android material render-state field reads
+
+The original `NuMtlSetRenderStatesPS` at `0x29c1c0` (697 bytes) tests
+the debris flag at material +0x1f2 before inspecting alpha-test bits
+at +0x42. The real `NUMTLATTRIB` fields map the bytes: `alpha_test`
+is +0x42 bits 4..6, `alpha_ref` is bits 7..14 of the word there,
+blend mode is +0x40 low nibble, and cull mode is +0x41 bits 4..5.
+The existing GL blend cases, alpha-test results, and cull call agree
+with the original disassembly. Its source, however, eagerly cached
+`alpha_ref` at function entry. Reading the genuine field at its use
+sites restores the original debris-first entry and avoids an early
+material load. Post-branch `u8` and promoted `u32` caching trials both
+regressed the body and were reverted; no state behavior was changed.
+
+Against `/tmp/scene_add_restored_o2.json` at 45.193546%, the isolated
+field-read report `/tmp/render_states_field_trial.json` rises to
+45.193947%. The address-keyed body improves 34.021427→36.721428%; all
+other 12,332 scored addresses are unchanged, none are added or lost,
+and 4,474 exact matches remain. The final combined target report is
+45.194190% after the separately documented display-list scene change;
+the render-state body retains 36.721428%. The remaining difference is
+mostly register allocation and blend-switch/control-flow placement,
+not a verified new behavior to invent.
+
+On the frozen combined source, target, WASM, and native/smoke builds,
+all three lint modes, four repository checks, and the extra-symbol
+baseline pass. Original text-symbol coverage remains 13,425/13,425
+with zero missing. The rebuilt Map/Cantina fixture advanced 120
+healthy frames on this run; the original movement/trig sanitizer flake
+remains documented above.
+
+### Android deferred transform callbacks
+
+The original `nuiosdl_gl.cpp` callback run contains
+`NuIOSDLDeferredTransformCallback` at `0x2948ce` and
+`NuIOSDLDeferredTransformParamsCallback` at `0x294a37`, each 103 bytes.
+The long intervening `NuIOSDLTransformParamsCallback` at `0x294935`
+is a different routine with tint, material, Z, shader, and shadow work;
+none of that work belongs in the deferred callbacks. The plain deferred
+body saves the render-stream matrix words at +0x3c/+0x2c, substitutes
+1.0f/0.0f, calls the existing `NuRenderContextSetWorld`, and restores
+the saved words. The params form does the same at +0x3c/+0x38 and calls
+`NuRenderContextSetWorld_transpose`. These functions now live in original
+order beside their non-deferred counterparts in the `-O2` Android
+display-list unit; the two empty catch-all stubs were removed. Both
+signatures were already declared in `nudlist_callbacks.h`.
+
+Against the frozen `/tmp/draw_render_reload_final.json` baseline at
+45.194190%, the final target report reaches 45.197998%. At their
+original addresses, both deferred bodies rise 12.727273→99.939390%
+and retain the original 103-byte size. Across 12,333 address/name keys,
+those are the only two score changes; there are no added or lost keys,
+no scored regression, and the 4,474 exact-match count is unchanged.
+
+Target, WASM, and native/smoke builds pass, as do all three lint modes,
+four repository checks, and the extra-symbol baseline. Original text
+symbol coverage remains 13,425/13,425 with zero missing. The rebuilt
+Map/Cantina fixture advanced 120 healthy frames on this run; the
+original movement/trig sanitizer flake remains documented above.
+
+### Android material reflection callback
+
+The original `NuIOSDLReflectionCallback(void*)` at `0x29c9b0`
+(66 bytes) directly follows the material callback and precedes
+`NuMtlCopy` in the original `numtl_android.cpp` `-O2` run. Its packet
+contains an `i32` reflection flag. The body writes that flag to
+`g_renderingReflection`, then, if the material currently in use is
+non-null, calls the existing `NuIOS_SetCullMode` with its typed
+`NUMTLATTRIB::cull_mode`. The material pointer is the same shared
+render-context value set by `NuIOSDLMtlCallback`. This ordinary body
+now lives beside its material neighbors, using the existing exported
+callback and GL-state declarations; the empty catch-all stub was
+removed.
+
+Against the pre-deferred `/tmp/draw_render_reload_final.json` baseline
+at 45.194190%, `/tmp/reflection_final.json` reaches 45.199104%.
+The two independently documented deferred callbacks and this
+reflection callback are the only three changed scores across the
+same 12,333 address/name keys. Reflection rises 21.00→100.00% and
+retains the original 66-byte body; there are no other scored changes
+or missing keys, and exact matches increase 4,474→4,475. The prior
+deferred-only target report was 45.197998%, so this reflection move
+accounts for the final 0.001106 percentage-point gain.
+
+On this frozen source, target, WASM, and native/smoke builds pass,
+as do all three lint modes, four repository checks, and the
+extra-symbol baseline. Original text-symbol coverage remains
+13,425/13,425 with zero missing. The rebuilt Map/Cantina fixture
+advanced 120 healthy frames on this run; the original movement/trig
+sanitizer flake remains documented above.
+
+### Cutscene loaded-address and adjacent callbacks
+
+The original `cutscene.cpp` text run has C++
+`NuGCutSceneRemapFocusIdToLocaterNum` at `0x4335d0`, C
+`NuGCutSceneLoadAddr` at `0x433910` (113 bytes), and C
+`NuGCutSceneDestroy` at `0x433990` (50 bytes), followed by
+`NuGCutSceneFixUp`. The LoadAddr body accepts only version >9,
+records the supplied loaded size, converts string and animation
+relocation deltas to the new address, selects the same flags-&-8
+pointer-fixup branch as `NuGCutSceneLoad`, remaps focus-camera
+indices, clears the temporary string delta, and returns the scene.
+It now uses the real `NuGCutSceneFixPtrs_Title` helper and an exported
+`nugcutscene.h` declaration instead of an empty catch-all stub.
+
+The already-implemented Remap was moved unchanged from the
+miscellaneous unit to the C++ scope immediately before the cutscene
+loader, preserving its mangled linkage and real header declaration.
+The exact Destroy body was then moved from `nucore_plain.cpp` between
+LoadAddr and FixUp; its exported declaration is now in
+`nugcutscene.h` rather than a local declaration in `cutscenes.cpp`.
+No tentative Destroy loss was retained.
+
+These were measured as three separate stages. Against the frozen
+`/tmp/reflection_final.json` baseline at 45.199104%, LoadAddr raises
+its original-address body 5.128205→82.615390% while retaining 113
+bytes, for 45.200960% overall in `/tmp/loadaddr_stage1.json`; it is
+the sole changed scored address. Remap then rises 75.66→75.86%, with
+no other score changes, to 45.200966% in
+`/tmp/cutscene_remap_stage2.json`. Finally, Destroy remains 100%
+and 50 bytes in `/tmp/cutscene_stage3.json` at 45.200980%. The only
+new score change at that stage is untouched `NuKeyToAscii`
+99.51613→100%, a downstream TU-wide code-generation effect from
+removing the old Destroy definition, not intended Destroy behavior.
+All stages retain the same 12,333 address/name keys without regressions;
+the exact count increases 4,475→4,476 in the final stage.
+
+The frozen combined source passes target, WASM, and native/smoke builds,
+all three lint modes, four repository checks, and the extra-symbol
+baseline. Original text-symbol coverage remains 13,425/13,425 with
+zero missing. The rebuilt Map/Cantina fixture advanced 120 healthy
+frames on this run; the original movement/trig sanitizer flake remains
+documented above.
+
+### Cutscene system initialization and locator VFX callbacks
+
+The original `cutscene.cpp` run places `NuGCutSceneSysInit` at
+`0x433530` (44 bytes) and C++ `NuGCutSceneSysInitVfx` at `0x433560`
+(60 bytes), before the focus remapper. SysInit clears the file-static
+background and active cutscene-instance lists before storing
+`locatorfns`. SysInitVfx stores its four callback arguments directly,
+in Lookup, Trigger, Release, Update order. The original BSS places
+Update at `0x1268140`, Release at `0x1268150`, Trigger at `0x1268160`,
+and Lookup at `0x1268170`; their current definitions are together in
+that declaration order in the cutscene owner.
+
+The real `nugcutscene.h` declarations preserve the original VFX
+signature: lookup takes `const char*`; trigger takes `(i32, VuMtx*)`
+and returns `i32`; release takes `i32`; update takes `(i32, VuMtx*)`.
+The locator dispatcher now builds a true 0x40-byte `VuMtx`, uses its
+`NUMTX` member for matrix operations, and passes the wrapper directly
+to Trigger/Update. This removes the provisional float-array copy and
+16-bit callback argument while preserving the original call ABI.
+
+The stages were measured independently. Against
+`/tmp/cutscene_stage3.json` (45.200980%), SysInit rises
+67.50→99.75%, retaining 44 bytes, to 45.201280% in
+`/tmp/cutscene_sysinit_stage4.json`. The type-only VFX correction
+raises `instNuGCutLocatorUpdate` 17.357320→25.401985% (1,665 bytes)
+and overall matching to 45.204117% in
+`/tmp/cutscene_vfx_type_stage5.json`. Moving the four data definitions
+to their original owner changes no scored body in
+`/tmp/cutscene_vfx_data_stage6.json`. Implementing the direct setter
+then raises `NuGCutSceneSysInitVfx` 28→100%, retaining 60 bytes, and
+overall matching to 45.205032% in
+`/tmp/cutscene_vfx_setter_stage7.json`. Each stage retains the same
+12,333 address/name keys with no scored regressions; exact matches
+rise 4,476→4,477 in the final stage.
+
+The frozen combined source passes target, WASM, and native/smoke
+builds, all three lint modes, four repository checks, and the
+extra-symbol baseline. Original text-symbol coverage remains
+13,425/13,425 with zero missing. The rebuilt Map/Cantina fixture
+advanced 120 healthy frames; the original movement/trig sanitizer
+flake remains documented above and was neither changed nor suppressed.

@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 45.17439,
+    "fuzzy_match_percent": 45.205032,
     "total_code": "4722419",
-    "matched_code": "393686",
-    "matched_code_percent": 8.336533,
+    "matched_code": "393890",
+    "matched_code_percent": 8.340853,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4708,
-    "matched_functions_percent": 34.980312,
+    "matched_functions": 4711,
+    "matched_functions_percent": 35.0026,
     "total_units": 1
   },
   "text": {
@@ -50763,12 +50763,52 @@
           "match_percent": 99.875
         },
         {
+          "name": "NuGCutSceneSysInit",
+          "demangled_name": "NuGCutSceneSysInit",
+          "address": 4404528,
+          "offset": 3514560,
+          "size": 44,
+          "match_percent": 99.75
+        },
+        {
+          "name": "_Z21NuGCutSceneSysInitVfxPFiPKcEPFiiP5VuMtxEPFviEPFviS4_E",
+          "demangled_name": "NuGCutSceneSysInitVfx(int (*)(char const*), int (*)(int, VuMtx*), void (*)(int), void (*)(int, VuMtx*))",
+          "address": 4404576,
+          "offset": 3514608,
+          "size": 60,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_Z35NuGCutSceneRemapFocusIdToLocaterNumP13NUGCUTSCENE_sP9variptr_u",
+          "demangled_name": "NuGCutSceneRemapFocusIdToLocaterNum(NUGCUTSCENE_s*, variptr_u*)",
+          "address": 4404688,
+          "offset": 3514720,
+          "size": 132,
+          "match_percent": 75.86
+        },
+        {
           "name": "NuGCutSceneLoad",
           "demangled_name": "NuGCutSceneLoad",
           "address": 4404832,
           "offset": 3514864,
           "size": 687,
           "match_percent": 48.005436
+        },
+        {
+          "name": "NuGCutSceneLoadAddr",
+          "demangled_name": "NuGCutSceneLoadAddr",
+          "address": 4405520,
+          "offset": 3515552,
+          "size": 113,
+          "match_percent": 82.61539
+        },
+        {
+          "name": "NuGCutSceneDestroy",
+          "demangled_name": "NuGCutSceneDestroy",
+          "address": 4405648,
+          "offset": 3515680,
+          "size": 50,
+          "match_percent": 100.0
         },
         {
           "name": "NuGCutSceneFixUp",
@@ -51550,7 +51590,7 @@
           "address": 4428704,
           "offset": 3538736,
           "size": 1665,
-          "match_percent": 17.35732
+          "match_percent": 25.401985
         },
         {
           "name": "instNuGCutSceneCalculateAverageCentre",
@@ -87187,12 +87227,28 @@
           "match_percent": 94.9589
         },
         {
+          "name": "_Z32NuIOSDLDeferredTransformCallbackPv",
+          "demangled_name": "NuIOSDLDeferredTransformCallback(void*)",
+          "address": 2705614,
+          "offset": 1815646,
+          "size": 103,
+          "match_percent": 99.93939
+        },
+        {
           "name": "_Z30NuIOSDLTransformParamsCallbackPv",
           "demangled_name": "NuIOSDLTransformParamsCallback(void*)",
           "address": 2705717,
           "offset": 1815749,
           "size": 258,
           "match_percent": 94.9589
+        },
+        {
+          "name": "_Z38NuIOSDLDeferredTransformParamsCallbackPv",
+          "demangled_name": "NuIOSDLDeferredTransformParamsCallback(void*)",
+          "address": 2705975,
+          "offset": 1816007,
+          "size": 103,
+          "match_percent": 99.93939
         },
         {
           "name": "_Z30NuIOSDLFaceOnTransformCallbackPv",
@@ -87367,7 +87423,7 @@
           "address": 2736576,
           "offset": 1846608,
           "size": 697,
-          "match_percent": 34.021427
+          "match_percent": 36.721428
         },
         {
           "name": "_Z18NuIOSDLMtlCallbackPv",
@@ -87375,7 +87431,15 @@
           "address": 2737280,
           "offset": 1847312,
           "size": 1321,
-          "match_percent": 13.371795
+          "match_percent": 78.464745
+        },
+        {
+          "name": "_Z25NuIOSDLReflectionCallbackPv",
+          "demangled_name": "NuIOSDLReflectionCallback(void*)",
+          "address": 2738608,
+          "offset": 1848640,
+          "size": 66,
+          "match_percent": 100.0
         },
         {
           "name": "NuMtlCopy",
@@ -88980,7 +89044,7 @@
           "address": 3050944,
           "offset": 2160976,
           "size": 3266,
-          "match_percent": 22.40389
+          "match_percent": 21.241419
         },
         {
           "name": "NuDisplayListDraw2D",
@@ -89012,7 +89076,7 @@
           "address": 3055152,
           "offset": 2165184,
           "size": 416,
-          "match_percent": 58.669567
+          "match_percent": 59.173912
         },
         {
           "name": "NuDisplaySceneDestroy",
@@ -89028,7 +89092,7 @@
           "address": 3059440,
           "offset": 2169472,
           "size": 1746,
-          "match_percent": 26.85055
+          "match_percent": 26.883516
         },
         {
           "name": "NuDisplayListSwapBuffersBeginFrame",
@@ -89076,7 +89140,7 @@
           "address": 3068320,
           "offset": 2178352,
           "size": 168,
-          "match_percent": 69.55102
+          "match_percent": 98.77551
         },
         {
           "name": "NuDisplayListReset",
@@ -89103,12 +89167,20 @@
           "match_percent": 96.27907
         },
         {
+          "name": "NuInvalidateClipRanges",
+          "demangled_name": "NuInvalidateClipRanges",
+          "address": 3084784,
+          "offset": 2194816,
+          "size": 64,
+          "match_percent": 100.0
+        },
+        {
           "name": "NuDisplayListExecute",
           "demangled_name": "NuDisplayListExecute",
           "address": 3084848,
           "offset": 2194880,
           "size": 78,
-          "match_percent": 26.766666
+          "match_percent": 82.066666
         },
         {
           "name": "NuDisplaySceneClone",
@@ -95121,30 +95193,6 @@
           "match_percent": 19.857143
         },
         {
-          "name": "_Z32NuIOSDLDeferredTransformCallbackPv",
-          "demangled_name": "NuIOSDLDeferredTransformCallback(void*)",
-          "address": 2705614,
-          "offset": 1815646,
-          "size": 103,
-          "match_percent": 12.727273
-        },
-        {
-          "name": "_Z38NuIOSDLDeferredTransformParamsCallbackPv",
-          "demangled_name": "NuIOSDLDeferredTransformParamsCallback(void*)",
-          "address": 2705975,
-          "offset": 1816007,
-          "size": 103,
-          "match_percent": 12.727273
-        },
-        {
-          "name": "_Z25NuIOSDLReflectionCallbackPv",
-          "demangled_name": "NuIOSDLReflectionCallback(void*)",
-          "address": 2738608,
-          "offset": 1848640,
-          "size": 66,
-          "match_percent": 21.0
-        },
-        {
           "name": "_Z32NuIOS_CreateGLTexFromPVRInMemoryPvPiS0_",
           "demangled_name": "NuIOS_CreateGLTexFromPVRInMemory(void*, int*, int*)",
           "address": 2746288,
@@ -95343,22 +95391,6 @@
           "offset": 3284128,
           "size": 227,
           "match_percent": 5.915493
-        },
-        {
-          "name": "_Z21NuGCutSceneSysInitVfxPFiPKcEPFiiP5VuMtxEPFviEPFviS4_E",
-          "demangled_name": "NuGCutSceneSysInitVfx(int (*)(char const*), int (*)(int, VuMtx*), void (*)(int), void (*)(int, VuMtx*))",
-          "address": 4404576,
-          "offset": 3514608,
-          "size": 60,
-          "match_percent": 28.0
-        },
-        {
-          "name": "_Z35NuGCutSceneRemapFocusIdToLocaterNumP13NUGCUTSCENE_sP9variptr_u",
-          "demangled_name": "NuGCutSceneRemapFocusIdToLocaterNum(NUGCUTSCENE_s*, variptr_u*)",
-          "address": 4404688,
-          "offset": 3514720,
-          "size": 132,
-          "match_percent": 75.66
         },
         {
           "name": "_Z25NuGCutRigidForceInstancedP13NUGCUTSCENE_s",
@@ -99522,14 +99554,6 @@
           "match_percent": 100.0
         },
         {
-          "name": "NuInvalidateClipRanges",
-          "demangled_name": "NuInvalidateClipRanges",
-          "address": 3084784,
-          "offset": 2194816,
-          "size": 64,
-          "match_percent": 100.0
-        },
-        {
           "name": "NuTimeBarInit",
           "demangled_name": "NuTimeBarInit",
           "address": 3088880,
@@ -99871,7 +99895,7 @@
           "address": 3783904,
           "offset": 2893936,
           "size": 78,
-          "match_percent": 99.51613
+          "match_percent": 100.0
         },
         {
           "name": "NuPartResetGlobalTime",
@@ -99879,30 +99903,6 @@
           "address": 4314576,
           "offset": 3424608,
           "size": 26,
-          "match_percent": 100.0
-        },
-        {
-          "name": "NuGCutSceneSysInit",
-          "demangled_name": "NuGCutSceneSysInit",
-          "address": 4404528,
-          "offset": 3514560,
-          "size": 44,
-          "match_percent": 67.5
-        },
-        {
-          "name": "NuGCutSceneLoadAddr",
-          "demangled_name": "NuGCutSceneLoadAddr",
-          "address": 4405520,
-          "offset": 3515552,
-          "size": 113,
-          "match_percent": 5.128205
-        },
-        {
-          "name": "NuGCutSceneDestroy",
-          "demangled_name": "NuGCutSceneDestroy",
-          "address": 4405648,
-          "offset": 3515680,
-          "size": 50,
           "match_percent": 100.0
         },
         {
