@@ -617,3 +617,45 @@ per-file candidate supported by data order and the original initializer
 shape; substantial original-owned functions are still needed to verify it.
 The principled table move preserves whole-binary function matching at
 44.631924% and 4,633 exact functions.
+
+### Scattered animation-source bodies
+
+The former animation catch-all also contained functions at widely separated
+original text addresses. `NeedsPretendAnim` at `0x00150af0` is directly before
+`MovePlayer_VEHICLEDIRECTIONAL` in the original vehicle-movement run. Moving
+its unchanged body to `move.cpp` (both current units `-O2`) keeps its 100%
+match; its three character-ID dependencies are declared in the character
+owner header instead of in the source body.
+
+`ReadInstAnimBlockDlist` at `0x002d9780` and `ReadInstAnimBlock` at
+`0x002d9940` sit between `StateAnim*`, `ReadInstanceIDs`, and `NuGScn*`
+functions in the original scene-processing run. Their unchanged bodies and
+private layout helper now live in `nugscn.cpp`, in original address order,
+with the scene API declarations in `nugscn.h`. The allocator declaration is
+also in that owner header. The recipient's `-O3` changes
+`ReadInstAnimBlock` from 97.34% to 99.79%; ordering the pair raises
+`ReadInstAnimBlockDlist` from 70.96% to 71.11%. No exact match is lost and
+whole-binary fuzzy matching moves to approximately 44.6322%.
+
+The original `gcutscn.cpp` local-symbol block contains named file-local
+cutscene functions on both sides of `EvaluateJointOrientationMtx` at
+`0x00437000`. Its unchanged body now lives in `gcutscn.cpp`, using its real
+cutscene header and scene/joint dependencies. Both current owners use `-O2`;
+the moved body and all existing gcutscn scores remain unchanged. This
+local-block evidence is stronger than address adjacency alone.
+
+`RedirectAnim` at `0x0045fe80` sits between the character-name lookup helpers
+and `CharScenes_Init` in the original text run. The original `characters.cpp`
+local block contains the corresponding `CharScene_Area`, icon-scene, and
+variant data, while the following `charconfig.cpp` block begins later. Its
+unchanged body has moved into `characters.cpp` immediately before
+`CharScenes_Init`, retaining its previous score. With no unrelated bodies
+left in `animation.cpp`, its unused catch-all includes were removed. The
+original animation initializer is not reconstructed by fake includes; it
+remains an explicit gap while the 82-word data table stays intact.
+
+An unchanged `NuGScnUpdate` move to `nugscn.cpp` was also measured and
+reverted. Its own 42.33% score did not change, two unrelated functions lost
+tiny fractions of a point, and the mixed-family address run did not supply
+independent TU evidence. The render owner stays in place pending stronger
+evidence or body reconstruction.

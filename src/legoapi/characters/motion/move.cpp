@@ -2269,7 +2269,6 @@ void MovePlayer_DIRECTIONAL(GameObject_s *object) {
 extern "C" i16 id_LANDSPEEDER, id_WOOKIEFLYER, id_STAP2;
 extern AREADATA_s *SPEEDERCHASE_ADATA;
 extern GameObject_s *GetOtherActivePlayer(GameObject_s *);
-extern i32 NeedsPretendAnim(GameObject_s *);
 extern GameObject_s *CarWashHack;
 extern i32 IDLESPEEDINNARROWSOCKSONLY;
 extern f32 GetVehicleSpeedMul(GameObject_s *, f32);
@@ -2278,6 +2277,12 @@ extern f32 PodSprint_InStartCountdown(WORLDINFO_s *);
 extern f32 DeathStar2BattleFire_GetSlowDownMul(GameObject_s *);
 extern i32 OutSideSplineArea(NUVEC *, nugspline_s *, NUVEC *, NUVEC *, i32);
 extern void VehicleCollisionCode(GameObject_s *);
+
+i32 NeedsPretendAnim(GameObject_s *object) {
+    return object->apiobj.character_model->model_data_b[object->apiobj.anim_packet.requested_animation] == NULL ||
+           object->id == id_JEDISTARFIGHTERREDEP3 || object->id == id_JEDISTARFIGHTERYELLOWEP3 ||
+           object->id == id_TIEINTERCEPTOR;
+}
 
 void MovePlayer_VEHICLEDIRECTIONAL(GameObject_s *object) {
     APIOBJECT_s &api = object->apiobj;

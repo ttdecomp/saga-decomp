@@ -30,6 +30,7 @@
 #include "nu2api/nucore/bgproc.h"
 #include "nu2api/nu3d/nudlist.h"
 #include "nu2api/nu3d/nuspecial.h"
+#include "nu2api/nucore/nustring.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -497,6 +498,19 @@ void CharScene_Draw(WORLDINFO_s *world, i32 character_id, numtx_s *matrix, numtx
             NuSpecialDrawAt(special, reflection_matrix);
         }
     }
+}
+
+i32 RedirectAnim(char *path, ANIMREDIRECT *redirects, ANIMLIST_s *animation_list, char *directory) {
+    CHARACTERANIM_s *animation = reinterpret_cast<CHARACTERANIM_s *>(animation_list);
+    for (ANIMREDIRECT *redirect = redirects; redirect->name != NULL; ++redirect) {
+        if (redirect->animation_id == animation->animation_id && NuStrICmp(redirect->name, animation->name) == 0) {
+            NuStrCpy(path, directory);
+            NuStrCat(path, animation->name);
+            animation->flags &= ~CHARACTER_ANIMATION_FLAG_BSA;
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void CharScenes_Init(variptr_u *buf, variptr_u *) {

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.631924,
+    "fuzzy_match_percent": 44.632168,
     "total_code": "4722419",
     "matched_code": "386975",
     "matched_code_percent": 8.194424,
@@ -44055,6 +44055,14 @@
           "match_percent": 8.4
         },
         {
+          "name": "_Z12RedirectAnimPcP12ANIMREDIRECTP10ANIMLIST_sS_",
+          "demangled_name": "RedirectAnim(char*, ANIMREDIRECT*, ANIMLIST_s*, char*)",
+          "address": 4587136,
+          "offset": 3697168,
+          "size": 146,
+          "match_percent": 75.53846
+        },
+        {
           "name": "_Z15CharScenes_InitP9variptr_uS0_",
           "demangled_name": "CharScenes_Init(variptr_u*, variptr_u*)",
           "address": 4587296,
@@ -46505,56 +46513,7 @@
       "name": "legoapi/characters/motion/animation.cpp.o",
       "source": "src/legoapi/characters/motion/animation.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/animation.o",
-      "functions": [
-        {
-          "name": "_GLOBAL__sub_I_animation.cpp",
-          "demangled_name": "_GLOBAL__sub_I_animation.cpp",
-          "address": 917808,
-          "offset": 27840,
-          "size": 93,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_Z16NeedsPretendAnimP12GameObject_s",
-          "demangled_name": "NeedsPretendAnim(GameObject_s*)",
-          "address": 1379056,
-          "offset": 489088,
-          "size": 87,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_Z22ReadInstAnimBlockDlistiP8nugscn_s",
-          "demangled_name": "ReadInstAnimBlockDlist(int, nugscn_s*)",
-          "address": 2987904,
-          "offset": 2097936,
-          "size": 339,
-          "match_percent": 70.96
-        },
-        {
-          "name": "_Z17ReadInstAnimBlockiP8nugscn_s",
-          "demangled_name": "ReadInstAnimBlock(int, nugscn_s*)",
-          "address": 2988352,
-          "offset": 2098384,
-          "size": 440,
-          "match_percent": 97.33557
-        },
-        {
-          "name": "_Z27EvaluateJointOrientationMtxP8nugscn_siP7numtx_s",
-          "demangled_name": "EvaluateJointOrientationMtx(nugscn_s*, int, numtx_s*)",
-          "address": 4419584,
-          "offset": 3529616,
-          "size": 351,
-          "match_percent": 44.817307
-        },
-        {
-          "name": "_Z12RedirectAnimPcP12ANIMREDIRECTP10ANIMLIST_sS_",
-          "demangled_name": "RedirectAnim(char*, ANIMREDIRECT*, ANIMLIST_s*, char*)",
-          "address": 4587136,
-          "offset": 3697168,
-          "size": 146,
-          "match_percent": 75.53846
-        }
-      ]
+      "functions": []
     },
     {
       "name": "legoapi/characters/motion/camera.cpp.o",
@@ -48366,6 +48325,14 @@
           "offset": 487296,
           "size": 1218,
           "match_percent": 80.016464
+        },
+        {
+          "name": "_Z16NeedsPretendAnimP12GameObject_s",
+          "demangled_name": "NeedsPretendAnim(GameObject_s*)",
+          "address": 1379056,
+          "offset": 489088,
+          "size": 87,
+          "match_percent": 100.0
         },
         {
           "name": "_Z29MovePlayer_VEHICLEDIRECTIONALP12GameObject_s",
@@ -51962,6 +51929,14 @@
           "offset": 3528928,
           "size": 368,
           "match_percent": 3.716814
+        },
+        {
+          "name": "_Z27EvaluateJointOrientationMtxP8nugscn_siP7numtx_s",
+          "demangled_name": "EvaluateJointOrientationMtx(nugscn_s*, int, numtx_s*)",
+          "address": 4419584,
+          "offset": 3529616,
+          "size": 351,
+          "match_percent": 44.817307
         },
         {
           "name": "_Z33instNuGCutContainsInstancedRigidsP17instNUGCUTSCENE_s",
@@ -88670,6 +88645,22 @@
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nugscn.o",
       "functions": [
         {
+          "name": "_Z22ReadInstAnimBlockDlistiP8nugscn_s",
+          "demangled_name": "ReadInstAnimBlockDlist(int, nugscn_s*)",
+          "address": 2987904,
+          "offset": 2097936,
+          "size": 339,
+          "match_percent": 71.11
+        },
+        {
+          "name": "_Z17ReadInstAnimBlockiP8nugscn_s",
+          "demangled_name": "ReadInstAnimBlock(int, nugscn_s*)",
+          "address": 2988352,
+          "offset": 2098384,
+          "size": 440,
+          "match_percent": 99.78523
+        },
+        {
           "name": "_Z18NuGScnMtlLayerMaskP8nugscn_sh",
           "demangled_name": "NuGScnMtlLayerMask(nugscn_s*, unsigned char)",
           "address": 2990928,
@@ -122951,6 +122942,14 @@
       "match_percent": 0.0
     },
     {
+      "name": "_GLOBAL__sub_I_animation.cpp",
+      "demangled_name": "_GLOBAL__sub_I_animation.cpp",
+      "address": 917808,
+      "offset": 27840,
+      "size": 93,
+      "match_percent": 0.0
+    },
+    {
       "name": "_GLOBAL__sub_I_contexts.cpp",
       "demangled_name": "_GLOBAL__sub_I_contexts.cpp",
       "address": 917904,
@@ -129634,8 +129633,8 @@
   "summary": {
     "bazel_units": 514,
     "functions": 13454,
-    "assigned_functions": 12320,
+    "assigned_functions": 12319,
     "ambiguous_functions": 231,
-    "unassigned_functions": 903
+    "unassigned_functions": 904
   }
 }

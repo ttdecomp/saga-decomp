@@ -382,6 +382,9 @@ DECOMP_ASSERT(offsetof(NUGSCN, instance_visibility_flags) == 0x13c, "NUGSCN port
 DECOMP_ASSERT(offsetof(NUGSCN, animation_end_frames) == 0x1e0, "NUGSCN animation end-frame table offset");
 
 #ifdef __cplusplus
+void *NuGScnBufferAllocAligned(i32 size, i32 alignment);
+void ReadInstAnimBlock(i32 file, NUGSCN *scene);
+void ReadInstAnimBlockDlist(i32 file, NUGSCN *scene);
 i32 NuGScnReadTexturesPS(i32 file, VARIPTR *buf, VARIPTR buf_end);
 void NuGScnCreatePS(NUGSCN *scene, VARIPTR *buf, VARIPTR *buf_end);
 i32 NuGScnFixupTID(NUGSCN *scene, i32 tid);

@@ -9,6 +9,8 @@ typedef struct nugscn_s NUGSCN;
 struct NUGCUTRIGID_s;
 struct instNUGCUTSCENE_s;
 
+void EvaluateJointOrientationMtx(nugscn_s *scene, i32 joint_index, numtx_s *matrix);
+
 struct NUGCUTLOCATOR_s {
     NUMTX base_matrix;
     NUVEC pivot;
