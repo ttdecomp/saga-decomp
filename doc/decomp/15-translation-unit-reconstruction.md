@@ -528,3 +528,40 @@ cross-TU declarations instead of scattered local `extern` declarations.
   neighboring functions shift slightly in fuzzy score, with virtually no
   whole-binary change. Target and WASM builds, four checks, zero missing
   symbols, and 120-frame Map smoke pass.
+- Original `zipup.cpp` has a contiguous text run from `ZipUp_ActivateRev`
+  at `0x001d1440` through `ZipUps_DrawLines` at `0x001d4910`, before the
+  detonator run starts at `0x001d4b40`. The file-static
+  `ZipUp_GetStartPoint` at `0x001d1500` sits among the zip-up callbacks in
+  that run, while its callers were stranded in a separate movement source.
+  Stage 1 combines the `-O3` callback source
+  `gizmos/door/zipups.cpp` with the `-O3` movement source
+  `props/objects/zipup.cpp`, retaining the original `zipup.cpp` initializer
+  basename and the helper's local linkage. No function body is changed; the
+  unnecessary `__used__` marker on the now-referenced helper is removed.
+  Whole-binary fuzzy matching rises from 44.6312% to 44.6320%, with
+  `ZipUp_GetStartPoint` improving 87.16% to exact and no exact match lost.
+  `ZipUps_Load` declines 0.10 percentage points; `ZipUps_Reset` and
+  `ZipUps_DrawLines` improve slightly. The obsolete callback-file `-O3`
+  override was removed; target build, four checks, zero-missing symbol
+  coverage, and 120-frame Map smoke pass. This stage is partial because
+  `InitRopeMtl`, `DrawRopeSingle`, and adjacent rope data are still in
+  separate sources.
+  Stage 2 moves `InitRopeMtl` at `0x001d3d30` and `DrawRopeSingle` at
+  `0x001d3e40` into the same zip-up owner, between registration and
+  `ZipUps_DrawLines` in the original text run. Their `ropemtl` global and
+  `DrawRopeSingle` function-local `ROPELEN` and `ropedif` follow them; the
+  latter two now use natural function-local static declarations, matching
+  the original local-symbol names. The resulting object has the original
+  relative `.data` order `zipup_gizmotype_id`, `ZipUpHookOffset`,
+  `zipup_outputName`, `ropedif`, and `.bss` order `ropemtl`, registration
+  `addtype`, `ROPELEN`. The separate original `rope.cpp` initializer remains
+  with `DrawRopeCurved` at `0x00502e50`, moved unchanged from the render
+  catch-all to a real rope owner with a public header; its body is still an
+  unfinished stub, not evidence of a matched implementation. Original
+  `LEGOACT_WHIP_SWING_*` data is far from the zip-up data block and remains
+  a separate ownership question. Stage 2 preserves all exact matches and
+  changes whole-binary fuzzy matching only from 44.6320% to 44.6319%.
+  `ZipUp_FindNearest` improves 0.10 percentage points;
+  `DrawRopeSingle` falls 0.03 and unrelated `DrawStillScreen` falls 0.24,
+  both still body-level differences. Target build, four checks, zero-missing
+  symbol coverage, and 120-frame Map smoke pass.

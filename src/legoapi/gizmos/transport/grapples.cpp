@@ -1,4 +1,5 @@
 #include "legoapi/gizmos/transport/grapples.h"
+#include "legoapi/actions/combat/rope.h"
 
 #include "decomp.h"
 #include "globals.h"
@@ -19,7 +20,6 @@
 extern "C" void NewTerrPlatformsOff(void);
 f32 GameShadow(GameObject_s *object, NUVEC *position, f32 probe_height, i32 terrain_mask);
 void FindAnglesZX(NUVEC *normal, u16 *x_rotation, u16 *z_rotation);
-void DrawRopeCurved(NUVEC *start, NUVEC *points, i32 point_count, i32 flags, NUMTL *material);
 void EnableShadowMapRendering(i32 enabled);
 void ResetShadowMapRendering();
 

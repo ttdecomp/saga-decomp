@@ -1,4 +1,5 @@
 #include "decomp.h"
+#include "legoapi/misc/utilities.h"
 #include "legoapi/legoapi_types.h"
 #include "nu2api/nucore/nuhgobj.h"
 #include "nu2api/nu3d/nutex.h"

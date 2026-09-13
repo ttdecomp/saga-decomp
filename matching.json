@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.631233,
+    "fuzzy_match_percent": 44.631924,
     "total_code": "4722419",
-    "matched_code": "386740",
-    "matched_code_percent": 8.189447,
+    "matched_code": "386975",
+    "matched_code_percent": 8.194424,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4632,
-    "matched_functions_percent": 34.415634,
+    "matched_functions": 4633,
+    "matched_functions_percent": 34.42306,
     "total_units": 1
   },
   "text": {
@@ -40240,12 +40240,12 @@
           "match_percent": 99.35294
         },
         {
-          "name": "_Z11InitRopeMtlPcP9variptr_uS1_",
-          "demangled_name": "InitRopeMtl(char*, variptr_u*, variptr_u*)",
-          "address": 1916208,
-          "offset": 1026240,
-          "size": 270,
-          "match_percent": 80.731346
+          "name": "_Z14DrawRopeCurvedP7nuvec_sS0_iiP7numtl_s",
+          "demangled_name": "DrawRopeCurved(nuvec_s*, nuvec_s*, int, int, numtl_s*)",
+          "address": 5254736,
+          "offset": 4364768,
+          "size": 1535,
+          "match_percent": 1.935484
         }
       ]
     },
@@ -57540,157 +57540,6 @@
       ]
     },
     {
-      "name": "legoapi/gizmos/door/zipups.cpp.o",
-      "source": "src/legoapi/gizmos/door/zipups.cpp",
-      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/zipups.o",
-      "functions": [
-        {
-          "name": "_ZL17ZipUp_ActivateRevP7GIZMO_sii",
-          "demangled_name": "ZipUp_ActivateRev(GIZMO_s*, int, int)",
-          "address": 1905728,
-          "offset": 1015760,
-          "size": 88,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL25ZipUps_ReserveBufferSpacePv",
-          "demangled_name": "ZipUps_ReserveBufferSpace(void*)",
-          "address": 1905824,
-          "offset": 1015856,
-          "size": 84,
-          "match_percent": 76.17647
-        },
-        {
-          "name": "_ZL14ZipUp_ActivateP7GIZMO_si",
-          "demangled_name": "ZipUp_Activate(GIZMO_s*, int)",
-          "address": 1906160,
-          "offset": 1016192,
-          "size": 45,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL19ZipUp_SetVisibilityP7GIZMO_si",
-          "demangled_name": "ZipUp_SetVisibility(GIZMO_s*, int)",
-          "address": 1906208,
-          "offset": 1016240,
-          "size": 37,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL19ZipUps_GetMaxGizmosPv",
-          "demangled_name": "ZipUps_GetMaxGizmos(void*)",
-          "address": 1906256,
-          "offset": 1016288,
-          "size": 27,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL18ZipUp_GetGizmoNameP7GIZMO_s",
-          "demangled_name": "ZipUp_GetGizmoName(GIZMO_s*)",
-          "address": 1906288,
-          "offset": 1016320,
-          "size": 19,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL15ZipUp_GetOutputP7GIZMO_sii",
-          "demangled_name": "ZipUp_GetOutput(GIZMO_s*, int, int)",
-          "address": 1906320,
-          "offset": 1016352,
-          "size": 27,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL19ZipUp_GetOutputNameP7GIZMO_si",
-          "demangled_name": "ZipUp_GetOutputName(GIZMO_s*, int)",
-          "address": 1906352,
-          "offset": 1016384,
-          "size": 22,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL19ZipUp_GetNumOutputsP7GIZMO_s",
-          "demangled_name": "ZipUp_GetNumOutputs(GIZMO_s*)",
-          "address": 1906384,
-          "offset": 1016416,
-          "size": 12,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL20ZipUps_ClearProgressPvS_",
-          "demangled_name": "ZipUps_ClearProgress(void*, void*)",
-          "address": 1906400,
-          "offset": 1016432,
-          "size": 24,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL27ZipUps_AllocateProgressDataP9variptr_uS0_",
-          "demangled_name": "ZipUps_AllocateProgressData(variptr_u*, variptr_u*)",
-          "address": 1906432,
-          "offset": 1016464,
-          "size": 50,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL13ZipUps_UpdatePvS_f",
-          "demangled_name": "ZipUps_Update(void*, void*, float)",
-          "address": 1906496,
-          "offset": 1016528,
-          "size": 201,
-          "match_percent": 74.77358
-        },
-        {
-          "name": "_ZL16ZipUps_AddGizmosP10GIZMOSYS_siPvS1_",
-          "demangled_name": "ZipUps_AddGizmos(GIZMOSYS_s*, int, void*, void*)",
-          "address": 1906704,
-          "offset": 1016736,
-          "size": 134,
-          "match_percent": 89.90476
-        },
-        {
-          "name": "_Z12ZipUps_ResetPvS_S_",
-          "demangled_name": "ZipUps_Reset(void*, void*, void*)",
-          "address": 1906848,
-          "offset": 1016880,
-          "size": 633,
-          "match_percent": 75.23226
-        },
-        {
-          "name": "_ZL11ZipUps_LoadPvS_",
-          "demangled_name": "ZipUps_Load(void*, void*)",
-          "address": 1907488,
-          "offset": 1017520,
-          "size": 564,
-          "match_percent": 61.051613
-        },
-        {
-          "name": "_ZL20ZipUps_StoreProgressPvS_S_",
-          "demangled_name": "ZipUps_StoreProgress(void*, void*, void*)",
-          "address": 1908064,
-          "offset": 1018096,
-          "size": 138,
-          "match_percent": 66.67347
-        },
-        {
-          "name": "_ZL11ZipUps_DrawPvS_f",
-          "demangled_name": "ZipUps_Draw(void*, void*, float)",
-          "address": 1908208,
-          "offset": 1018240,
-          "size": 1773,
-          "match_percent": 67.498695
-        },
-        {
-          "name": "_Z20ZipUps_RegisterGizmoi",
-          "demangled_name": "ZipUps_RegisterGizmo(int)",
-          "address": 1915808,
-          "offset": 1025840,
-          "size": 388,
-          "match_percent": 99.51515
-        }
-      ]
-    },
-    {
       "name": "legoapi/gizmos/fx/edgizshadowmachine.cpp.o",
       "source": "src/legoapi/gizmos/fx/edgizshadowmachine.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/edgizshadowmachine.o",
@@ -73892,12 +73741,148 @@
           "match_percent": 99.35294
         },
         {
+          "name": "_ZL17ZipUp_ActivateRevP7GIZMO_sii",
+          "demangled_name": "ZipUp_ActivateRev(GIZMO_s*, int, int)",
+          "address": 1905728,
+          "offset": 1015760,
+          "size": 88,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL25ZipUps_ReserveBufferSpacePv",
+          "demangled_name": "ZipUps_ReserveBufferSpace(void*)",
+          "address": 1905824,
+          "offset": 1015856,
+          "size": 84,
+          "match_percent": 76.17647
+        },
+        {
           "name": "_ZL19ZipUp_GetStartPointP12GameObject_sP7nuvec_s",
           "demangled_name": "ZipUp_GetStartPoint(GameObject_s*, nuvec_s*)",
           "address": 1905920,
           "offset": 1015952,
           "size": 235,
-          "match_percent": 87.15625
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL14ZipUp_ActivateP7GIZMO_si",
+          "demangled_name": "ZipUp_Activate(GIZMO_s*, int)",
+          "address": 1906160,
+          "offset": 1016192,
+          "size": 45,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL19ZipUp_SetVisibilityP7GIZMO_si",
+          "demangled_name": "ZipUp_SetVisibility(GIZMO_s*, int)",
+          "address": 1906208,
+          "offset": 1016240,
+          "size": 37,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL19ZipUps_GetMaxGizmosPv",
+          "demangled_name": "ZipUps_GetMaxGizmos(void*)",
+          "address": 1906256,
+          "offset": 1016288,
+          "size": 27,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL18ZipUp_GetGizmoNameP7GIZMO_s",
+          "demangled_name": "ZipUp_GetGizmoName(GIZMO_s*)",
+          "address": 1906288,
+          "offset": 1016320,
+          "size": 19,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL15ZipUp_GetOutputP7GIZMO_sii",
+          "demangled_name": "ZipUp_GetOutput(GIZMO_s*, int, int)",
+          "address": 1906320,
+          "offset": 1016352,
+          "size": 27,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL19ZipUp_GetOutputNameP7GIZMO_si",
+          "demangled_name": "ZipUp_GetOutputName(GIZMO_s*, int)",
+          "address": 1906352,
+          "offset": 1016384,
+          "size": 22,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL19ZipUp_GetNumOutputsP7GIZMO_s",
+          "demangled_name": "ZipUp_GetNumOutputs(GIZMO_s*)",
+          "address": 1906384,
+          "offset": 1016416,
+          "size": 12,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL20ZipUps_ClearProgressPvS_",
+          "demangled_name": "ZipUps_ClearProgress(void*, void*)",
+          "address": 1906400,
+          "offset": 1016432,
+          "size": 24,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL27ZipUps_AllocateProgressDataP9variptr_uS0_",
+          "demangled_name": "ZipUps_AllocateProgressData(variptr_u*, variptr_u*)",
+          "address": 1906432,
+          "offset": 1016464,
+          "size": 50,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL13ZipUps_UpdatePvS_f",
+          "demangled_name": "ZipUps_Update(void*, void*, float)",
+          "address": 1906496,
+          "offset": 1016528,
+          "size": 201,
+          "match_percent": 74.77358
+        },
+        {
+          "name": "_ZL16ZipUps_AddGizmosP10GIZMOSYS_siPvS1_",
+          "demangled_name": "ZipUps_AddGizmos(GIZMOSYS_s*, int, void*, void*)",
+          "address": 1906704,
+          "offset": 1016736,
+          "size": 134,
+          "match_percent": 89.90476
+        },
+        {
+          "name": "_Z12ZipUps_ResetPvS_S_",
+          "demangled_name": "ZipUps_Reset(void*, void*, void*)",
+          "address": 1906848,
+          "offset": 1016880,
+          "size": 633,
+          "match_percent": 75.32903
+        },
+        {
+          "name": "_ZL11ZipUps_LoadPvS_",
+          "demangled_name": "ZipUps_Load(void*, void*)",
+          "address": 1907488,
+          "offset": 1017520,
+          "size": 564,
+          "match_percent": 60.954838
+        },
+        {
+          "name": "_ZL20ZipUps_StoreProgressPvS_S_",
+          "demangled_name": "ZipUps_StoreProgress(void*, void*, void*)",
+          "address": 1908064,
+          "offset": 1018096,
+          "size": 138,
+          "match_percent": 66.67347
+        },
+        {
+          "name": "_ZL11ZipUps_DrawPvS_f",
+          "demangled_name": "ZipUps_Draw(void*, void*, float)",
+          "address": 1908208,
+          "offset": 1018240,
+          "size": 1773,
+          "match_percent": 67.498695
         },
         {
           "name": "_Z17ZipUp_FindNearestP11WORLDINFO_sP7nuvec_sfPfPiP12GameObject_sb",
@@ -73905,7 +73890,7 @@
           "address": 1909984,
           "offset": 1020016,
           "size": 612,
-          "match_percent": 55.090908
+          "match_percent": 55.188313
         },
         {
           "name": "_Z14ZipUp_MoveCodeP12GameObject_si",
@@ -73924,12 +73909,36 @@
           "match_percent": 76.28125
         },
         {
+          "name": "_Z20ZipUps_RegisterGizmoi",
+          "demangled_name": "ZipUps_RegisterGizmo(int)",
+          "address": 1915808,
+          "offset": 1025840,
+          "size": 388,
+          "match_percent": 99.51515
+        },
+        {
+          "name": "_Z11InitRopeMtlPcP9variptr_uS1_",
+          "demangled_name": "InitRopeMtl(char*, variptr_u*, variptr_u*)",
+          "address": 1916208,
+          "offset": 1026240,
+          "size": 270,
+          "match_percent": 80.731346
+        },
+        {
+          "name": "_Z14DrawRopeSingleP7nuvec_sS0_fP7numtl_sffff",
+          "demangled_name": "DrawRopeSingle(nuvec_s*, nuvec_s*, float, numtl_s*, float, float, float, float)",
+          "address": 1916480,
+          "offset": 1026512,
+          "size": 2765,
+          "match_percent": 36.388187
+        },
+        {
           "name": "_Z16ZipUps_DrawLinesv",
           "demangled_name": "ZipUps_DrawLines()",
           "address": 1919248,
           "offset": 1029280,
           "size": 546,
-          "match_percent": 29.048388
+          "match_percent": 29.733871
         }
       ]
     },
@@ -74718,14 +74727,6 @@
           "match_percent": 92.6875
         },
         {
-          "name": "_Z14DrawRopeSingleP7nuvec_sS0_fP7numtl_sffff",
-          "demangled_name": "DrawRopeSingle(nuvec_s*, nuvec_s*, float, numtl_s*, float, float, float, float)",
-          "address": 1916480,
-          "offset": 1026512,
-          "size": 2765,
-          "match_percent": 36.41983
-        },
-        {
           "name": "_Z16DrawStatusBG_LSWP14STATUSPACKET_s",
           "demangled_name": "DrawStatusBG_LSW(STATUSPACKET_s*)",
           "address": 2019840,
@@ -75427,7 +75428,7 @@
           "address": 4771056,
           "offset": 3881088,
           "size": 337,
-          "match_percent": 50.714287
+          "match_percent": 50.47619
         },
         {
           "name": "_Z13DrawPauseFadev",
@@ -75588,14 +75589,6 @@
           "offset": 4272512,
           "size": 1412,
           "match_percent": 1.390729
-        },
-        {
-          "name": "_Z14DrawRopeCurvedP7nuvec_sS0_iiP7numtl_s",
-          "demangled_name": "DrawRopeCurved(nuvec_s*, nuvec_s*, int, int, numtl_s*)",
-          "address": 5254736,
-          "offset": 4364768,
-          "size": 1535,
-          "match_percent": 1.935484
         },
         {
           "name": "_Z14DrawBezierLineR5VuVecS0_S0_S0_P7numtl_si",
@@ -129639,7 +129632,7 @@
     }
   ],
   "summary": {
-    "bazel_units": 515,
+    "bazel_units": 514,
     "functions": 13454,
     "assigned_functions": 12320,
     "ambiguous_functions": 231,

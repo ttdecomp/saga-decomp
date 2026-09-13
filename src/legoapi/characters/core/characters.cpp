@@ -19,6 +19,7 @@
 #include "legoapi/menus/screens/shop.h"
 #include "legoapi/render/fx.h"
 #include "legoapi/gizmos/object/lever.h"
+#include "legoapi/gizmos/door/zipups.h"
 #include "legoapi/gizmos/object/technos.h"
 #include "legoapi/world/level.h"
 #include "legoapi/world/areas.h"
@@ -82,7 +83,6 @@ char *TexAnimList_LSW[32] = {
 };
 
 void InitStreaks(VARIPTR *, VARIPTR, char *);
-void InitRopeMtl(char *, VARIPTR *, VARIPTR *);
 void InitRipples(ripple_set_s **, VARIPTR *, VARIPTR *, i32);
 void CreateFadeMaterials();
 void CreateUsefulMaterials();

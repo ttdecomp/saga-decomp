@@ -212,7 +212,6 @@ build:target --per_file_copt=^src/legoapi/gizmos/object/technos\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/transport/teleport\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/transport/tightropes\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/transport/tubes\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmos/door/zipups\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/core/config/cheat\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/core/config/cheat\.cpp$@-fPIE
 build:target --per_file_copt=^src/legoapi/characters/motion/camera\.cpp$@-O2
