@@ -49,14 +49,8 @@ def _cstring(data: bytes, offset: int) -> str:
     return data[offset:end].decode("utf-8", errors="replace")
 
 
-def read_elf32(
-    path: Path, *, include_file_symbols: bool = False
-) -> tuple[list[dict], list[dict]]:
-    """Read sections and defined symbols from a 32-bit ELF file.
-
-    ``STT_FILE`` uses a special section index and is normally omitted. The
-    calibration tool can request those records to test TU-boundary inference.
-    """
+def read_elf32(path: Path) -> tuple[list[dict], list[dict]]:
+    """Read sections and defined symbols from a 32-bit ELF file."""
     data = path.read_bytes()
     if data[:4] != b"\x7fELF" or data[4] != 1:
         raise ValueError(f"{path}: expected a 32-bit ELF file")
@@ -111,20 +105,14 @@ def read_elf32(
             + strings_section["size"]
         ]
         entry_size = symbol_table["entry_size"] or symbol_struct.size
-        for symbol_index, offset in enumerate(
-            range(
-                symbol_table["offset"],
-                symbol_table["offset"] + symbol_table["size"],
-                entry_size,
-            )
+        for offset in range(
+            symbol_table["offset"],
+            symbol_table["offset"] + symbol_table["size"],
+            entry_size,
         ):
             fields = symbol_struct.unpack_from(data, offset)
             section_index = fields[5]
-            is_file = (fields[3] & 0x0F) == 4
-            if not fields[0] or (
-                section_index >= len(sections)
-                and not (include_file_symbols and is_file)
-            ):
+            if not fields[0] or section_index >= len(sections):
                 continue
             symbols.append(
                 {
@@ -133,9 +121,6 @@ def read_elf32(
                     "size": fields[2],
                     "type": fields[3] & 0x0F,
                     "binding": fields[3] >> 4,
-                    "visibility": fields[4] & 0x03,
-                    "symbol_index": symbol_index,
-                    "symbol_table": symbol_table["name"],
                     "section_index": section_index,
                 }
             )

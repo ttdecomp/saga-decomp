@@ -16,13 +16,8 @@ import json
 from pathlib import Path
 import re
 
-from scripts.generate_bazel_objdiff_report import (
-    SHF_ALLOC,
-    bazel_target_output,
-    read_elf32,
-    workspace_root,
-)
-from scripts.lib.bazel_actions import bazel_units
+from scripts.restructure.elf32 import SHF_ALLOC, read_elf32, workspace_root
+from scripts.restructure.inputs import read_units_manifest
 
 STT_FILE = 4
 CONSTRUCTOR = re.compile(r"^_GLOBAL__sub_I_(.+)$")
@@ -264,13 +259,13 @@ def calibrate(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--current", type=Path)
+    parser.add_argument("--current", type=Path, required=True)
+    parser.add_argument("--units", type=Path, required=True, help="JSON source/object manifest")
     parser.add_argument("--output", type=Path)
-    parser.add_argument("--bazel", default="bazel")
     args = parser.parse_args()
     root = workspace_root()
-    current = args.current or bazel_target_output(root, args.bazel, "//src:saga_target")
-    units = bazel_units(root, args.bazel, "//src:saga_target")
+    current = args.current.resolve()
+    units = read_units_manifest(args.units, root)
     sections, symbols = read_elf32(current.resolve(), include_file_symbols=True)
     linked = [
         {**symbol, "section": sections[symbol["section_index"]]["name"]}

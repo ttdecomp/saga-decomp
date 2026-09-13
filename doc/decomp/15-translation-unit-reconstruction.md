@@ -106,35 +106,41 @@ medium, or unresolved confidence rather than forcing every symbol into a TU.
 The symbol ledger for step 1 is reproducible with:
 
 ```sh
-bazel build --config=target //src:saga_target
 PYTHONPATH=. python3 scripts/restructure/generate_original_tu_map.py
-PYTHONPATH=. python3 scripts/restructure/calibrate_tu_map.py
 PYTHONPATH=. python3 -m unittest scripts.restructure.test_original_tu_map scripts.restructure.test_calibrate_tu_map
 ```
 
-It writes `.work/original-tu-map.json` (ignored by Git). The schema records
-each original and current object symbol with its own symbol-table index,
-section, address, size, type, binding, and visibility; aliases and zero-sized
-symbols remain separate. The ledger uses `.symtab`; a defined-name comparison
+The first command needs only `res/libTTapp.so`. To compare with a current
+build, pass explicit `--current <ELF> --units <JSON>` to either script. The
+JSON is a list of `{ "source": "...", "object": "..." }` records or an object
+with a `units` list (for example, `matching.json`); object paths may be
+relative to the repository root. The scripts neither invoke Bazel nor define
+Bazel targets. `calibrate_tu_map.py` requires both inputs.
+
+The first script writes `.work/original-tu-map.json` (ignored by Git). It
+records each original symbol, and optionally each current object symbol, with
+its symbol-table index, section, address, size, type, binding, and visibility;
+aliases and zero-sized symbols remain separate. The ledger uses `.symtab`; a
+defined-name comparison
 with `.dynsym` found no dynamic-only defined names in this reference ELF.
-Current source/object pairs and explicit `-O` flags
-come from the live Bazel action graph. `null` means no explicit optimization
-flag in that compile action. Original-to-current candidate IDs are exact-name,
-same-type joins within the same local/nonlocal binding class; they identify a
+Optional current source/object pairs and optimization metadata come only from
+the supplied JSON; `null` means the manifest did not provide an optimization
+value. Original-to-current candidate IDs are exact-name, same-type joins
+within the same local/nonlocal binding class; they identify a
 possible **current owner**, not a proven original TU. The generated artifact
 is deliberately not a hand-maintained build authority.
 
 On the `fabus1184/restructure` baseline, the ledger contains 32,596 named,
 defined allocated original symbols: 14,541 in `.text`, 9,384 in `.rodata`,
 6,625 in `.bss`, 1,796 in `.data`, and 250 in other allocated sections. The
-type split is 13,459 `FUNC`, 8,916 `OBJECT`, and 10,221 `NOTYPE`. All 523
-target compile actions are represented. There are 325 initializer-delimited
+type split is 13,459 `FUNC`, 8,916 `OBJECT`, and 10,221 `NOTYPE`. In the
+optional baseline comparison, the supplied `matching.json` represents 523
+current source/object pairs. There are 325 initializer-delimited
 local-symbol blocks and an undelimited tail, 327 `.init_array` entries,
 21 distinct embedded source paths, 247 name-derived function-local-static
 anchors, and 1,105 same-location/size/type alias groups. Of original symbols,
-17,742 have one same-name/type current object
-candidate, 10,771 have multiple, and 4,083 have none. These figures are
-**candidate counts**, not recovered-TU
+17,742 have one same-name/type current object candidate, 10,771 have multiple,
+and 4,083 have none. These figures are **candidate counts**, not recovered-TU
 coverage. For example, the block ending in
 `_GLOBAL__sub_I_NuInputDevice_android.cpp` contains a local squish function
 and squish lookup tables before that initializer. This proves that assigning
@@ -162,9 +168,9 @@ truth.
 
 1. **Capture a reproducible baseline.** Derive original symbol index, address,
    size, binding, type, section, constructor basename, initializer order, and
-   embedded paths directly from `res/libTTapp.so`. Derive current source-to-
-   object ownership and effective compile command from Bazel `aquery`, not
-   from a copied list. Save the matching report and exact-match counts for
+   embedded paths directly from `res/libTTapp.so`. When comparing a current
+   build, supply an explicit source/object manifest and check its provenance
+   separately. Save the matching report and exact-match counts for
    comparison. Do not turn a guessed original map into a build authority.
 2. **Validate the inference method before using it.** On our built ELF, hide
    `STT_FILE` labels and attempt to reconstruct the known object blocks from

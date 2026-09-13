@@ -3,7 +3,8 @@
 
 This is an evidence ledger, not a claimed recovery of absent STT_FILE records.
 Every named, defined, allocated symbol is retained, including aliases and
-zero-sized symbols. Run after building //src:saga_target with --config=target.
+zero-sized symbols. Current-build comparison is optional and takes explicit
+file paths; this tool never invokes a build system.
 """
 
 from __future__ import annotations
@@ -16,13 +17,8 @@ import re
 import struct
 import subprocess
 
-from scripts.generate_bazel_objdiff_report import (
-    SHF_ALLOC,
-    bazel_target_output,
-    read_elf32,
-    workspace_root,
-)
-from scripts.lib.bazel_actions import bazel_units
+from scripts.restructure.elf32 import SHF_ALLOC, read_elf32, workspace_root
+from scripts.restructure.inputs import read_units_manifest
 
 EXCLUDED_TYPES = {3, 4}  # STT_SECTION, STT_FILE
 CONSTRUCTOR = re.compile(r"^_GLOBAL__sub_I_(.+)$")
@@ -179,12 +175,18 @@ def function_local_anchors(symbols: list[dict]) -> dict[int, list[int]]:
     return anchors
 
 
-def build_map(original: Path, current: Path, units: list[dict]) -> dict:
+def build_map(
+    original: Path, current: Path | None = None, units: list[dict] | None = None
+) -> dict:
+    if (current is None) != (units is None):
+        raise ValueError("current ELF and unit manifest must be supplied together")
     original_sections, original_all = read_elf32(original)
-    current_sections, current_all = read_elf32(current)
     original_symbols = allocated_symbols(original_sections, original_all)
     aliases, alias_assignment = alias_groups(original_symbols)
-    current_symbols = allocated_symbols(current_sections, current_all)
+    current_symbols = []
+    if current is not None:
+        current_sections, current_all = read_elf32(current)
+        current_symbols = allocated_symbols(current_sections, current_all)
     blocks, local_blocks = local_initializer_blocks(original_all)
     local_anchors = function_local_anchors(original_symbols)
     initializers, embedded_paths = original_build_clues(
@@ -193,7 +195,7 @@ def build_map(original: Path, current: Path, units: list[dict]) -> dict:
 
     unit_records = []
     name_owners: dict[tuple[str, int, int], set[int]] = defaultdict(set)
-    for unit_id, unit in enumerate(units):
+    for unit_id, unit in enumerate(units or []):
         sections, all_symbols = read_elf32(unit["object_path"])
         object_symbols = allocated_symbols(sections, all_symbols)
         entries = []
@@ -221,38 +223,59 @@ def build_map(original: Path, current: Path, units: list[dict]) -> dict:
     candidate_counts = Counter()
     candidate_by_section: dict[str, Counter] = defaultdict(Counter)
     for symbol in original_symbols:
-        binding_class = 0 if symbol["binding"] == 0 else 1
-        candidates = sorted(
-            name_owners.get((symbol["name"], binding_class, symbol["type"]), ())
-        )
-        if symbol["binding"] == 0:
-            evidence = "local-name-only; requires independent corroboration"
-        else:
-            evidence = "global-name-match; current owner, not original TU proof"
-        candidate_class = (
-            "unique" if len(candidates) == 1 else "ambiguous" if candidates else "none"
-        )
-        candidate_counts[candidate_class] += 1
-        candidate_by_section[
-            original_sections[symbol["section_index"]]["name"]
-        ][candidate_class] += 1
-        mapped.append(
-            {
-                **symbol,
-                "section": original_sections[symbol["section_index"]]["name"],
-                "local_initializer_block": local_blocks.get(symbol["symbol_index"])
-                if symbol["binding"] == 0
-                else None,
-                "alias_group": alias_assignment.get(symbol["symbol_index"]),
-                "containing_function_symbols": local_anchors.get(
-                    symbol["symbol_index"], []
-                ),
-                "current_owner_candidates": candidates,
-                "candidate_evidence": evidence if candidates else "no same-name current symbol",
-            }
-        )
+        entry = {
+            **symbol,
+            "section": original_sections[symbol["section_index"]]["name"],
+            "local_initializer_block": local_blocks.get(symbol["symbol_index"])
+            if symbol["binding"] == 0
+            else None,
+            "alias_group": alias_assignment.get(symbol["symbol_index"]),
+            "containing_function_symbols": local_anchors.get(
+                symbol["symbol_index"], []
+            ),
+        }
+        if current is not None:
+            binding_class = 0 if symbol["binding"] == 0 else 1
+            candidates = sorted(
+                name_owners.get((symbol["name"], binding_class, symbol["type"]), ())
+            )
+            if symbol["binding"] == 0:
+                evidence = "local-name-only; requires independent corroboration"
+            else:
+                evidence = "global-name-match; current owner, not original TU proof"
+            candidate_class = (
+                "unique" if len(candidates) == 1 else "ambiguous" if candidates else "none"
+            )
+            candidate_counts[candidate_class] += 1
+            candidate_by_section[entry["section"]][candidate_class] += 1
+            entry["current_owner_candidates"] = candidates
+            entry["candidate_evidence"] = (
+                evidence if candidates else "no same-name current symbol"
+            )
+        mapped.append(entry)
 
     original_section_counts = Counter(symbol["section"] for symbol in mapped)
+    summary = {
+        "original_allocated_symbols": len(mapped),
+        "initializer_delimited_blocks": len(blocks),
+        "init_array_entries": len(initializers),
+        "embedded_source_paths": len(embedded_paths),
+        "function_local_static_anchors": len(local_anchors),
+        "alias_groups": len(aliases),
+        "original_by_section": dict(sorted(original_section_counts.items())),
+    }
+    if current is not None:
+        summary.update(
+            {
+                "current_allocated_symbols": len(current_symbols),
+                "current_target_units": len(unit_records),
+                "current_candidate_counts": dict(sorted(candidate_counts.items())),
+                "current_candidates_by_original_section": {
+                    section: dict(sorted(counts.items()))
+                    for section, counts in sorted(candidate_by_section.items())
+                },
+            }
+        )
     return {
         "schema_version": 1,
         "rules": {
@@ -262,23 +285,8 @@ def build_map(original: Path, current: Path, units: list[dict]) -> dict:
             "aliases": "preserved as separate entries by symbol_table and symbol_index",
         },
         "original": str(original),
-        "current": str(current),
-        "summary": {
-            "original_allocated_symbols": len(mapped),
-            "current_allocated_symbols": len(current_symbols),
-            "current_target_units": len(unit_records),
-            "initializer_delimited_blocks": len(blocks),
-            "init_array_entries": len(initializers),
-            "embedded_source_paths": len(embedded_paths),
-            "function_local_static_anchors": len(local_anchors),
-            "alias_groups": len(aliases),
-            "original_by_section": dict(sorted(original_section_counts.items())),
-            "current_candidate_counts": dict(sorted(candidate_counts.items())),
-            "current_candidates_by_original_section": {
-                section: dict(sorted(counts.items()))
-                for section, counts in sorted(candidate_by_section.items())
-            },
-        },
+        "current": str(current) if current is not None else None,
+        "summary": summary,
         "original_local_blocks": blocks,
         "original_alias_groups": aliases,
         "original_initializers": initializers,
@@ -292,15 +300,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--original", type=Path)
     parser.add_argument("--current", type=Path)
+    parser.add_argument("--units", type=Path, help="JSON source/object manifest")
     parser.add_argument("--output", type=Path)
-    parser.add_argument("--bazel", default="bazel")
     args = parser.parse_args()
+    if (args.current is None) != (args.units is None):
+        parser.error("--current and --units must be supplied together")
     root = workspace_root()
     original = args.original or root / "res/libTTapp.so"
-    current = args.current or bazel_target_output(root, args.bazel, "//src:saga_target")
     output = args.output or root / ".work/original-tu-map.json"
-    units = bazel_units(root, args.bazel, "//src:saga_target")
-    inventory = build_map(original.resolve(), current.resolve(), units)
+    units = read_units_manifest(args.units, root) if args.units else None
+    inventory = build_map(
+        original.resolve(), args.current.resolve() if args.current else None, units
+    )
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(inventory, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(inventory["summary"], indent=2))

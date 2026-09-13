@@ -2,6 +2,7 @@
 
 import unittest
 from pathlib import Path
+import json
 import struct
 import tempfile
 
@@ -12,6 +13,7 @@ from scripts.restructure.generate_original_tu_map import (
     local_initializer_blocks,
     original_build_clues,
 )
+from scripts.restructure.inputs import read_units_manifest
 
 
 class OriginalTuMapTest(unittest.TestCase):
@@ -75,6 +77,20 @@ class OriginalTuMapTest(unittest.TestCase):
             {"symbol_index": 2, "name": "_ZZ17NuIOS_YieldThreadE5count", "type": 1},
         ]
         self.assertEqual(function_local_anchors(symbols), {2: [1]})
+
+    def test_explicit_unit_manifest_needs_no_build_tool(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "unit.o").write_bytes(b"object")
+            manifest = root / "units.json"
+            manifest.write_text(
+                json.dumps({"units": [{"source": "src/unit.cpp", "object": "unit.o"}]}),
+                encoding="utf-8",
+            )
+            units = read_units_manifest(manifest, root)
+            self.assertEqual(units[0]["source"], "src/unit.cpp")
+            self.assertEqual(units[0]["object_path"], root / "unit.o")
+            self.assertIsNone(units[0]["optimization"])
 
 
 if __name__ == "__main__":
