@@ -6,13 +6,12 @@
 #include "nu2api/nu3d/nuspecial.h"
 #include "nu2api/nu3d/nuspline.h"
 #include "nu2api/nucore/nustring.h"
+#include "nu2api/nucore/nuvideo.h"
 #include "nu2api/numath/nuvec.h"
 #include "nu2api/nufile/nufile.h"
 #include <stdio.h>
 #include <string.h>
 #include "nu2api/numath/nurand.h"
-
-extern "C" void NuPs2VideoScreenDump(char *, i32, f32, f32, i32, i32, i32);
 
 EdRegistry theRegistry;
 i32 pad_disabled;

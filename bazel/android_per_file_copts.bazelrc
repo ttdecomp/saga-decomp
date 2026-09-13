@@ -7,6 +7,8 @@
 # apply only to the corresponding source.
 
 build:target --per_file_copt=^src/batman\.cpp$@-O2
+# The original rain unit was named .c but compiled as C++ (VuVec constructors).
+build --per_file_copt=^src/nu2api/nu3d/android/nurain_android\.c$@-x,c++,-std=gnu++11
 # Editor path callbacks in the original use optimized frameless PIC call sequences.
 build:target --per_file_copt=^src/editor/edpath\.cpp$@-O2
 # Recovered Android entry points; -O2 and -O3 emit the same measured bodies.
@@ -19,6 +21,9 @@ build:target --per_file_copt=^src/legoapi/items/objects/cable\.cpp$@-O3
 # The allocator has no vectorizable code; -O2 and -O3 emit the same measured
 # bodies, including nine exact constructors/destructor helpers.
 build:target --per_file_copt=^src/gamelib/util/VirtualStackAllocator\.cpp$@-O2
+# The original CRC constructor and hash loops are optimized; this is the
+# measured TU setting, not a calling-convention override.
+build:target --per_file_copt=^src/gamelib/util/CRC16\.cpp$@-O3
 build:target --per_file_copt=^src/gamelib/util/Network_stubs\.cpp$@-O3
 build:target --per_file_copt=^src/gamelib/util/Message\.cpp$@-O3
 build:target --per_file_copt=^src/gamelib/util/Stats\.cpp$@-O3
@@ -248,6 +253,7 @@ build:target --per_file_copt=^src/nu2api/nu3d/nutex\.cpp$@-O3
 build:target --per_file_copt=^src/nu2api/nu3d/NuDDSFunctions\.cpp$@-O3
 build:target --per_file_copt=^src/nu2api/nu3d/nuvport\.cpp$@-O3
 build:target --per_file_copt=^src/nu2api/nu3d/android/numtl_android\.cpp$@-O2
+build:target --per_file_copt=^src/nu2api/nu3d/android/nufmv_android\.cpp$@-O3
 build:target --per_file_copt=^src/nu2api/nu3d/android/nuqfnt_android\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nu3d/android/nurenderthread\.cpp$@-O3
 build:target --per_file_copt=^src/nu2api/nu3d/android/nutimebar_plain\.cpp$@-O2
@@ -355,6 +361,7 @@ build:target --per_file_copt=^src/nu2api/nu3d/nudlist\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nucore/nu2api_nucore_misc\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nucore/nugcutscene_anim\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nucore/nuonline_android\.cpp$@-O3
+build:target --per_file_copt=^src/nu2api/nucore/nuvideo_dump\.cpp$@-O3
 build:target --per_file_copt=^src/nu2api/nucore/pending_stubs\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nusound/nusound_effect\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nusound/nusound_handle\.cpp$@-O2

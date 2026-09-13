@@ -11,12 +11,6 @@ void NuMarkSceneAsZPrePass() {
 void NuDisplayListSetInstSurfGeom(void *) {
 }
 
-void NuRainDrawDrop(i32, i32, float, float, i32) {
-}
-
-void NuRainDrawShape(float) {
-}
-
 void NuTerminateHardware() {
 }
 

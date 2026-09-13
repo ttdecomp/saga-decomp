@@ -9,7 +9,7 @@
 #include "nu2api/nu3d/android/nutex_android.h"
 
 struct nugscn_s;
-struct nutexturetype_e;
+enum nutexturetype_e : i32;
 
 typedef enum nutextype_e {
     NUTEX_RTT24 = 15,

@@ -10,6 +10,7 @@
 #include "nu2api/nu3d/nutex.h"
 #include "nu2api/nu3d/nuportal.h"
 #include "nu2api/nu3d/android/nutimebar_plain.h"
+#include "nu2api/nu3d/android/nurain_android.h"
 #include "gameapi/edtools/edstubs.h"
 #include "nu2api/nu3d/nucamera.h"
 #include "nu2api/nucore/nustring.h"
@@ -909,7 +910,6 @@ extern "C" {
     i32 DebrisGlassParticlesActive(void);
     i32 NuRndrBeginSceneEx(i32, i32, i32);
     void NuRndrEndScene(void);
-    void NuRainDraw(i32);
 
     void DebrisDrawGlassEx(i32 flicker) {
         if (debris_initialised == 0)

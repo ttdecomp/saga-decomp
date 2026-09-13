@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.836178,
+    "fuzzy_match_percent": 44.916985,
     "total_code": "4722419",
-    "matched_code": "391480",
-    "matched_code_percent": 8.289819,
+    "matched_code": "391759",
+    "matched_code_percent": 8.295728,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4668,
-    "matched_functions_percent": 34.683113,
+    "matched_functions": 4671,
+    "matched_functions_percent": 34.7054,
     "total_units": 1
   },
   "text": {
@@ -36982,12 +36982,20 @@
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_gamelib/CRC16.o",
       "functions": [
         {
+          "name": "_GLOBAL__sub_I_CRC16.cpp",
+          "demangled_name": "_GLOBAL__sub_I_CRC16.cpp",
+          "address": 907760,
+          "offset": 17792,
+          "size": 241,
+          "match_percent": 24.444445
+        },
+        {
           "name": "_ZN5CRC16C1Ev",
           "demangled_name": "CRC16::CRC16()",
           "address": 3203552,
           "offset": 2313584,
           "size": 267,
-          "match_percent": 4.691358
+          "match_percent": 91.111115
         },
         {
           "name": "_ZN5CRC16C2Ev",
@@ -36995,7 +37003,7 @@
           "address": 3203552,
           "offset": 2313584,
           "size": 267,
-          "match_percent": 4.691358
+          "match_percent": 91.111115
         },
         {
           "name": "_ZN5CRC164hashEPKhi",
@@ -37003,7 +37011,7 @@
           "address": 3203824,
           "offset": 2313856,
           "size": 88,
-          "match_percent": 12.1875
+          "match_percent": 61.21875
         },
         {
           "name": "_ZN5CRC1611hashInverseEPKhi",
@@ -37011,7 +37019,7 @@
           "address": 3203920,
           "offset": 2313952,
           "size": 88,
-          "match_percent": 10.30303
+          "match_percent": 44.848484
         }
       ]
     },
@@ -86352,7 +86360,7 @@
           "address": 5416336,
           "offset": 4526368,
           "size": 636,
-          "match_percent": 2.978723
+          "match_percent": 85.97872
         },
         {
           "name": "_Z16NuDDSGetMipLeveliii11NUTEXFORMATibiiRiS0_S0_",
@@ -86360,7 +86368,7 @@
           "address": 5416976,
           "offset": 4527008,
           "size": 872,
-          "match_percent": 2.134387
+          "match_percent": 8.529644
         },
         {
           "name": "_Z12NuDDSGetSizePKc",
@@ -86368,7 +86376,7 @@
           "address": 5417856,
           "offset": 4527888,
           "size": 259,
-          "match_percent": 82.4
+          "match_percent": 83.93846
         }
       ]
     },
@@ -86797,6 +86805,45 @@
           "offset": 1893568,
           "size": 1133,
           "match_percent": 70.172165
+        }
+      ]
+    },
+    {
+      "name": "nu2api/nu3d/android/nufmv_android.cpp.o",
+      "source": "src/nu2api/nu3d/android/nufmv_android.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nufmv_android.o",
+      "functions": [
+        {
+          "name": "_GLOBAL__sub_I_nufmv_android.cpp",
+          "demangled_name": "_GLOBAL__sub_I_nufmv_android.cpp",
+          "address": 927552,
+          "offset": 37584,
+          "size": 93,
+          "match_percent": 99.35294
+        },
+        {
+          "name": "NuFmvInit",
+          "demangled_name": "NuFmvInit",
+          "address": 5419888,
+          "offset": 4529920,
+          "size": 9,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuFmvPlayV",
+          "demangled_name": "NuFmvPlayV",
+          "address": 5419904,
+          "offset": 4529936,
+          "size": 12,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuFmvPlay",
+          "demangled_name": "NuFmvPlay",
+          "address": 5419920,
+          "offset": 4529952,
+          "size": 154,
+          "match_percent": 100.0
         }
       ]
     },
@@ -87467,8 +87514,8 @@
       ]
     },
     {
-      "name": "nu2api/nu3d/android/nurain_android.cpp.o",
-      "source": "src/nu2api/nu3d/android/nurain_android.cpp",
+      "name": "nu2api/nu3d/android/nurain_android.c.o",
+      "source": "src/nu2api/nu3d/android/nurain_android.c",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nurain_android.o",
       "functions": [
         {
@@ -87480,11 +87527,43 @@
           "match_percent": 100.0
         },
         {
+          "name": "_Z14NuRainDrawDropiiffi",
+          "demangled_name": "NuRainDrawDrop(int, int, float, float, int)",
+          "address": 5419362,
+          "offset": 4529394,
+          "size": 5,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_Z15NuRainDrawShapef",
+          "demangled_name": "NuRainDrawShape(float)",
+          "address": 5419367,
+          "offset": 4529399,
+          "size": 5,
+          "match_percent": 100.0
+        },
+        {
           "name": "NuRainDraw",
           "demangled_name": "NuRainDraw",
           "address": 5419372,
           "offset": 4529404,
           "size": 5,
+          "match_percent": 100.0
+        },
+        {
+          "name": "NuRainSetFall",
+          "demangled_name": "NuRainSetFall",
+          "address": 5419377,
+          "offset": 4529409,
+          "size": 97,
+          "match_percent": 99.85185
+        },
+        {
+          "name": "_GLOBAL__sub_I_nurain_android.c",
+          "demangled_name": "_GLOBAL__sub_I_nurain_android.c",
+          "address": 5419847,
+          "offset": 4529879,
+          "size": 29,
           "match_percent": 100.0
         }
       ]
@@ -90067,7 +90146,7 @@
           "address": 2998048,
           "offset": 2108080,
           "size": 3149,
-          "match_percent": 57.889225
+          "match_percent": 57.911987
         },
         {
           "name": "NuRndrSolidTri",
@@ -90839,7 +90918,7 @@
           "address": 3184160,
           "offset": 2294192,
           "size": 1201,
-          "match_percent": 33.5414
+          "match_percent": 41.46815
         },
         {
           "name": "_ZN19ShaderManagerOpenGL35adaptShaderMaterialForShaderVersionEP17nushadermtldesc_s",
@@ -95013,22 +95092,6 @@
           "offset": 2159392,
           "size": 24,
           "match_percent": 31.428572
-        },
-        {
-          "name": "_Z14NuRainDrawDropiiffi",
-          "demangled_name": "NuRainDrawDrop(int, int, float, float, int)",
-          "address": 5419362,
-          "offset": 4529394,
-          "size": 5,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_Z15NuRainDrawShapef",
-          "demangled_name": "NuRainDrawShape(float)",
-          "address": 5419367,
-          "offset": 4529399,
-          "size": 5,
-          "match_percent": 100.0
         }
       ]
     },
@@ -96479,30 +96542,6 @@
           "offset": 1609331,
           "size": 126,
           "match_percent": 10.5
-        },
-        {
-          "name": "NuQTCreate",
-          "demangled_name": "NuQTCreate",
-          "address": 2499425,
-          "offset": 1609457,
-          "size": 295,
-          "match_percent": 4.0
-        },
-        {
-          "name": "NuQTRead",
-          "demangled_name": "NuQTRead",
-          "address": 2500052,
-          "offset": 1610084,
-          "size": 139,
-          "match_percent": 8.4
-        },
-        {
-          "name": "NuQTWrite",
-          "demangled_name": "NuQTWrite",
-          "address": 2500191,
-          "offset": 1610223,
-          "size": 150,
-          "match_percent": 9.333333
         },
         {
           "name": "NuTimeStartFrame",
@@ -99793,46 +99832,6 @@
           "match_percent": 100.0
         },
         {
-          "name": "NuPs2VideoScreenDump",
-          "demangled_name": "NuPs2VideoScreenDump",
-          "address": 5418128,
-          "offset": 4528160,
-          "size": 196,
-          "match_percent": 7.5
-        },
-        {
-          "name": "NuRainSetFall",
-          "demangled_name": "NuRainSetFall",
-          "address": 5419377,
-          "offset": 4529409,
-          "size": 97,
-          "match_percent": 15.555555
-        },
-        {
-          "name": "NuFmvInit",
-          "demangled_name": "NuFmvInit",
-          "address": 5419888,
-          "offset": 4529920,
-          "size": 9,
-          "match_percent": 100.0
-        },
-        {
-          "name": "NuFmvPlayV",
-          "demangled_name": "NuFmvPlayV",
-          "address": 5419904,
-          "offset": 4529936,
-          "size": 12,
-          "match_percent": 100.0
-        },
-        {
-          "name": "NuFmvPlay",
-          "demangled_name": "NuFmvPlay",
-          "address": 5419920,
-          "offset": 4529952,
-          "size": 154,
-          "match_percent": 100.0
-        },
-        {
           "name": "NuMemAllocFn",
           "demangled_name": "NuMemAllocFn",
           "address": 5420144,
@@ -102412,6 +102411,14 @@
           "match_percent": 100.0
         },
         {
+          "name": "NuQTCreate",
+          "demangled_name": "NuQTCreate",
+          "address": 2499425,
+          "offset": 1609457,
+          "size": 295,
+          "match_percent": 93.85714
+        },
+        {
           "name": "_ZL16NuQTUnfixAddressP9nuqthdr_s",
           "demangled_name": "NuQTUnfixAddress(nuqthdr_s*)",
           "address": 2499720,
@@ -102426,6 +102433,22 @@
           "offset": 1609919,
           "size": 165,
           "match_percent": 100.0
+        },
+        {
+          "name": "NuQTRead",
+          "demangled_name": "NuQTRead",
+          "address": 2500052,
+          "offset": 1610084,
+          "size": 139,
+          "match_percent": 77.44
+        },
+        {
+          "name": "NuQTWrite",
+          "demangled_name": "NuQTWrite",
+          "address": 2500191,
+          "offset": 1610223,
+          "size": 150,
+          "match_percent": 85.28889
         }
       ]
     },
@@ -103484,7 +103507,7 @@
           "address": 2929264,
           "offset": 2039296,
           "size": 112,
-          "match_percent": 13.548388
+          "match_percent": 99.96774
         },
         {
           "name": "_Z17NuTexAnimProgInitP15nutexanimprog_s",
@@ -103500,7 +103523,7 @@
           "address": 2929712,
           "offset": 2039744,
           "size": 212,
-          "match_percent": 7.924528
+          "match_percent": 87.603775
         },
         {
           "name": "NuTexAnimProgWrite",
@@ -103508,7 +103531,7 @@
           "address": 2929936,
           "offset": 2039968,
           "size": 104,
-          "match_percent": 16.153847
+          "match_percent": 100.0
         },
         {
           "name": "NuTexAnimProgRead",
@@ -103516,7 +103539,7 @@
           "address": 2930048,
           "offset": 2040080,
           "size": 278,
-          "match_percent": 5.915493
+          "match_percent": 99.95775
         },
         {
           "name": "NuTexAnimProgAssembleEnd",
@@ -103970,6 +103993,21 @@
           "offset": 2348691,
           "size": 5,
           "match_percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "nu2api/nucore/nuvideo_dump.cpp.o",
+      "source": "src/nu2api/nucore/nuvideo_dump.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nuvideo_dump.o",
+      "functions": [
+        {
+          "name": "NuPs2VideoScreenDump",
+          "demangled_name": "NuPs2VideoScreenDump",
+          "address": 5418128,
+          "offset": 4528160,
+          "size": 196,
+          "match_percent": 95.21429
         }
       ]
     },
@@ -105765,7 +105803,7 @@
           "address": 3246448,
           "offset": 2356480,
           "size": 623,
-          "match_percent": 2.896552
+          "match_percent": 88.082756
         },
         {
           "name": "_ZN12NuFileDevice19FreeDirectoryHandleEi",
@@ -105773,7 +105811,7 @@
           "address": 3247072,
           "offset": 2357104,
           "size": 146,
-          "match_percent": 12.727273
+          "match_percent": 100.0
         },
         {
           "name": "_ZN12NuFileDevice16SetDefaultDeviceE16NuFileDeviceType",
@@ -105797,7 +105835,7 @@
           "address": 3247360,
           "offset": 2357392,
           "size": 84,
-          "match_percent": 12.352942
+          "match_percent": 93.5
         },
         {
           "name": "_ZN12NuFileDevice17GetDeviceFromPathEPKc",
@@ -105805,7 +105843,7 @@
           "address": 3247456,
           "offset": 2357488,
           "size": 518,
-          "match_percent": 3.243243
+          "match_percent": 44.14189
         },
         {
           "name": "_ZN12NuFileDevice9AddDeviceEPS_",
@@ -105829,7 +105867,7 @@
           "address": 3248080,
           "offset": 2358112,
           "size": 244,
-          "match_percent": 6.885246
+          "match_percent": 62.590164
         },
         {
           "name": "_ZN12NuFileDevice12SetMountNameEPc",
@@ -117182,6 +117220,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -117267,6 +117306,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -117352,6 +117392,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -117448,6 +117489,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -117578,6 +117620,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -117674,6 +117717,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -117770,6 +117814,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -117866,6 +117911,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -117962,6 +118008,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -118058,6 +118105,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -118364,6 +118412,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -118460,6 +118509,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -118556,6 +118606,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -118698,6 +118749,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -118805,6 +118857,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -119019,6 +119072,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -119186,6 +119240,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -119354,6 +119409,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -119450,6 +119506,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -119546,6 +119603,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -119642,6 +119700,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -119787,6 +119846,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -119883,6 +119943,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -119990,6 +120051,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -120086,6 +120148,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -120195,6 +120258,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -120291,6 +120355,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -120421,6 +120486,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -120517,6 +120583,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -120613,6 +120680,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -120709,6 +120777,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -120868,6 +120937,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -120964,6 +121034,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -121060,6 +121131,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -121503,6 +121575,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -121727,6 +121800,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -121926,6 +122000,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -122381,6 +122456,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -122477,6 +122553,7 @@
         "nu2api/nu3d/android/nugscn_android.cpp.o",
         "nu2api/nu3d/android/nuiosdl_gl.cpp.o",
         "nu2api/nu3d/android/nuptl_flush.cpp.o",
+        "nu2api/nu3d/android/nurain_android.c.o",
         "nu2api/nu3d/nurndr_noops.cpp.o",
         "nu2api/nucore/android/nuapi_android.cpp.o",
         "nu2api/nusound/nu2api_nusound_types.cpp.o"
@@ -122933,14 +123010,6 @@
       "match_percent": 0.0
     },
     {
-      "name": "_GLOBAL__sub_I_CRC16.cpp",
-      "demangled_name": "_GLOBAL__sub_I_CRC16.cpp",
-      "address": 907760,
-      "offset": 17792,
-      "size": 241,
-      "match_percent": 0.0
-    },
-    {
       "name": "_GLOBAL__sub_I_nushaderobjectbase.cpp",
       "demangled_name": "_GLOBAL__sub_I_nushaderobjectbase.cpp",
       "address": 908016,
@@ -123081,14 +123150,6 @@
       "demangled_name": "_GLOBAL__sub_I_screengrab_android.cpp",
       "address": 927456,
       "offset": 37488,
-      "size": 93,
-      "match_percent": 0.0
-    },
-    {
-      "name": "_GLOBAL__sub_I_nufmv_android.cpp",
-      "demangled_name": "_GLOBAL__sub_I_nufmv_android.cpp",
-      "address": 927552,
-      "offset": 37584,
       "size": 93,
       "match_percent": 0.0
     },
@@ -127101,14 +127162,6 @@
       "match_percent": 0.0
     },
     {
-      "name": "_GLOBAL__sub_I_nurain_android.c",
-      "demangled_name": "_GLOBAL__sub_I_nurain_android.c",
-      "address": 5419847,
-      "offset": 4529879,
-      "size": 29,
-      "match_percent": 0.0
-    },
-    {
       "name": "_ZN8EdStreamD1Ev",
       "demangled_name": "EdStream::~EdStream()",
       "address": 5420768,
@@ -129686,10 +129739,10 @@
     }
   ],
   "summary": {
-    "bazel_units": 522,
+    "bazel_units": 524,
     "functions": 13454,
-    "assigned_functions": 12323,
+    "assigned_functions": 12326,
     "ambiguous_functions": 231,
-    "unassigned_functions": 900
+    "unassigned_functions": 897
   }
 }

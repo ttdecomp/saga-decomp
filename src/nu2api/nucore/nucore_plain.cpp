@@ -3552,9 +3552,6 @@ extern "C" {
     void NuPostBloom(i32, const NuBloomParameters *parameters) {
         currentScene.bloom = *parameters;
     }
-    // This entry point is empty in the original Android binary.
-    void NuRainSetFall(void) {
-    }
     void NuRenderContextInit(void) {
         extern f32 g_renderContext_viewProj[16];
         extern f32 g_renderContext_view[16];
@@ -5048,8 +5045,6 @@ extern "C" {
         }
         return value;
     }
-    void NuPs2VideoScreenDump(void) {
-    }
     // ---------------------------------------------------------------------------
     // Culling / visibility / portals / occlusion
     // ---------------------------------------------------------------------------
@@ -5299,12 +5294,6 @@ extern "C" {
 
     void NuQTAddElement(void) {
     }
-    void NuQTCreate(void) {
-    }
-    void NuQTRead(void) {
-    }
-    void NuQTWrite(void) {
-    }
 
     // ---------------------------------------------------------------------------
     // Containers / lists / params
@@ -5445,18 +5434,6 @@ extern "C" {
     // ---------------------------------------------------------------------------
 
     void NuSplineList(void) {
-    }
-    void NuFmvInit(void) {
-    }
-    i32 NuFmvPlayV(i32 option, ...) {
-        return 1;
-    }
-    // The original wrapper forwards eight 32-bit arguments through a tagged
-    // option list. Option meanings beyond this layout remain unrecovered.
-    i32 NuFmvPlay(u32 argument0, i32 enabled, u32 argument2, u32 argument3, u32 argument4, u32 argument5, u32 argument6,
-                  u32 argument7) {
-        return NuFmvPlayV(2, argument0, enabled != 0 ? 3 : 0, 4, argument2, 5, argument3, 6, argument4, 7, argument5, 8,
-                          argument6, argument7, 1);
     }
     extern void (*nuapi_endframe_callbackfn)(void);
     void NuRegisterEndFrameCallBackFn(void (*callback)(void)) {

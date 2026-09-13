@@ -32,3 +32,9 @@ struct nuqthdr_s {
 DECOMP_ASSERT(sizeof(nuqtdim_s) == 0x10, "NuQT dimensions size");
 DECOMP_ASSERT(sizeof(nuqtentry_s) == 0xc, "NuQT entry size");
 DECOMP_ASSERT(sizeof(nuqthdr_s) == 0x38, "NuQT header size");
+
+extern "C" nuqthdr_s *NuQTRead(char *path, u8 **cursor, u8 **end);
+extern "C" i32 NuQTWrite(char *path, nuqthdr_s *header);
+extern "C" i32 NuQTCreate(i32 entry_capacity, i32 data_capacity, i32 element_size,
+                          u32 field_34, u32 field_30, u32 field_04, u32 field_0c,
+                          u32 field_08, u32 field_10, u8 **cursor, u8 **end);

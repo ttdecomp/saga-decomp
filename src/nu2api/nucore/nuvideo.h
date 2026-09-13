@@ -38,6 +38,7 @@ extern "C" {
     void NuVideoSetBrightness(f32 brightness);
     void NuVideoSetResolution(i32 width, i32 height);
     NUVIDEO_SWAPMODE NuVideoSetSwapMode(NUVIDEO_SWAPMODE video_swap_mode);
+    void NuPs2VideoScreenDump(char *filename, i32 format, f32 scale_x, f32 scale_y, i32 face, i32 x, i32 y);
 #ifdef __cplusplus
 }
 #endif

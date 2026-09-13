@@ -1,22 +1,65 @@
 #include "nu2api_nufile_types.h"
+#include "nu2api/nucore/numemory.h"
 #include "nu2api/nucore/nustring.h"
+#include "nu2api/nufile/nufile.h"
+
+#include <cstring>
+#include <pthread.h>
 
 NuFileDevice *NuFileDevice::sm_Devices[16];
 i32 NuFileDevice::sm_NumDevices;
 NuFileDevice *NuFileDevice::sm_DefaultDevice;
 NuFileDevice *NuFileDevice::sm_HostDevice;
 i32 NuFileDevice::sm_NumRules;
+NuFileDevice::PathRule NuFileDevice::sm_Rules[32];
 NuFileDevice::DirectoryHandle NuFileDevice::sm_DirectoryHandles[16];
+pthread_mutex_t NuFileDevice::sm_CriticalSection;
 
 void NuFileDevice::AddDevice(NuFileDevice *device) {
     device->device_id = sm_NumDevices;
     sm_Devices[sm_NumDevices++] = device;
 }
 
-void NuFileDevice::AddPathRule(NuFileDeviceType, char const *) {
+void NuFileDevice::AddPathRule(NuFileDeviceType type, char const *path) {
+    if (sm_NumRules >= 32)
+        return;
+    PathRule &rule = sm_Rules[sm_NumRules];
+    rule.device_type = type;
+    if (path) {
+        char *copy = static_cast<char *>(NuMemoryGet()->GetThreadMem()->_BlockAlloc(
+            std::strlen(path) + 1, 4, 4, __FILE__, 0));
+        std::strcpy(copy, path);
+        rule.path = copy;
+    } else {
+        rule.path = NULL;
+    }
+    rule.path_length = NuStrLen(path);
+    ++sm_NumRules;
 }
 
-void NuFileDevice::AllocDirectoryHandle(char const *) {
+i32 NuFileDevice::AllocDirectoryHandle(char const *path) {
+    pthread_mutex_lock(&sm_CriticalSection);
+    i32 handle = 0;
+    for (i32 i = 1; i < 16; ++i) {
+        if (!sm_DirectoryHandles[i].device) {
+            handle = i;
+            break;
+        }
+    }
+    if (handle) {
+        DirectoryHandle &entry = sm_DirectoryHandles[handle];
+        entry.device = this;
+        if (path) {
+            char *copy = static_cast<char *>(NuMemoryGet()->GetThreadMem()->_BlockAlloc(
+                std::strlen(path) + 1, 4, 4, __FILE__, 0));
+            std::strcpy(copy, path);
+            entry.path = copy;
+        } else {
+            entry.path = NULL;
+        }
+    }
+    pthread_mutex_unlock(&sm_CriticalSection);
+    return handle;
 }
 
 void NuFileDevice::ClearPathRules() {
@@ -95,17 +138,61 @@ i32 NuFileDevice::FormatName(char *output, i32 size, char const *path) const {
     return 1;
 }
 
-void NuFileDevice::FreeDirectoryHandle(i32) {
+void NuFileDevice::FreeDirectoryHandle(i32 handle) {
+    pthread_mutex_lock(&sm_CriticalSection);
+    char *path = sm_DirectoryHandles[handle].path;
+    sm_DirectoryHandles[handle].device = NULL;
+    if (path)
+        NuMemoryGet()->GetThreadMem()->BlockFree(path, 4);
+    sm_DirectoryHandles[handle].path = NULL;
+    pthread_mutex_unlock(&sm_CriticalSection);
 }
 
-void NuFileDevice::GetDeviceByType(NuFileDeviceType) {
+NuFileDevice *NuFileDevice::GetDeviceByType(NuFileDeviceType type) {
+    if (type == static_cast<NuFileDeviceType>(6))
+        return sm_DefaultDevice;
+    for (i32 i = 0; i < sm_NumDevices; ++i) {
+        NuFileDevice *device = sm_Devices[i];
+        if (device && device->device_type == type)
+            return device;
+    }
+    return NULL;
 }
 
 NuFileDevice *NuFileDevice::GetDeviceFromDirectoryHandle(i32 handle) {
     return sm_DirectoryHandles[handle].device;
 }
 
-void NuFileDevice::GetDeviceFromPath(char const *) {
+NuFileDevice *NuFileDevice::GetDeviceFromPath(char const *path) {
+    if (((path[0] | 0x20) >= 'a' && (path[0] | 0x20) <= 'z') && path[1] == ':' &&
+        (path[2] == '/' || path[2] == '\\'))
+        return sm_DefaultDevice;
+    if (path[0] == 'h' && path[1] == 'o' && path[2] == 's' && path[3] == 't' && path[4] == ':')
+        return sm_HostDevice;
+
+    for (i32 i = 0; i < 8; ++i) {
+        if (path[i] == ':') {
+            for (i32 j = 0; j < sm_NumDevices; ++j) {
+                NuFileDevice *device = sm_Devices[j];
+                if (device && *device->label &&
+                    NuStrNICmp(path, device->label, NuStrLen(device->label)) == 0)
+                    return device;
+            }
+            return NULL;
+        }
+    }
+
+    NuFileDevice *device = sm_DefaultDevice;
+    if (sm_NumRules > 0) {
+        char normalized[512];
+        NuFileNormalise(normalized, sizeof(normalized), path);
+        for (i32 i = 0; i < sm_NumRules; ++i) {
+            PathRule &rule = sm_Rules[i];
+            if (NuStrNICmp(normalized, rule.path, rule.path_length) == 0)
+                device = GetDeviceByType(rule.device_type);
+        }
+    }
+    return device;
 }
 
 void NuFileDevice::Interrogate() {

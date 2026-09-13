@@ -4,6 +4,7 @@
 
 #include "nu2api/nucore/common.h"
 #include "nu2api/nufile/android/nufile_android.h"
+#include <pthread.h>
 
 struct NuFileAndroidAPK;
 struct NuFileBase;
@@ -21,12 +22,12 @@ namespace NuFile {
 struct NuFileDevice {
     static void AddDevice(NuFileDevice *);
     void AddPathRule(NuFileDeviceType, char const *);
-    void AllocDirectoryHandle(char const *);
+    i32 AllocDirectoryHandle(char const *);
     static void ClearPathRules();
     void FreeDirectoryHandle(i32);
-    void GetDeviceByType(NuFileDeviceType);
+    static NuFileDevice *GetDeviceByType(NuFileDeviceType);
     static NuFileDevice *GetDeviceFromDirectoryHandle(i32);
-    void GetDeviceFromPath(char const *);
+    static NuFileDevice *GetDeviceFromPath(char const *);
     NuFileDevice();
     static void SetDefaultDevice(NuFileDeviceType);
     void SetLabel(char *);
@@ -84,11 +85,18 @@ struct NuFileDevice {
     static NuFileDevice *sm_DefaultDevice;
     static NuFileDevice *sm_HostDevice;
     static i32 sm_NumRules;
+    struct PathRule {
+        NuFileDeviceType device_type;
+        char *path;
+        i32 path_length;
+    };
+    static PathRule sm_Rules[32];
     struct DirectoryHandle {
         NuFileDevice *device;
-        i32 handle;
+        char *path;
     };
     static DirectoryHandle sm_DirectoryHandles[16];
+    static pthread_mutex_t sm_CriticalSection;
 
   protected:
     i32 device_id;

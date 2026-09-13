@@ -1101,8 +1101,21 @@ the observed code.
 This phase raises matching from 44.8228% to 44.8301% with no regressions:
 `AddNode` is exact, `RemoveData` is 99.76%, and `ElOverlaps` is 96.13%.
 The public NuQT bodies and the larger insertion helpers remain unfinished;
-in particular, the original `InsertData` appears to have a null-destination
-edge case requiring a separate correctness audit before implementation. The
+in particular, an independent disassembly audit confirmed a latent original
+`InsertData` null-destination copy at `0x261883`–`0x261889` when a leaf has a
+null data pointer. Its normal-game reachability is not established, so the
+insertion cluster needs a coherent behavior audit before implementation. The
+target and WASM builds, four checks, zero-missing-symbol audit, and 120-frame
+Cantina smoke test pass.
+
+The original `NuQTRead` and `NuQTWrite` wrappers now use the real NuFile API,
+align or unfix/fix the stored pointers, and update the caller's buffer cursor.
+Their source-level success/failure control flow reaches 77.44% and 85.29%,
+respectively. `NuQTCreate` now aligns and reserves the caller's arena,
+initializes the 0x38-byte header and entry/data regions, and reaches 93.86%.
+The original returns zero on both the successful and insufficient-space paths;
+the reconstructed body preserves that observed behavior. The three bodies
+replace zero-argument export stubs. Insertion remains pending. The combined
 target and WASM builds, four checks, zero-missing-symbol audit, and 120-frame
 Cantina smoke test pass.
 
@@ -1117,12 +1130,131 @@ Including the real vector header recovers the static initializer to 99.35%.
 The existing texture-description body remains at 82.13%; the other three
 bodies initially remained low-scoring stubs. `NuDDSGetSize` now follows the
 original description/mip query, palette adjustment, and header-size addition,
-raising that wrapper from 6.46% to 82.40%. Its return type is `i32`, as the
-original return register shows. Correct runtime size results still depend on
-reconstructing `NuDDSGetMipLevel`, which remains a stub; neither it nor
-`NuDDSSetTextureDescription` is claimed as implemented.
+raising that wrapper from 6.46% to 83.94%. Its return type is `i32`, as the
+original return register shows. The mip routine now has a real source-level
+body and four DDS-specific format tables verified byte-for-byte against the
+original ELF. An independent disassembly audit caught and corrected its
+compressed block-size expression and the minimum width/height orientation.
+Separating the original compressed and uncompressed loops raises it to 8.53%
+without other function regressions. It remains a low match despite these
+behavior checks, so further reconstruction
+and focused runtime validation are required before treating it as a faithful
+match or relying on it for all texture formats. `NuDDSSetTextureDescription`
+now writes the 128-byte DDS header, including the original 26-entry format
+dispatch, dimension/mipmap flags, and cubemap caps. Its `nutexturetype_e`
+parameter is a fixed-underlying integer enum rather than the former empty
+struct placeholder, restoring the original value-passing ABI. An independent
+disassembly audit found no semantic mismatch; the body reaches 85.98%.
 
 The unit move and size wrapper raise overall matching from 44.8301% to
 44.8362% with no
 function regressions. The target and WASM builds, four checks, zero-missing-
 symbol audit, and 120-frame Cantina smoke test pass.
+
+The subsequent NuQT wrappers and DDS bodies raise the combined overall
+score to 44.8580% with six improved functions and no regressions. The same
+target/WASM/check/symbol/Cantina gates pass on the combined tree.
+
+### Android rain owner
+
+The original `nurain_android.c` initializer follows the five contiguous rain
+entry points at `0x52b134`–`0x52b347`. Their code now lives together in
+`nu3d/android/nurain_android.c`, compiled as C++ to match the original
+C++-constructed vectors despite the `.c` suffix. The original
+`NuRainSetFall(float)` clamps the requested value to [0, 1]; it replaces an
+incorrectly typed empty
+zero-argument stub and rises from 15.56% to 99.85%. The other four entry
+points remain exact. The original `.data` bytes for `NuRainKey`, `testrain`,
+and `NuRainOldY` match the compiled object, while four rain globals and the
+first six local 16-byte `VuVec` objects recover their adjacent `.bss`
+ownership. The second nearby six-vector group follows FMV globals and is not
+part of this TU. A real rain header replaces the terrain caller's local
+linker-only declaration. The combined score reaches 44.8598%, with seven
+improvements and no regressions.
+
+Using the original filename recovers the genuine
+`_GLOBAL__sub_I_nurain_android.c` at an exact 100% match, with no rain-body
+regression. This is a source-language configuration, not a fabricated symbol.
+
+### Android FMV owner
+
+The three contiguous `NuFmvInit`, `NuFmvPlayV`, and `NuFmvPlay` bodies at
+`0x52b370`–`0x52b42a` move unchanged from the miscellaneous core file to
+`nu3d/android/nufmv_android.cpp`; all three remain exact. Five FMV globals
+occupy the original `.bss` region immediately after rain, followed by the
+second six local `VuVec` objects. The separate
+`_GLOBAL__sub_I_nufmv_android.cpp` at `0x0e2740` directly initializes those
+six objects and now matches at 99.35% under the evidenced `-O3` setting.
+This takes the combined score to 44.8617% with eight improvements and no
+regressions.
+
+### Screen-dump wrapper
+
+The standalone `NuPs2VideoScreenDump` body at `0x52ac90`–`0x52ad54` now
+lives in `nucore/nuvideo_dump.cpp` with a real seven-argument declaration in
+`nuvideo.h`. The original formats `<base><face>.bmp` for a nonnegative face;
+otherwise it probes `<base>.bmp` and then numbered `%03d` suffixes until a
+filename is unused. It calls the front-buffer getter but does not write an
+image. The implementation preserves that observed behavior rather than
+inventing a capture path. An `-O3` trial reaches 95.21% (from 7.50%) and the
+public header replaces the editor caller's local declaration. The combined
+score reaches 44.8654% with ten improvements and no regressions.
+
+The post-screen-dump target/WASM builds, four checks, and zero-missing-symbol
+audit pass. The ordinary native smoke invocation currently cannot open the
+new 3.09 GB `res/main.1060.com.wb.lego.tcs.obb`: its 32-bit file open returns
+`EOVERFLOW` before engine startup. Without changing either asset, the same
+current native binary passes 120 healthy Cantina frames from a temporary
+working directory using the repository's pre-existing 1.31 GB `.obb.bak`
+and copied save fixture. This is a fixture-size limitation, not a successful
+test against the newly replaced OBB.
+
+### NuFileDevice path and handle storage
+
+The original `NuFileDevice` method run at `0x318970`–`0x3190ef` is already
+co-located in `nufiledevice.cpp` at `-O3`, but five methods were empty or
+incorrectly typed. `AllocDirectoryHandle`, `FreeDirectoryHandle`,
+`GetDeviceByType`, `GetDeviceFromPath`, and `AddPathRule` now follow the
+observed locking, copied-path allocation/freeing, device selection, and
+ordered path-rule behavior. The real internal type declares the original
+0x180-byte rule table, 0x80-byte directory-handle table, and four-byte Bionic
+mutex static. Their original target storage sizes are verified. The five
+bodies rise to 88.08%, 100%, 93.50%, 44.14%, and 62.59%, respectively;
+26 formerly exact neighboring bodies remain exact. Overall matching reaches
+44.8894%, with no regressions. The target/WASM builds, four checks, and
+zero-missing-symbol audit pass; the current native binary also passes 120
+Cantina frames using the saved compatible OBB fixture described above.
+
+### Texture-animation program persistence
+
+The existing `nutexanim.cpp` `-O3` unit contains a contiguous persistence
+cluster around `0x2cb270`–`0x2cb696`. Four zero-argument placeholders now
+have their original signatures and real bodies, declared in the public
+`nutexanm.h`: `NuTexAnimProgCreate` reserves a program and instruction span,
+`Destroy` unlinks/frees owned programs, `Write` serializes the fixed header
+plus used instructions, and `Read` loads and links a program with its ownership
+flag. The create buffer path does not align its cursor, matching the original;
+the read path likewise retains the original's unchecked allocation failure.
+Scores rise to 87.60%, 99.97%, 100%, and 99.96% for Create, Destroy, Write,
+and Read. Overall matching reaches 44.9024%, with four additional
+improvements and no regressions.
+
+The combined post-persistence target/WASM builds, four checks, and
+zero-missing-symbol audit pass. The current native binary again advances 120
+healthy Cantina frames with the saved compatible OBB fixture.
+
+### CRC16 table owner and shader caller
+
+The original `CRC16.cpp` has one global instance, a 256-entry table, three
+contiguous methods at `0x30e1e0`–`0x30e3b6`, and a separate static
+initializer. The constructor now builds the original CCITT polynomial table;
+`hash` and `hashInverse` are static methods taking only data and length, as
+confirmed by their original call sites and stack arguments. Both use the
+table with `0xffff` initial state, forward and reverse byte order respectively.
+An independent `123456789` check gives `0x29b1` forward and `0x84df` reverse.
+The measured `-O3` unit produces 91.11%, 61.22%, and 44.85% for the three
+bodies, with the original table and instance storage sizes. The shader-key
+generator now calls these real methods rather than maintaining a second CRC
+table in `nushadermanager_plain.cpp`; its score rises from 33.54% to 41.47%.
+The combined score is 44.9170%, with 25 improvements, three newly exact
+functions, and no regressions against the preceding commit.
