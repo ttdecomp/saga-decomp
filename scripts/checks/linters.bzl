@@ -7,6 +7,14 @@ load("@rules_cc//cc:defs.bzl", "CcInfo", "cc_common")
 _SOURCE_EXTENSIONS = ["c", "C", "cc", "cpp", "cxx", "c++"]
 _DISABLED_FEATURES = ["layering_check"]
 
+# These original .c-named translation units contain C++ constructors and are
+# compiled as C++ by the matching and host builds. Lint them in that language
+# as well; clang-tidy cannot infer the Bazel per-file -x override from a suffix.
+_CXX_NAMED_C_SOURCES = [
+    "src/nu2api/nu3d/android/nurain_android.c",
+    "src/nu2api/nucore/android/nutime_android.c",
+]
+
 def _prefixed(values, prefix):
     result = []
     for value in values:
@@ -47,7 +55,8 @@ def _safe_flags(flags):
     return result
 
 def _compiler_args(ctx, compilation_context, source):
-    action_name = ACTION_NAMES.c_compile if source.extension == "c" else ACTION_NAMES.cpp_compile
+    c_source = source.extension == "c" and source.short_path not in _CXX_NAMED_C_SOURCES
+    action_name = ACTION_NAMES.c_compile if c_source else ACTION_NAMES.cpp_compile
     user_flags = ctx.fragments.cpp.copts
     if action_name == ACTION_NAMES.cpp_compile:
         user_flags = ctx.fragments.cpp.cxxopts + user_flags
@@ -139,6 +148,7 @@ def _clang_tidy_aspect(extra_args = []):
             arguments = ctx.actions.args()
             arguments.add("--config-file=" + ctx.file._config.path)
             arguments.add_all(ctx.attr._extra_args)
+
             # native_binary relocates clang-tidy away from its LLVM installation.
             # Supply its builtin headers explicitly, including in sandboxed actions.
             for header in ctx.attr._clang_headers[DefaultInfo].files.to_list():

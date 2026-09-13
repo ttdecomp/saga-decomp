@@ -1258,3 +1258,36 @@ generator now calls these real methods rather than maintaining a second CRC
 table in `nushadermanager_plain.cpp`; its score rises from 33.54% to 41.47%.
 The combined score is 44.9170%, with 25 improvements, three newly exact
 functions, and no regressions against the preceding commit.
+
+### Android time platform unit
+
+The original six-function time run at `0x270991`–`0x270ba4` is followed by
+`_GLOBAL__sub_I_nutime_android.c` and a local `g_startTime` adjacent to six
+`VuVec` objects. The current `.cpp` has been renamed to the original `.c`
+filename but compiled as C++, preserving the mangled platform helpers.
+`NuTimeGetMicrosecondsPS` moved from a miscellaneous empty stub into this
+unit and now uses the same observed `clock_gettime` and microsecond conversion
+as the neighboring exact `NuTimeGetTicksPS`. Including the shared vector
+definition reconstructs the original six local objects and makes the named
+initializer exact. Expressing ticks-per-second as the original 64-bit value
+makes that helper exact too. Existing `NuGetCurrentTimeMilisecondsPS`,
+`NuTimeGetTicksPS`, and `NuTimeGetTime` remain exact, and `NuTimeInitPS`
+remains 99.85%. The caller uses the existing `nutime.h` declaration instead
+of a local linker-only declaration.
+
+In the same interval, the shader-manager destroy and save-folder wrappers
+have been moved from placeholders to their existing shader-manager unit,
+with a real header and the original 256-byte save-folder global. Their scores
+reach 93.79% and 100%. The two bounded CRC string loops in their existing
+`crc.cpp` unit now test the character before the length bound, as the original
+does, raising their matches to 47.93% and 35.15%. The combined measured
+score is 44.9237%, eight improvements, four newly exact functions, and no
+regressions against the preceding commit.
+
+The original `.c` names require the repository's clang-tidy aspect to parse
+those two files as C++, just as the actual compile actions do. The first PR
+run exposed this mismatch for `nurain_android.c` in Linux target/native lint;
+`linters.bzl` now explicitly follows the real language for both reconstructed
+`.c` units. This is a tooling language correction, not a source-level match
+override. Target, native, and WASM clang-tidy have passed locally with the
+change.

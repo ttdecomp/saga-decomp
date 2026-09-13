@@ -9,6 +9,9 @@
 build:target --per_file_copt=^src/batman\.cpp$@-O2
 # The original rain unit was named .c but compiled as C++ (VuVec constructors).
 build --per_file_copt=^src/nu2api/nu3d/android/nurain_android\.c$@-x,c++,-std=gnu++11
+# The original Android time unit likewise used a .c filename with C++
+# linkage for its clock helper functions.
+build --per_file_copt=^src/nu2api/nucore/android/nutime_android\.c$@-x,c++,-std=gnu++11
 # Editor path callbacks in the original use optimized frameless PIC call sequences.
 build:target --per_file_copt=^src/editor/edpath\.cpp$@-O2
 # Recovered Android entry points; -O2 and -O3 emit the same measured bodies.

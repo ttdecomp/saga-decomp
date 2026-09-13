@@ -90,7 +90,7 @@ u32 CRC_ProcessString(const char *str) {
 
 u32 CRC_ProcessStringN(const char *str, u32 size) {
     u32 crc = 0;
-    for (u32 i = 0; i < size && str[i] != '\0'; ++i) {
+    for (u32 i = 0; str[i] != '\0' && i < size; ++i) {
         const u32 table_index = static_cast<u32>(static_cast<i32>(str[i])) ^ (crc >> 24);
         crc = (crc << 8) ^ g_crc_table[table_index];
     }
@@ -108,7 +108,7 @@ u32 CRC_ProcessStringIgnoreCase(const char *str) {
 
 u32 CRC_ProcessStringNIgnoreCase(const char *str, u32 size) {
     u32 crc = 0;
-    for (u32 i = 0; i < size && str[i] != '\0'; ++i) {
+    for (u32 i = 0; str[i] != '\0' && i < size; ++i) {
         const u32 table_index = static_cast<u32>(static_cast<i32>(CRC_ToUpper(str[i]))) ^ (crc >> 24);
         crc = (crc << 8) ^ g_crc_table[table_index];
     }

@@ -633,9 +633,6 @@ i32 NuIOS_GetPurchaseResult() {
 void NuLightMotionBlurEffect(i32, float) {
 }
 
-void NuTimeGetMicrosecondsPS(u32 *, u32 *) {
-}
-
 // original 0x2954f0 -- legacy three-lightmap packet followed by a UV offset.
 void NuIOSDLLightmapOffsetOld(void *arg) {
     const i32 *texture_ids = static_cast<const i32 *>(arg);

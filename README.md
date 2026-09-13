@@ -81,7 +81,7 @@ See https://ttdecomp.github.io/saga/
 | `legoapi/render` | 40.8% | 27.3% |
 | `legoapi/world` | 39.9% | 29.9% |
 | `legogame` | 50.8% | 60.0% |
-| `nu2api` | 71.1% | 57.6% |
+| `nu2api` | 71.2% | 57.7% |
 
 <!-- matching-table-end -->
 

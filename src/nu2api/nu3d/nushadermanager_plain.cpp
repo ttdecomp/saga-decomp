@@ -33,6 +33,7 @@ using nu2api::LoadedUniqueShaderRecord;
 using nu2api::ShaderMtlDescFilterPlain;
 
 void *g_shaderManager = nullptr;
+char g_shaderSaveFolder[256] = "shaders";
 
 #include <GLES2/gl2.h>
 #include <cstdio>
@@ -549,6 +550,21 @@ extern "C" void NuShaderManagerDestroyShaders(void) {
             NuShaderObjectUnInit(slot);
         }
     }
+}
+
+extern "C" void NuShaderManagerDestroy(void) {
+    ShaderManagerOpenGL *manager = static_cast<ShaderManagerOpenGL *>(g_shaderManager);
+    for (i32 i = 0; i < nu2api::kSlotCount; ++i) {
+        NUSHADEROBJECT *slot = &manager->slots[i];
+        if (slot->glsl.base.field1 >= 0) {
+            NuShaderObjectUnInit(slot);
+        }
+    }
+    g_shaderManager = nullptr;
+}
+
+extern "C" void NuShaderManagerSetShaderSaveFolder(const char *folder) {
+    std::strcpy(g_shaderSaveFolder, folder);
 }
 
 extern u32 g_boundShader;

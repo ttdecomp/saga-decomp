@@ -67,7 +67,6 @@ extern "C" {
 }
 
 void NuRndrInitGeneric(void); // nurndr.cpp (C++ linkage)
-void NuTimeInitPS(void);      // nutime_android.cpp
 void bgProcInit(void);        // bgproc_android.cpp
 
 NUAPI nuapi;
