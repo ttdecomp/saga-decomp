@@ -1,3 +1,5 @@
+#pragma once
+
 #include <pthread.h>
 
 #include "nu2api/nucore/common.h"
@@ -15,12 +17,15 @@ class NuMemoryPool {
 
   private:
     struct FreeBlock {
-        FreeBlock *next;
+        FreeBlock volatile *next;
     };
 
     struct Page {
         Page *next;
         u32 size;
+        void *ptr;
+        u32 offset;
+        u32 allocation_count;
     };
 
   public:
@@ -39,7 +44,7 @@ class NuMemoryPool {
     u32 GetFreeBytes();
     u32 GetLargeBlockBytes();
     u32 GetPagedBytes();
-    void InterlockedPop(FreeBlock volatile **out_head);
+    FreeBlock volatile *InterlockedPop(FreeBlock volatile **out_head);
     void InterlockedPush(FreeBlock volatile **head, void *block);
     void Merge(FreeBlock volatile *a, FreeBlock volatile *b);
     void Merge(Page *a, Page *b);
@@ -62,7 +67,7 @@ class NuMemoryPool {
     u32 large_block_bytes;
     Page *pages;
     u8 reserved_0x1c[0x400];
-    bool page_list_stable;
+    volatile bool page_list_stable;
     u8 reserved_0x41d[3];
     pthread_mutex_t mutex;
 

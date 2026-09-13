@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.71382,
+    "fuzzy_match_percent": 44.725765,
     "total_code": "4722419",
-    "matched_code": "387888",
-    "matched_code_percent": 8.213757,
+    "matched_code": "388132",
+    "matched_code_percent": 8.218924,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4644,
-    "matched_functions_percent": 34.50479,
+    "matched_functions": 4646,
+    "matched_functions_percent": 34.519653,
     "total_units": 1
   },
   "text": {
@@ -92091,6 +92091,14 @@
           "match_percent": 100.0
         },
         {
+          "name": "_ZN15NuMemoryManager15GetSmallBinSizeEj",
+          "demangled_name": "NuMemoryManager::GetSmallBinSize(unsigned int)",
+          "address": 991376,
+          "offset": 101408,
+          "size": 12,
+          "match_percent": 100.0
+        },
+        {
           "name": "_ZN15NuMemoryManager16GetLargeBinIndexEj",
           "demangled_name": "NuMemoryManager::GetLargeBinIndex(unsigned int)",
           "address": 991392,
@@ -92105,6 +92113,14 @@
           "offset": 101520,
           "size": 74,
           "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager13VisitManagersEPNS_8IVisitorE",
+          "demangled_name": "NuMemoryManager::VisitManagers(NuMemoryManager::IVisitor*)",
+          "address": 991568,
+          "offset": 101600,
+          "size": 114,
+          "match_percent": 99.97298
         },
         {
           "name": "_ZN15NuMemoryManagerC1EPNS_13IEventHandlerEPNS_13IErrorHandlerEPKcPS5_j",
@@ -92123,11 +92139,35 @@
           "match_percent": 100.0
         },
         {
+          "name": "_ZNK15NuMemoryManager12GetDebugNameEv",
+          "demangled_name": "NuMemoryManager::GetDebugName() const",
+          "address": 992624,
+          "offset": 102656,
+          "size": 28,
+          "match_percent": 99.28571
+        },
+        {
           "name": "_ZN15NuMemoryManager9SetZombieEv",
           "demangled_name": "NuMemoryManager::SetZombie()",
           "address": 992656,
           "offset": 102688,
           "size": 13,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager8IsZombieEv",
+          "demangled_name": "NuMemoryManager::IsZombie()",
+          "address": 992672,
+          "offset": 102704,
+          "size": 13,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager10VisitPagesEPNS_12IPageVisitorE",
+          "demangled_name": "NuMemoryManager::VisitPages(NuMemoryManager::IPageVisitor*)",
+          "address": 992688,
+          "offset": 102720,
+          "size": 117,
           "match_percent": 100.0
         },
         {
@@ -92203,6 +92243,38 @@
           "match_percent": 17.452381
         },
         {
+          "name": "_ZN15NuMemoryManager19ReleaseExternalPageEPv",
+          "demangled_name": "NuMemoryManager::ReleaseExternalPage(void*)",
+          "address": 994816,
+          "offset": 104848,
+          "size": 242,
+          "match_percent": 5.6
+        },
+        {
+          "name": "_ZN15NuMemoryManager21MergeLargeBinSegmentsEPNS_10FreeHeaderES1_",
+          "demangled_name": "NuMemoryManager::MergeLargeBinSegments(NuMemoryManager::FreeHeader*, NuMemoryManager::FreeHeader*)",
+          "address": 995072,
+          "offset": 105104,
+          "size": 221,
+          "match_percent": 6.75
+        },
+        {
+          "name": "_ZN15NuMemoryManager19SortLargeBinSegmentEPNS_10FreeHeaderEj",
+          "demangled_name": "NuMemoryManager::SortLargeBinSegment(NuMemoryManager::FreeHeader*, unsigned int)",
+          "address": 995296,
+          "offset": 105328,
+          "size": 138,
+          "match_percent": 9.130435
+        },
+        {
+          "name": "_ZN15NuMemoryManager12SortLargeBinEj",
+          "demangled_name": "NuMemoryManager::SortLargeBin(unsigned int)",
+          "address": 995440,
+          "offset": 105472,
+          "size": 126,
+          "match_percent": 10.243902
+        },
+        {
           "name": "_ZN15NuMemoryManager18CalculateBlockSizeEj",
           "demangled_name": "NuMemoryManager::CalculateBlockSize(unsigned int)",
           "address": 995568,
@@ -92235,12 +92307,36 @@
           "match_percent": 26.027708
         },
         {
+          "name": "_ZNK15NuMemoryManager21GetCurrentContextNameEv",
+          "demangled_name": "NuMemoryManager::GetCurrentContextName() const",
+          "address": 997136,
+          "offset": 107168,
+          "size": 27,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZNK15NuMemoryManager19GetCurrentContextIDEv",
+          "demangled_name": "NuMemoryManager::GetCurrentContextID() const",
+          "address": 997168,
+          "offset": 107200,
+          "size": 27,
+          "match_percent": 100.0
+        },
+        {
           "name": "_ZN15NuMemoryManager15ValidateAddressEPvPKc",
           "demangled_name": "NuMemoryManager::ValidateAddress(void*, char const*)",
           "address": 997200,
           "offset": 107232,
           "size": 211,
           "match_percent": 99.895836
+        },
+        {
+          "name": "_ZN15NuMemoryManager22GetBlockDebugBackTraceEPvPS0_",
+          "demangled_name": "NuMemoryManager::GetBlockDebugBackTrace(void*, void**)",
+          "address": 997424,
+          "offset": 107456,
+          "size": 129,
+          "match_percent": 13.125
         },
         {
           "name": "_ZN15NuMemoryManager20ValidateBlockIsPagedEPvPKc",
@@ -92259,6 +92355,14 @@
           "match_percent": 99.941864
         },
         {
+          "name": "_ZN15NuMemoryManager16_MultiBlockAllocEjjjPPvjPKct",
+          "demangled_name": "NuMemoryManager::_MultiBlockAlloc(unsigned int, unsigned int, unsigned int, void**, unsigned int, char const*, unsigned short)",
+          "address": 997984,
+          "offset": 108016,
+          "size": 426,
+          "match_percent": 3.934426
+        },
+        {
           "name": "_ZN15NuMemoryManager24ValidateBlockIsAllocatedEPNS_6HeaderEPKc",
           "demangled_name": "NuMemoryManager::ValidateBlockIsAllocated(NuMemoryManager::Header*, char const*)",
           "address": 998416,
@@ -92267,12 +92371,60 @@
           "match_percent": 99.93827
         },
         {
+          "name": "_ZN15NuMemoryManager22ClearBlockDebugContextEPv",
+          "demangled_name": "NuMemoryManager::ClearBlockDebugContext(void*)",
+          "address": 998800,
+          "offset": 108832,
+          "size": 143,
+          "match_percent": 12.0
+        },
+        {
           "name": "_ZN15NuMemoryManager21SetBlockDebugCategoryEPvt",
           "demangled_name": "NuMemoryManager::SetBlockDebugCategory(void*, unsigned short)",
           "address": 998944,
           "offset": 108976,
           "size": 153,
           "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager20SetBlockDebugContextEPvj",
+          "demangled_name": "NuMemoryManager::SetBlockDebugContext(void*, unsigned int)",
+          "address": 999104,
+          "offset": 109136,
+          "size": 162,
+          "match_percent": 10.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager17SetBlockDebugNameEPvPKc",
+          "demangled_name": "NuMemoryManager::SetBlockDebugName(void*, char const*)",
+          "address": 999280,
+          "offset": 109312,
+          "size": 144,
+          "match_percent": 11.351352
+        },
+        {
+          "name": "_ZN15NuMemoryManager20GetBlockDebugContextEPv",
+          "demangled_name": "NuMemoryManager::GetBlockDebugContext(void*)",
+          "address": 999424,
+          "offset": 109456,
+          "size": 150,
+          "match_percent": 11.052631
+        },
+        {
+          "name": "_ZN15NuMemoryManager17GetBlockAlignmentEPv",
+          "demangled_name": "NuMemoryManager::GetBlockAlignment(void*)",
+          "address": 999584,
+          "offset": 109616,
+          "size": 140,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager12GetBlockSizeEPv",
+          "demangled_name": "NuMemoryManager::GetBlockSize(void*)",
+          "address": 999728,
+          "offset": 109760,
+          "size": 181,
+          "match_percent": 75.34
         },
         {
           "name": "_ZN15NuMemoryManager18ValidateBlockFlagsEPNS_6HeaderEjPKc",
@@ -92291,6 +92443,22 @@
           "match_percent": 57.024292
         },
         {
+          "name": "_ZN15NuMemoryManager28ValidateBlockDeferredContentEPNS_6HeaderEPKc",
+          "demangled_name": "NuMemoryManager::ValidateBlockDeferredContent(NuMemoryManager::Header*, char const*)",
+          "address": 1001664,
+          "offset": 111696,
+          "size": 304,
+          "match_percent": 6.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager13ValidateBlockEPv",
+          "demangled_name": "NuMemoryManager::ValidateBlock(void*)",
+          "address": 1001968,
+          "offset": 112000,
+          "size": 162,
+          "match_percent": 10.243902
+        },
+        {
           "name": "_ZN15NuMemoryManager8ValidateEv",
           "demangled_name": "NuMemoryManager::Validate()",
           "address": 1002144,
@@ -92307,11 +92475,67 @@
           "match_percent": 3.255814
         },
         {
+          "name": "_ZN15NuMemoryManager26FindAndTouchMatchingBlocksEPNS_11DebugHeaderEPjj",
+          "demangled_name": "NuMemoryManager::FindAndTouchMatchingBlocks(NuMemoryManager::DebugHeader*, unsigned int*, unsigned int)",
+          "address": 1002944,
+          "offset": 112976,
+          "size": 588,
+          "match_percent": 3.037975
+        },
+        {
+          "name": "_ZN15NuMemoryManager16UnTouchAllBlocksEv",
+          "demangled_name": "NuMemoryManager::UnTouchAllBlocks()",
+          "address": 1003536,
+          "offset": 113568,
+          "size": 165,
+          "match_percent": 8.571428
+        },
+        {
+          "name": "_ZN15NuMemoryManager9DumpBlockEjP13NuSymbolQueryPNS_6HeaderEjjj",
+          "demangled_name": "NuMemoryManager::DumpBlock(unsigned int, NuSymbolQuery*, NuMemoryManager::Header*, unsigned int, unsigned int, unsigned int)",
+          "address": 1003712,
+          "offset": 113744,
+          "size": 1383,
+          "match_percent": 0.923913
+        },
+        {
+          "name": "_ZN15NuMemoryManager20DumpBlocksForContextEjP13NuSymbolQueryPNS_7ContextEj",
+          "demangled_name": "NuMemoryManager::DumpBlocksForContext(unsigned int, NuSymbolQuery*, NuMemoryManager::Context*, unsigned int)",
+          "address": 1005104,
+          "offset": 115136,
+          "size": 1320,
+          "match_percent": 1.268882
+        },
+        {
           "name": "_ZN15NuMemoryManager4DumpEjPKc",
           "demangled_name": "NuMemoryManager::Dump(unsigned int, char const*)",
           "address": 1006432,
           "offset": 116464,
           "size": 9,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager13GetPagedBytesEv",
+          "demangled_name": "NuMemoryManager::GetPagedBytes()",
+          "address": 1006448,
+          "offset": 116480,
+          "size": 116,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZNK15NuMemoryManager12GetFreeBytesEv",
+          "demangled_name": "NuMemoryManager::GetFreeBytes() const",
+          "address": 1006576,
+          "offset": 116608,
+          "size": 56,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager17GetAllocatedBytesEv",
+          "demangled_name": "NuMemoryManager::GetAllocatedBytes()",
+          "address": 1006640,
+          "offset": 116672,
+          "size": 70,
           "match_percent": 100.0
         },
         {
@@ -92355,6 +92579,14 @@
           "match_percent": 100.0
         },
         {
+          "name": "_ZN15NuMemoryManager11PushContextEPKc",
+          "demangled_name": "NuMemoryManager::PushContext(char const*)",
+          "address": 1007776,
+          "offset": 117808,
+          "size": 197,
+          "match_percent": 8.936171
+        },
+        {
           "name": "_ZN15NuMemoryManager13_BlockReAllocEPvjjjPKct",
           "demangled_name": "NuMemoryManager::_BlockReAlloc(void*, unsigned int, unsigned int, unsigned int, char const*, unsigned short)",
           "address": 1007984,
@@ -92393,6 +92625,54 @@
           "offset": 120960,
           "size": 142,
           "match_percent": 100.0
+        },
+        {
+          "name": "_ZNK15NuMemoryManager19GetNumFreeFragmentsEv",
+          "demangled_name": "NuMemoryManager::GetNumFreeFragments() const",
+          "address": 1011072,
+          "offset": 121104,
+          "size": 15,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager19SetOverrideCategoryEt",
+          "demangled_name": "NuMemoryManager::SetOverrideCategory(unsigned short)",
+          "address": 1011088,
+          "offset": 121120,
+          "size": 18,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager27SetOverrideCategoryBGThreadEt",
+          "demangled_name": "NuMemoryManager::SetOverrideCategoryBGThread(unsigned short)",
+          "address": 1011120,
+          "offset": 121152,
+          "size": 18,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager19GetOverrideCategoryEv",
+          "demangled_name": "NuMemoryManager::GetOverrideCategory()",
+          "address": 1011152,
+          "offset": 121184,
+          "size": 16,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager27GetOverrideCategoryBGThreadEv",
+          "demangled_name": "NuMemoryManager::GetOverrideCategoryBGThread()",
+          "address": 1011168,
+          "offset": 121200,
+          "size": 16,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN15NuMemoryManager25GetCategoryAllocatedBytesEt",
+          "demangled_name": "NuMemoryManager::GetCategoryAllocatedBytes(unsigned short)",
+          "address": 1011184,
+          "offset": 121216,
+          "size": 19,
+          "match_percent": 100.0
         }
       ]
     },
@@ -92418,12 +92698,172 @@
           "match_percent": 100.0
         },
         {
+          "name": "_ZN12NuMemoryPool15InterlockedPushEPPVNS_9FreeBlockEPv",
+          "demangled_name": "NuMemoryPool::InterlockedPush(NuMemoryPool::FreeBlock volatile**, void*)",
+          "address": 1011312,
+          "offset": 121344,
+          "size": 32,
+          "match_percent": 99.833336
+        },
+        {
+          "name": "_ZN12NuMemoryPool14InterlockedPopEPPVNS_9FreeBlockE",
+          "demangled_name": "NuMemoryPool::InterlockedPop(NuMemoryPool::FreeBlock volatile**)",
+          "address": 1011344,
+          "offset": 121376,
+          "size": 38,
+          "match_percent": 99.933334
+        },
+        {
+          "name": "_ZN12NuMemoryPool10VisitPoolsEPNS_8IVisitorE",
+          "demangled_name": "NuMemoryPool::VisitPools(NuMemoryPool::IVisitor*)",
+          "address": 1011392,
+          "offset": 121424,
+          "size": 98,
+          "match_percent": 20.454546
+        },
+        {
+          "name": "_ZN12NuMemoryPoolC1EPNS_13IEventHandlerEjPKc",
+          "demangled_name": "NuMemoryPool::NuMemoryPool(NuMemoryPool::IEventHandler*, unsigned int, char const*)",
+          "address": 1011504,
+          "offset": 121536,
+          "size": 269,
+          "match_percent": 5.833334
+        },
+        {
+          "name": "_ZN12NuMemoryPoolC2EPNS_13IEventHandlerEjPKc",
+          "demangled_name": "NuMemoryPool::NuMemoryPool(NuMemoryPool::IEventHandler*, unsigned int, char const*)",
+          "address": 1011504,
+          "offset": 121536,
+          "size": 269,
+          "match_percent": 5.833334
+        },
+        {
+          "name": "_ZNK12NuMemoryPool12GetDebugNameEv",
+          "demangled_name": "NuMemoryPool::GetDebugName() const",
+          "address": 1011776,
+          "offset": 121808,
+          "size": 12,
+          "match_percent": 100.0
+        },
+        {
           "name": "_ZN12NuMemoryPool7AddPageEPvj",
           "demangled_name": "NuMemoryPool::AddPage(void*, unsigned int)",
           "address": 1011792,
           "offset": 121824,
           "size": 211,
-          "match_percent": 8.936171
+          "match_percent": 99.97872
+        },
+        {
+          "name": "_ZN12NuMemoryPool5MergeEPVNS_9FreeBlockES2_",
+          "demangled_name": "NuMemoryPool::Merge(NuMemoryPool::FreeBlock volatile*, NuMemoryPool::FreeBlock volatile*)",
+          "address": 1012016,
+          "offset": 122048,
+          "size": 164,
+          "match_percent": 6.31579
+        },
+        {
+          "name": "_ZN12NuMemoryPool9MergeSortEPVNS_9FreeBlockEj",
+          "demangled_name": "NuMemoryPool::MergeSort(NuMemoryPool::FreeBlock volatile*, unsigned int)",
+          "address": 1012192,
+          "offset": 122224,
+          "size": 136,
+          "match_percent": 9.130435
+        },
+        {
+          "name": "_ZN12NuMemoryPool5MergeEPNS_4PageES1_",
+          "demangled_name": "NuMemoryPool::Merge(NuMemoryPool::Page*, NuMemoryPool::Page*)",
+          "address": 1012336,
+          "offset": 122368,
+          "size": 156,
+          "match_percent": 5.915493
+        },
+        {
+          "name": "_ZN12NuMemoryPool9MergeSortEPNS_4PageEj",
+          "demangled_name": "NuMemoryPool::MergeSort(NuMemoryPool::Page*, unsigned int)",
+          "address": 1012496,
+          "offset": 122528,
+          "size": 136,
+          "match_percent": 9.130435
+        },
+        {
+          "name": "_ZN12NuMemoryPool24ReleaseUnreferencedPagesEv",
+          "demangled_name": "NuMemoryPool::ReleaseUnreferencedPages()",
+          "address": 1012640,
+          "offset": 122672,
+          "size": 868,
+          "match_percent": 2.068965
+        },
+        {
+          "name": "_ZN12NuMemoryPoolD1Ev",
+          "demangled_name": "NuMemoryPool::~NuMemoryPool()",
+          "address": 1013520,
+          "offset": 123552,
+          "size": 122,
+          "match_percent": 9.767442
+        },
+        {
+          "name": "_ZN12NuMemoryPoolD2Ev",
+          "demangled_name": "NuMemoryPool::~NuMemoryPool()",
+          "address": 1013520,
+          "offset": 123552,
+          "size": 122,
+          "match_percent": 9.767442
+        },
+        {
+          "name": "_ZN12NuMemoryPool28ReleaseUnreferencedPages_OLDEv",
+          "demangled_name": "NuMemoryPool::ReleaseUnreferencedPages_OLD()",
+          "address": 1013648,
+          "offset": 123680,
+          "size": 508,
+          "match_percent": 3.483871
+        },
+        {
+          "name": "_ZN12NuMemoryPool15ReleaseAllPagesEv",
+          "demangled_name": "NuMemoryPool::ReleaseAllPages()",
+          "address": 1014160,
+          "offset": 124192,
+          "size": 268,
+          "match_percent": 6.0
+        },
+        {
+          "name": "_ZN12NuMemoryPool13GetPagedBytesEv",
+          "demangled_name": "NuMemoryPool::GetPagedBytes()",
+          "address": 1014432,
+          "offset": 124464,
+          "size": 127,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN12NuMemoryPool12GetFreeBytesEv",
+          "demangled_name": "NuMemoryPool::GetFreeBytes()",
+          "address": 1014560,
+          "offset": 124592,
+          "size": 12,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN12NuMemoryPool17GetAllocatedBytesEv",
+          "demangled_name": "NuMemoryPool::GetAllocatedBytes()",
+          "address": 1014576,
+          "offset": 124608,
+          "size": 51,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN12NuMemoryPool18GetLargeBlockBytesEv",
+          "demangled_name": "NuMemoryPool::GetLargeBlockBytes()",
+          "address": 1014640,
+          "offset": 124672,
+          "size": 12,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN12NuMemoryPool9PageAllocEjPKc",
+          "demangled_name": "NuMemoryPool::PageAlloc(unsigned int, char const*)",
+          "address": 1014656,
+          "offset": 124688,
+          "size": 289,
+          "match_percent": 4.421053
         }
       ]
     },
@@ -92462,7 +92902,7 @@
           "address": 986720,
           "offset": 96752,
           "size": 129,
-          "match_percent": 12.352942
+          "match_percent": 99.67647
         },
         {
           "name": "_ZN15NuThreadManager8AllocTLSEv",
@@ -100836,446 +101276,6 @@
           "offset": 101248,
           "size": 80,
           "match_percent": 22.105263
-        },
-        {
-          "name": "_ZN15NuMemoryManager15GetSmallBinSizeEj",
-          "demangled_name": "NuMemoryManager::GetSmallBinSize(unsigned int)",
-          "address": 991376,
-          "offset": 101408,
-          "size": 12,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager13VisitManagersEPNS_8IVisitorE",
-          "demangled_name": "NuMemoryManager::VisitManagers(NuMemoryManager::IVisitor*)",
-          "address": 991568,
-          "offset": 101600,
-          "size": 114,
-          "match_percent": 11.351352
-        },
-        {
-          "name": "_ZNK15NuMemoryManager12GetDebugNameEv",
-          "demangled_name": "NuMemoryManager::GetDebugName() const",
-          "address": 992624,
-          "offset": 102656,
-          "size": 28,
-          "match_percent": 99.28571
-        },
-        {
-          "name": "_ZN15NuMemoryManager8IsZombieEv",
-          "demangled_name": "NuMemoryManager::IsZombie()",
-          "address": 992672,
-          "offset": 102704,
-          "size": 13,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager10VisitPagesEPNS_12IPageVisitorE",
-          "demangled_name": "NuMemoryManager::VisitPages(NuMemoryManager::IPageVisitor*)",
-          "address": 992688,
-          "offset": 102720,
-          "size": 117,
-          "match_percent": 12.307693
-        },
-        {
-          "name": "_ZN15NuMemoryManager19ReleaseExternalPageEPv",
-          "demangled_name": "NuMemoryManager::ReleaseExternalPage(void*)",
-          "address": 994816,
-          "offset": 104848,
-          "size": 242,
-          "match_percent": 5.6
-        },
-        {
-          "name": "_ZN15NuMemoryManager21MergeLargeBinSegmentsEPNS_10FreeHeaderES1_",
-          "demangled_name": "NuMemoryManager::MergeLargeBinSegments(NuMemoryManager::FreeHeader*, NuMemoryManager::FreeHeader*)",
-          "address": 995072,
-          "offset": 105104,
-          "size": 221,
-          "match_percent": 6.75
-        },
-        {
-          "name": "_ZN15NuMemoryManager19SortLargeBinSegmentEPNS_10FreeHeaderEj",
-          "demangled_name": "NuMemoryManager::SortLargeBinSegment(NuMemoryManager::FreeHeader*, unsigned int)",
-          "address": 995296,
-          "offset": 105328,
-          "size": 138,
-          "match_percent": 9.130435
-        },
-        {
-          "name": "_ZN15NuMemoryManager12SortLargeBinEj",
-          "demangled_name": "NuMemoryManager::SortLargeBin(unsigned int)",
-          "address": 995440,
-          "offset": 105472,
-          "size": 126,
-          "match_percent": 10.243902
-        },
-        {
-          "name": "_ZNK15NuMemoryManager21GetCurrentContextNameEv",
-          "demangled_name": "NuMemoryManager::GetCurrentContextName() const",
-          "address": 997136,
-          "offset": 107168,
-          "size": 27,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZNK15NuMemoryManager19GetCurrentContextIDEv",
-          "demangled_name": "NuMemoryManager::GetCurrentContextID() const",
-          "address": 997168,
-          "offset": 107200,
-          "size": 27,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager22GetBlockDebugBackTraceEPvPS0_",
-          "demangled_name": "NuMemoryManager::GetBlockDebugBackTrace(void*, void**)",
-          "address": 997424,
-          "offset": 107456,
-          "size": 129,
-          "match_percent": 13.125
-        },
-        {
-          "name": "_ZN15NuMemoryManager16_MultiBlockAllocEjjjPPvjPKct",
-          "demangled_name": "NuMemoryManager::_MultiBlockAlloc(unsigned int, unsigned int, unsigned int, void**, unsigned int, char const*, unsigned short)",
-          "address": 997984,
-          "offset": 108016,
-          "size": 426,
-          "match_percent": 3.934426
-        },
-        {
-          "name": "_ZN15NuMemoryManager22ClearBlockDebugContextEPv",
-          "demangled_name": "NuMemoryManager::ClearBlockDebugContext(void*)",
-          "address": 998800,
-          "offset": 108832,
-          "size": 143,
-          "match_percent": 12.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager20SetBlockDebugContextEPvj",
-          "demangled_name": "NuMemoryManager::SetBlockDebugContext(void*, unsigned int)",
-          "address": 999104,
-          "offset": 109136,
-          "size": 162,
-          "match_percent": 10.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager17SetBlockDebugNameEPvPKc",
-          "demangled_name": "NuMemoryManager::SetBlockDebugName(void*, char const*)",
-          "address": 999280,
-          "offset": 109312,
-          "size": 144,
-          "match_percent": 11.351352
-        },
-        {
-          "name": "_ZN15NuMemoryManager20GetBlockDebugContextEPv",
-          "demangled_name": "NuMemoryManager::GetBlockDebugContext(void*)",
-          "address": 999424,
-          "offset": 109456,
-          "size": 150,
-          "match_percent": 11.052631
-        },
-        {
-          "name": "_ZN15NuMemoryManager17GetBlockAlignmentEPv",
-          "demangled_name": "NuMemoryManager::GetBlockAlignment(void*)",
-          "address": 999584,
-          "offset": 109616,
-          "size": 140,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager12GetBlockSizeEPv",
-          "demangled_name": "NuMemoryManager::GetBlockSize(void*)",
-          "address": 999728,
-          "offset": 109760,
-          "size": 181,
-          "match_percent": 75.34
-        },
-        {
-          "name": "_ZN15NuMemoryManager28ValidateBlockDeferredContentEPNS_6HeaderEPKc",
-          "demangled_name": "NuMemoryManager::ValidateBlockDeferredContent(NuMemoryManager::Header*, char const*)",
-          "address": 1001664,
-          "offset": 111696,
-          "size": 304,
-          "match_percent": 6.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager13ValidateBlockEPv",
-          "demangled_name": "NuMemoryManager::ValidateBlock(void*)",
-          "address": 1001968,
-          "offset": 112000,
-          "size": 162,
-          "match_percent": 10.243902
-        },
-        {
-          "name": "_ZN15NuMemoryManager26FindAndTouchMatchingBlocksEPNS_11DebugHeaderEPjj",
-          "demangled_name": "NuMemoryManager::FindAndTouchMatchingBlocks(NuMemoryManager::DebugHeader*, unsigned int*, unsigned int)",
-          "address": 1002944,
-          "offset": 112976,
-          "size": 588,
-          "match_percent": 3.037975
-        },
-        {
-          "name": "_ZN15NuMemoryManager16UnTouchAllBlocksEv",
-          "demangled_name": "NuMemoryManager::UnTouchAllBlocks()",
-          "address": 1003536,
-          "offset": 113568,
-          "size": 165,
-          "match_percent": 8.571428
-        },
-        {
-          "name": "_ZN15NuMemoryManager9DumpBlockEjP13NuSymbolQueryPNS_6HeaderEjjj",
-          "demangled_name": "NuMemoryManager::DumpBlock(unsigned int, NuSymbolQuery*, NuMemoryManager::Header*, unsigned int, unsigned int, unsigned int)",
-          "address": 1003712,
-          "offset": 113744,
-          "size": 1383,
-          "match_percent": 0.923913
-        },
-        {
-          "name": "_ZN15NuMemoryManager20DumpBlocksForContextEjP13NuSymbolQueryPNS_7ContextEj",
-          "demangled_name": "NuMemoryManager::DumpBlocksForContext(unsigned int, NuSymbolQuery*, NuMemoryManager::Context*, unsigned int)",
-          "address": 1005104,
-          "offset": 115136,
-          "size": 1320,
-          "match_percent": 1.268882
-        },
-        {
-          "name": "_ZN15NuMemoryManager13GetPagedBytesEv",
-          "demangled_name": "NuMemoryManager::GetPagedBytes()",
-          "address": 1006448,
-          "offset": 116480,
-          "size": 116,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZNK15NuMemoryManager12GetFreeBytesEv",
-          "demangled_name": "NuMemoryManager::GetFreeBytes() const",
-          "address": 1006576,
-          "offset": 116608,
-          "size": 56,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager17GetAllocatedBytesEv",
-          "demangled_name": "NuMemoryManager::GetAllocatedBytes()",
-          "address": 1006640,
-          "offset": 116672,
-          "size": 70,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager11PushContextEPKc",
-          "demangled_name": "NuMemoryManager::PushContext(char const*)",
-          "address": 1007776,
-          "offset": 117808,
-          "size": 197,
-          "match_percent": 8.936171
-        },
-        {
-          "name": "_ZNK15NuMemoryManager19GetNumFreeFragmentsEv",
-          "demangled_name": "NuMemoryManager::GetNumFreeFragments() const",
-          "address": 1011072,
-          "offset": 121104,
-          "size": 15,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager19SetOverrideCategoryEt",
-          "demangled_name": "NuMemoryManager::SetOverrideCategory(unsigned short)",
-          "address": 1011088,
-          "offset": 121120,
-          "size": 18,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager27SetOverrideCategoryBGThreadEt",
-          "demangled_name": "NuMemoryManager::SetOverrideCategoryBGThread(unsigned short)",
-          "address": 1011120,
-          "offset": 121152,
-          "size": 18,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager19GetOverrideCategoryEv",
-          "demangled_name": "NuMemoryManager::GetOverrideCategory()",
-          "address": 1011152,
-          "offset": 121184,
-          "size": 16,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager27GetOverrideCategoryBGThreadEv",
-          "demangled_name": "NuMemoryManager::GetOverrideCategoryBGThread()",
-          "address": 1011168,
-          "offset": 121200,
-          "size": 16,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN15NuMemoryManager25GetCategoryAllocatedBytesEt",
-          "demangled_name": "NuMemoryManager::GetCategoryAllocatedBytes(unsigned short)",
-          "address": 1011184,
-          "offset": 121216,
-          "size": 19,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN12NuMemoryPool15InterlockedPushEPPVNS_9FreeBlockEPv",
-          "demangled_name": "NuMemoryPool::InterlockedPush(NuMemoryPool::FreeBlock volatile**, void*)",
-          "address": 1011312,
-          "offset": 121344,
-          "size": 32,
-          "match_percent": 35.0
-        },
-        {
-          "name": "_ZN12NuMemoryPool14InterlockedPopEPPVNS_9FreeBlockE",
-          "demangled_name": "NuMemoryPool::InterlockedPop(NuMemoryPool::FreeBlock volatile**)",
-          "address": 1011344,
-          "offset": 121376,
-          "size": 38,
-          "match_percent": 28.0
-        },
-        {
-          "name": "_ZN12NuMemoryPool10VisitPoolsEPNS_8IVisitorE",
-          "demangled_name": "NuMemoryPool::VisitPools(NuMemoryPool::IVisitor*)",
-          "address": 1011392,
-          "offset": 121424,
-          "size": 98,
-          "match_percent": 20.454546
-        },
-        {
-          "name": "_ZN12NuMemoryPoolC1EPNS_13IEventHandlerEjPKc",
-          "demangled_name": "NuMemoryPool::NuMemoryPool(NuMemoryPool::IEventHandler*, unsigned int, char const*)",
-          "address": 1011504,
-          "offset": 121536,
-          "size": 269,
-          "match_percent": 5.833334
-        },
-        {
-          "name": "_ZN12NuMemoryPoolC2EPNS_13IEventHandlerEjPKc",
-          "demangled_name": "NuMemoryPool::NuMemoryPool(NuMemoryPool::IEventHandler*, unsigned int, char const*)",
-          "address": 1011504,
-          "offset": 121536,
-          "size": 269,
-          "match_percent": 5.833334
-        },
-        {
-          "name": "_ZNK12NuMemoryPool12GetDebugNameEv",
-          "demangled_name": "NuMemoryPool::GetDebugName() const",
-          "address": 1011776,
-          "offset": 121808,
-          "size": 12,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN12NuMemoryPool5MergeEPVNS_9FreeBlockES2_",
-          "demangled_name": "NuMemoryPool::Merge(NuMemoryPool::FreeBlock volatile*, NuMemoryPool::FreeBlock volatile*)",
-          "address": 1012016,
-          "offset": 122048,
-          "size": 164,
-          "match_percent": 6.31579
-        },
-        {
-          "name": "_ZN12NuMemoryPool9MergeSortEPVNS_9FreeBlockEj",
-          "demangled_name": "NuMemoryPool::MergeSort(NuMemoryPool::FreeBlock volatile*, unsigned int)",
-          "address": 1012192,
-          "offset": 122224,
-          "size": 136,
-          "match_percent": 9.130435
-        },
-        {
-          "name": "_ZN12NuMemoryPool5MergeEPNS_4PageES1_",
-          "demangled_name": "NuMemoryPool::Merge(NuMemoryPool::Page*, NuMemoryPool::Page*)",
-          "address": 1012336,
-          "offset": 122368,
-          "size": 156,
-          "match_percent": 5.915493
-        },
-        {
-          "name": "_ZN12NuMemoryPool9MergeSortEPNS_4PageEj",
-          "demangled_name": "NuMemoryPool::MergeSort(NuMemoryPool::Page*, unsigned int)",
-          "address": 1012496,
-          "offset": 122528,
-          "size": 136,
-          "match_percent": 9.130435
-        },
-        {
-          "name": "_ZN12NuMemoryPool24ReleaseUnreferencedPagesEv",
-          "demangled_name": "NuMemoryPool::ReleaseUnreferencedPages()",
-          "address": 1012640,
-          "offset": 122672,
-          "size": 868,
-          "match_percent": 2.068965
-        },
-        {
-          "name": "_ZN12NuMemoryPoolD1Ev",
-          "demangled_name": "NuMemoryPool::~NuMemoryPool()",
-          "address": 1013520,
-          "offset": 123552,
-          "size": 122,
-          "match_percent": 9.767442
-        },
-        {
-          "name": "_ZN12NuMemoryPoolD2Ev",
-          "demangled_name": "NuMemoryPool::~NuMemoryPool()",
-          "address": 1013520,
-          "offset": 123552,
-          "size": 122,
-          "match_percent": 9.767442
-        },
-        {
-          "name": "_ZN12NuMemoryPool28ReleaseUnreferencedPages_OLDEv",
-          "demangled_name": "NuMemoryPool::ReleaseUnreferencedPages_OLD()",
-          "address": 1013648,
-          "offset": 123680,
-          "size": 508,
-          "match_percent": 3.483871
-        },
-        {
-          "name": "_ZN12NuMemoryPool15ReleaseAllPagesEv",
-          "demangled_name": "NuMemoryPool::ReleaseAllPages()",
-          "address": 1014160,
-          "offset": 124192,
-          "size": 268,
-          "match_percent": 6.0
-        },
-        {
-          "name": "_ZN12NuMemoryPool13GetPagedBytesEv",
-          "demangled_name": "NuMemoryPool::GetPagedBytes()",
-          "address": 1014432,
-          "offset": 124464,
-          "size": 127,
-          "match_percent": 93.78788
-        },
-        {
-          "name": "_ZN12NuMemoryPool12GetFreeBytesEv",
-          "demangled_name": "NuMemoryPool::GetFreeBytes()",
-          "address": 1014560,
-          "offset": 124592,
-          "size": 12,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN12NuMemoryPool17GetAllocatedBytesEv",
-          "demangled_name": "NuMemoryPool::GetAllocatedBytes()",
-          "address": 1014576,
-          "offset": 124608,
-          "size": 51,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN12NuMemoryPool18GetLargeBlockBytesEv",
-          "demangled_name": "NuMemoryPool::GetLargeBlockBytes()",
-          "address": 1014640,
-          "offset": 124672,
-          "size": 12,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN12NuMemoryPool9PageAllocEjPKc",
-          "demangled_name": "NuMemoryPool::PageAlloc(unsigned int, char const*)",
-          "address": 1014656,
-          "offset": 124688,
-          "size": 289,
-          "match_percent": 4.421053
         }
       ]
     },

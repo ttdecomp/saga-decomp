@@ -925,3 +925,51 @@ previous default setting, `Create`, `Destroy`, and the constructor become
 exact, while `DetermineDeviceSpecs` rises from 0% to 86.62%. Together with
 `NuPlatform::Destroy`, this batch raises overall matching from 44.693275%
 to 44.7138% with four newly exact functions and no regressions.
+
+### Thread and memory-pool bodies in their existing owners
+
+The original `NuThreadManager::CreateThreadSuspended` has its own local
+priority map and returns the newly created `NuThread`, with the requested
+stack size unchanged and `is_suspended` set. Reconstructing that ordinary
+body in the existing `NuThreadManager.cpp` owner raises it from 12.35% to
+99.68%. The real header and the legacy stand-in declaration now agree on
+the pointer return type; this does not unify the stand-in's other types.
+
+The original `NuMemoryPool::AddPage` allocates a 20-byte `Page`, initializes
+its data pointer and counters, links it under the pool mutex, then adds its
+size to free bytes. Its field offsets agree with the original `PageAlloc`
+and `ReleaseUnreferencedPages` methods. Reconstructing that layout/body in
+the existing pool owner raises `AddPage` from 8.94% to 99.98%. The
+`page_list_stable` field must be observable across the lock interval; making
+it `volatile` preserves the original false/true stores and also brings
+`GetPagedBytes` from 93.79% to exact. These are source-level data and
+concurrency semantics, not forced-emission markers or instruction hacks.
+Overall matching rises from 44.713820% to 44.720432% without regressions.
+
+The neighboring original `NuMemoryPool.cpp` run also contains
+`InterlockedPush` and `InterlockedPop`, previously empty stubs in
+`numemory.cpp`. Their ordinary compare-and-swap loops now live beside
+`InterlockedAdd`/`InterlockedSub` in the pool owner. `Pop` returns the
+removed free block, as the original return register shows; both canonical
+and legacy declarations now use that pointer return type. The reconstructed
+pair reaches 99.83%/99.93% respectively, without assembly, intrinsic
+vector types, or forced-emission attributes. The complete thread/pool batch
+reaches 44.721450% overall with no regressions.
+
+The remaining `NuMemoryPool` methods had still been collected in
+`numemory.cpp`. They now share `NuMemoryPool.cpp` with the implemented
+atomic/page methods at the same `-O2` setting. Their existing bodies are
+unchanged, so this owner correction leaves every function score unchanged;
+large unimplemented release, merge, and allocation routines remain
+explicitly unfinished.
+
+The 37 `NuMemoryManager` definitions formerly collected in `numemory.cpp`
+likewise now live in `NuMemoryManager.cpp`, preserving their bodies and `-O2`
+setting. The move is matching-neutral. The original manager-table and page
+visitor bodies reveal that each visitor's first vtable slot is its visit
+method, not a virtual destructor. Correcting the canonical interfaces and
+implementing the two locked traversals raises `VisitManagers` from 11.35%
+to 99.97% and `VisitPages` from 12.31% to exact. The thread, pool, and
+manager batch reaches 44.725765% overall, with seven improved functions
+and no regressions. The four checks, zero-missing-symbol check, target and
+WASM builds, and 120-frame Cantina smoke test pass.

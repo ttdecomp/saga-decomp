@@ -1092,3 +1092,174 @@ void NuMemoryManager::IErrorHandler::CloseDump(NuMemoryManager *manager, u32 id)
 
 void NuMemoryManager::IErrorHandler::Dump(NuMemoryManager *manager, u32 id, const char *msg) {
 }
+
+void NuMemoryManager::ClearBlockDebugContext(void *) {
+}
+
+void NuMemoryManager::DumpBlock(u32, NuSymbolQuery *, NuMemoryManager::Header *, u32, u32, u32) {
+}
+
+void NuMemoryManager::DumpBlocksForContext(u32, NuSymbolQuery *, NuMemoryManager::Context *, u32) {
+}
+
+void NuMemoryManager::FindAndTouchMatchingBlocks(NuMemoryManager::DebugHeader *, u32 *, u32) {
+}
+
+u32 NuMemoryManager::GetAllocatedBytes() {
+    return GetPagedBytes() - GetFreeBytes();
+}
+
+u32 NuMemoryManager::GetBlockAlignment(void *ptr) {
+    ValidateAddress(ptr, __FUNCTION__);
+
+    Header *header = reinterpret_cast<Header *>(reinterpret_cast<usize>(ptr) - m_headerSize);
+    ValidateBlockIsAllocated(header, __FUNCTION__);
+    ValidateBlockEndTags(header, __FUNCTION__);
+
+    return 2u << ((header->value & 0x78000000) >> 27);
+}
+
+void NuMemoryManager::GetBlockDebugBackTrace(void *, void **) {
+}
+
+void NuMemoryManager::GetBlockDebugContext(void *) {
+}
+
+SAGA_HOST_WEAK u32 NuMemoryManager::GetBlockSize(void *ptr) {
+    ValidateAddress(ptr, __FUNCTION__);
+
+    Header *header = (Header *)((usize)ptr - m_headerSize);
+    ValidateBlockIsAllocated(header, __FUNCTION__);
+    ValidateBlockEndTags(header, __FUNCTION__);
+
+    u32 total_size = (header->value & 0x87ffffff) * 4;
+    u32 payload_size = total_size - m_headerSize;
+    u32 *end_tag = (u32 *)((usize)header + total_size - 4);
+    u32 manager_index = *end_tag >> 27;
+    if (manager_index == 0x1f) {
+        manager_index = *(end_tag - 1);
+    } else {
+        manager_index--;
+    }
+
+    return payload_size - (manager_index > 0x1d ? 8 : 4);
+}
+
+u32 NuMemoryManager::GetCategoryAllocatedBytes(u16 category) {
+    return stats.bytes_alloc_by_category[category];
+}
+
+u32 NuMemoryManager::GetCurrentContextID() const {
+    return cur_ctx != NULL ? cur_ctx->id : 0;
+}
+
+const char *NuMemoryManager::GetCurrentContextName() const {
+    return cur_ctx != NULL ? cur_ctx->name : NULL;
+}
+
+const char *NuMemoryManager::GetDebugName() const {
+    return name != NULL ? name : "null";
+}
+
+u32 NuMemoryManager::GetFreeBytes() const {
+    u32 fragment_overhead = m_headerSize + 4;
+    if (idx > 0x1d) {
+        fragment_overhead += 4;
+    }
+    return stats.free_frag_bytes - fragment_overhead * stats.frag_count;
+}
+
+u32 NuMemoryManager::GetNumFreeFragments() const {
+    return stats.frag_count;
+}
+
+u16 NuMemoryManager::GetOverrideCategory() {
+    return override_category;
+}
+
+u16 NuMemoryManager::GetOverrideCategoryBGThread() {
+    return override_category_bg_thread;
+}
+
+u32 NuMemoryManager::GetPagedBytes() {
+    u32 paged_bytes = 0;
+
+    if ((m_flags & MEM_MANAGER_IN_ERROR_STATE) != 0) {
+        return paged_bytes;
+    }
+
+    pthread_mutex_lock(&mutex);
+    for (Page *page = pages; page != NULL; page = page->next) {
+        paged_bytes += page->size;
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return paged_bytes;
+}
+
+u32 NuMemoryManager::GetSmallBinSize(u32 index) {
+    return index * 4;
+}
+
+bool NuMemoryManager::IsZombie() {
+    return is_zombie;
+}
+
+void NuMemoryManager::MergeLargeBinSegments(NuMemoryManager::FreeHeader *, NuMemoryManager::FreeHeader *) {
+}
+
+void NuMemoryManager::PushContext(char const *) {
+}
+
+void NuMemoryManager::ReleaseExternalPage(void *) {
+}
+
+void NuMemoryManager::SetBlockDebugContext(void *, u32) {
+}
+
+void NuMemoryManager::SetBlockDebugName(void *, char const *) {
+}
+
+void NuMemoryManager::SetOverrideCategory(u16 category) {
+    override_category = category;
+}
+
+void NuMemoryManager::SetOverrideCategoryBGThread(u16 category) {
+    override_category_bg_thread = category;
+}
+
+void NuMemoryManager::SortLargeBin(u32) {
+}
+
+void NuMemoryManager::SortLargeBinSegment(NuMemoryManager::FreeHeader *, u32) {
+}
+
+void NuMemoryManager::UnTouchAllBlocks() {
+}
+
+void NuMemoryManager::ValidateBlock(void *) {
+}
+
+void NuMemoryManager::ValidateBlockDeferredContent(NuMemoryManager::Header *, char const *) {
+}
+
+void NuMemoryManager::VisitManagers(NuMemoryManager::IVisitor *visitor) {
+    pthread_mutex_lock(m_globalCriticalSection);
+    for (NuMemoryManager *manager : m_memoryManagers) {
+        if (manager != NULL) {
+            visitor->Visit(manager);
+        }
+    }
+    pthread_mutex_unlock(m_globalCriticalSection);
+}
+
+void NuMemoryManager::VisitPages(NuMemoryManager::IPageVisitor *visitor) {
+    pthread_mutex_lock(&mutex);
+    for (Page *page = pages; page != NULL; page = page->next) {
+        visitor->Visit(this, page->original_ptr, page->size);
+    }
+    pthread_mutex_unlock(&mutex);
+}
+
+void NuMemoryManager::_MultiBlockAlloc(u32, u32, u32, void **, u32, char const *, u16) {
+}

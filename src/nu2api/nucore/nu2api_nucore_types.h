@@ -210,7 +210,7 @@ struct NuMemoryPool {
     u32 GetFreeBytes();
     u32 GetLargeBlockBytes();
     u32 GetPagedBytes();
-    void InterlockedPop(NuMemoryPool::FreeBlock volatile **);
+    NuMemoryPool::FreeBlock volatile *InterlockedPop(NuMemoryPool::FreeBlock volatile **);
     void InterlockedPush(NuMemoryPool::FreeBlock volatile **, void *);
     void Merge(NuMemoryPool::FreeBlock volatile *, NuMemoryPool::FreeBlock volatile *);
     void Merge(NuMemoryPool::Page *, NuMemoryPool::Page *);
@@ -296,7 +296,8 @@ struct NuThreadBase {
     const char *GetDebugName() const;
 };
 struct NuThreadManager {
-    void CreateThreadSuspended(void (*)(void *), void *, i32, char const *, i32, NUTHREADCAFECORE, NUTHREADXBOX360CORE);
+    NuThread *CreateThreadSuspended(void (*)(void *), void *, i32, char const *, i32, NUTHREADCAFECORE,
+                                    NUTHREADXBOX360CORE);
     void FreeTLS(i32);
     NuThread *GetMainThread();
 };

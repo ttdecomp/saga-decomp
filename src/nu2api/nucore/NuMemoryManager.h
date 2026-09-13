@@ -198,11 +198,13 @@ class NuMemoryManager {
 
     class IVisitor {
       public:
+        virtual void Visit(NuMemoryManager *manager) = 0;
         virtual ~IVisitor() = default;
     };
 
     class IPageVisitor {
       public:
+        virtual void Visit(NuMemoryManager *manager, void *ptr, u32 size) = 0;
         virtual ~IPageVisitor() = default;
     };
 
