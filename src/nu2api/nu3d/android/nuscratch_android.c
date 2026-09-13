@@ -1,45 +1,54 @@
-// Original nuscratch_android.c, optimized Android scratch/clear unit.
-// The scratch allocator functions are still in nucore_plain.cpp; this
-// file starts with the original clear wrapper and its function-local cache.
+// Android scratch allocator. The original TU owns the backing store and
+// repeats the alignment/push sequence in each public allocation entry point.
+#include "nu2api/nucore/numem.h"
 
-#include <GLES2/gl2.h>
+extern "C" {
+u8 PS2_SCRATCH_BASE[0x8000];
+}
 
-#include "nu2api/nu3d/android/nuposteffect_plain.h"
-#include "nu2api/nu3d/android/nuiosdl_gl.h"
+#include "nu2api/nucore/nuvuvec.hpp"
 
-// Nu-side DX-style clear flags, translated to GL masks below.
-static constexpr u32 kNuClear_Color = 0x100;
-static constexpr u32 kNuClear_Depth = 0x200;
-static constexpr u32 kNuClear_Stencil = 0x800;
+extern "C" {
+static u8 *ps2_scratch_free;
 
-// Original 0x317070. The packed colour has RGBA bytes from least to most
-// significant; clearing depth also restores writable GL depth state.
-extern "C" void Nu360_dxClear(u32 clear_flags, u32 colour) {
-    // Original local BSS: _ZZ13Nu360_dxClearE10lastColour.
-    static u32 lastColour;
-    GLbitfield glMask = 0;
+void NuScratchReset(void) {
+    ps2_scratch_free = PS2_SCRATCH_BASE;
+}
 
-    if ((clear_flags & kNuClear_Color) != 0) {
-        glMask |= GL_COLOR_BUFFER_BIT;
-        if (colour != lastColour) {
-            const float r = static_cast<float>(colour & 0xff) / 255.0f;
-            const float g = static_cast<float>((colour >> 8) & 0xff) / 255.0f;
-            const float b = static_cast<float>((colour >> 0x10) & 0xff) / 255.0f;
-            const float a = static_cast<float>(colour >> 0x18) / 255.0f;
-            glClearColor(r, g, b, a);
-            lastColour = colour;
-        }
-    }
-    if ((clear_flags & kNuClear_Depth) != 0) {
-        glMask |= GL_DEPTH_BUFFER_BIT;
-        if (g_renderContext_zFunc != 2) {
-            glDisable(GL_DEPTH_TEST);
-            glDepthMask(GL_TRUE);
-        }
-        g_renderContext_zFunc = 2;
-    }
-    if ((clear_flags & kNuClear_Stencil) != 0) {
-        glMask |= GL_STENCIL_BUFFER_BIT;
-    }
-    glClear(glMask);
+void *NuScratchAlloc32(i32 size) {
+    if (ps2_scratch_free == nullptr)
+        NuScratchReset();
+    u8 *previous = ps2_scratch_free;
+    u8 *allocation = reinterpret_cast<u8 *>((reinterpret_cast<usize>(ps2_scratch_free) + 3) & ~usize(3));
+    ps2_scratch_free = allocation + ((size + 3) & ~3);
+    *reinterpret_cast<u8 **>(ps2_scratch_free) = previous;
+    ps2_scratch_free += sizeof(previous);
+    return allocation;
+}
+
+void *NuScratchAlloc64(i32 size) {
+    if (ps2_scratch_free == nullptr)
+        NuScratchReset();
+    u8 *previous = ps2_scratch_free;
+    u8 *allocation = reinterpret_cast<u8 *>((reinterpret_cast<usize>(ps2_scratch_free) + 7) & ~usize(7));
+    ps2_scratch_free = allocation + ((size + 3) & ~3);
+    *reinterpret_cast<u8 **>(ps2_scratch_free) = previous;
+    ps2_scratch_free += sizeof(previous);
+    return allocation;
+}
+
+void *NuScratchAlloc128(i32 size) {
+    if (ps2_scratch_free == nullptr)
+        NuScratchReset();
+    u8 *previous = ps2_scratch_free;
+    u8 *allocation = reinterpret_cast<u8 *>((reinterpret_cast<usize>(ps2_scratch_free) + 15) & ~usize(15));
+    ps2_scratch_free = allocation + ((size + 3) & ~3);
+    *reinterpret_cast<u8 **>(ps2_scratch_free) = previous;
+    ps2_scratch_free += sizeof(previous);
+    return allocation;
+}
+
+void NuScratchRelease(void) {
+    ps2_scratch_free = *reinterpret_cast<u8 **>(ps2_scratch_free - sizeof(ps2_scratch_free));
+}
 }

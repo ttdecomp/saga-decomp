@@ -30,6 +30,5 @@ extern "C" nueffecttex_s *NuPostEffectGetBackBuffer(i32 frame);
 extern "C" nueffecttex_s *NuPostEffectGetDepthBuffer(i32 frame);
 extern "C" f32 NuPostEffectTiming(i32 *last_frame);
 
-extern "C" void Nu360_dxClear(u32 clear_flags, u32 colour);
 extern "C" void NuFramebufferClear(u32 clear_flags, u32 colour);
 extern "C" void NuFramebufferSwapBuffers(void);

@@ -22,6 +22,8 @@
 #include "legoapi/legoapi_types.h"
 #include "nu2api/nu3d/NuRenderDevice.h"
 #include "nu2api/nu3d/android/nutex_android.h"
+#include "nu2api/nu3d/android/nudlist_callbacks.h"
+#include "nu2api/nu3d/android/nutex_ios_ex.h"
 #include "nu2api/nu3d/numtl.h"
 #include "nu2api/nu3d/nushader.h"
 #include "nu2api/nu3d/nurndrstat.h"
@@ -67,7 +69,6 @@ extern "C" void NuShaderObjectGLSLSetupMaterial(NUSHADEROBJECT *shader_obj, numt
 extern "C" NUSHADEROBJECT *NuShaderManagerGetShaderById(i32 id);
 extern "C" NUSHADEROBJECT *NuShaderManagerGetCurrentShader(void);
 
-extern i32 g_currentTexUnit; // nutex_ios_ex.cpp
 extern NUAPI nuapi;
 
 static inline isize PtrToArgInt(const void *p) {
@@ -568,6 +569,17 @@ extern "C" {
     }
 }
 
+// Original 0x294764. The skin packet begins with the number of palette
+// matrices followed by their contiguous 4x4 values.
+void NuIOSDLSkinMtxCallback(void *data) {
+    i32 *packet = static_cast<i32 *>(data);
+    const i32 matrix_count = *packet++;
+    NUSHADEROBJECT *shader = NuShaderManagerGetCurrentShader();
+    if (shader != NULL) {
+        NuShaderObjectSetElementsfv(shader, 0x5a, 0, matrix_count * 4, reinterpret_cast<const f32 *>(packet));
+    }
+}
+
 // original 0x2947cc, 258 bytes — installs a display-list world transform and applies
 // the per-instance opacity to the current tint.
 // Original 0x293ad1, 5 bytes: deliberately empty on this platform.
@@ -643,6 +655,17 @@ void NuIOSDLVertexGroupsCallback(void *arg) {
     NuShaderManagerSetElementsfv(0x51, 0, vector_count, values);
 }
 
+// Original 0x294d93. The packet stores a count followed by up to eight vec4
+// vertex-offset entries for semantic 0x50.
+void NuIOSDLVertexOffsetsCallback(void *arg) {
+    const i32 *packet = static_cast<const i32 *>(arg);
+    i32 count = packet[0];
+    if (count > 8) {
+        count = 8;
+    }
+    NuShaderManagerSetElementsfv(0x50, 0, count, reinterpret_cast<const f32 *>(packet + 1));
+}
+
 // original 0x294dfe, 692 bytes — installs the light packet produced by
 // RndrStateBuildLightState into the shader semantic state.
 void NuIOSDLLightsCallback(void *arg) {
@@ -686,6 +709,92 @@ void NuIOSDLLightsCallback(void *arg) {
         1.0f,
     };
     NuShaderManagerSetfv(0x57, specular_intensity);
+}
+
+// Original 0x2951b0. Publish the packed fog colour and range to the shader.
+void NuIOSDLFogCallback(void *arg) {
+    const NUFOGSTATE *fog = static_cast<const NUFOGSTATE *>(arg);
+    if (fog->enabled != 0) {
+        const u32 colour = fog->colour;
+        const f32 fog_colour[4] = {
+            static_cast<f32>(colour & 0xff) / 255.0f,
+            static_cast<f32>((colour >> 8) & 0xff) / 255.0f,
+            static_cast<f32>((colour >> 16) & 0xff) / 255.0f,
+            static_cast<f32>(colour >> 24) / 255.0f,
+        };
+        const f32 fog_params[4] = {
+            fog->near_distance,
+            fog->far_distance,
+            fog->far_distance - fog->near_distance,
+            fog->density,
+        };
+        NuShaderManagerSetfv(0x47, fog_colour);
+        NuShaderManagerSetfv(0x48, fog_params);
+    } else {
+        const f32 fog_params[4] = {100000.0f, 0.0f, 100000.0f, 0.0f};
+        NuShaderManagerSetfv(0x48, fog_params);
+    }
+}
+
+// Original 0x295420 -- legacy packet containing three texture ids.
+void NuIOSDLLightmapOld(void *arg) {
+    const i32 *texture_ids = static_cast<const i32 *>(arg);
+    for (i32 index = 0; index < 3; ++index) {
+        const i32 texture_id = texture_ids[index] > 0 ? texture_ids[index] : 1;
+        NUNATIVETEX *texture = NuTexGetNative(texture_id);
+        glActiveTexture(GL_TEXTURE0 + index);
+        g_currentTexUnit = index;
+        glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
+    }
+
+    const f32 shader_offset[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    NuShaderManagerSetfv(0x58, shader_offset);
+}
+
+// Original 0x2954f0 -- legacy three-lightmap packet followed by a UV offset.
+void NuIOSDLLightmapOffsetOld(void *arg) {
+    const i32 *texture_ids = static_cast<const i32 *>(arg);
+    for (i32 index = 0; index < 3; ++index) {
+        const i32 texture_id = texture_ids[index] > 0 ? texture_ids[index] : 1;
+        NUNATIVETEX *texture = NuTexGetNative(texture_id);
+        glActiveTexture(GL_TEXTURE0 + index);
+        g_currentTexUnit = index;
+        glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
+    }
+
+    const f32 *offset = reinterpret_cast<const f32 *>(texture_ids + 3);
+    const f32 shader_offset[4] = {offset[0], -offset[1], 0.0f, 0.0f};
+    NuShaderManagerSetfv(0x58, shader_offset);
+}
+
+// Original 0x2955ee -- lightmap display-list packet. Mode 1 installs one
+// lightmap; mode 2 walks the packet's three lightmap ids. The latter selects
+// texture unit zero for each entry in the original binary.
+void NuIOSDLLightmap(void *arg) {
+    i32 *packet = static_cast<i32 *>(arg);
+    const i32 mode = packet[0];
+
+    if (mode == 1) {
+        const i32 texture_id = packet[1] > 0 ? packet[1] : 1;
+        NUNATIVETEX *texture = NuTexGetNative(texture_id);
+        glActiveTexture(GL_TEXTURE0);
+        g_currentTexUnit = 0;
+        glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
+    } else if (mode == 2) {
+        for (i32 index = 0; index < 3; ++index) {
+            const i32 texture_id = packet[index + 2] > 0 ? packet[index + 2] : 1;
+            NUNATIVETEX *texture = NuTexGetNative(texture_id);
+            glActiveTexture(GL_TEXTURE0);
+            g_currentTexUnit = 0;
+            glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
+        }
+    } else {
+        return;
+    }
+
+    const f32 *offset = reinterpret_cast<const f32 *>(packet + 5);
+    const f32 shader_offset[4] = {offset[0], -offset[1], 0.0f, 0.0f};
+    NuShaderManagerSetfv(0x58, shader_offset);
 }
 
 extern "C" void NuRenderContextSetViewport(i32 x, i32 y, i32 width, i32 height);

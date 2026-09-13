@@ -22,7 +22,7 @@ typedef struct numtl_s NUMTL;
 extern "C" {
 
     extern NUGLOBALRNDRSTATE render_state;
-    extern nudisplayscene_s currentScene;
+    extern nurenderscene_s currentScene;
 
     void *NuVisiEvaluate(NUGSCN *scene, void *visibility_context);
 

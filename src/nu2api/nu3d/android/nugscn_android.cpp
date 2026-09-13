@@ -253,8 +253,7 @@ extern "C" void NuGScnRestoreTIDsPS(NUGSCN *scene) {
     }
 }
 
-static void PreWarmGeomsAndBakeVAOs(nudisplayscene_s *raw_scene, nunativegscene_s *) {
-    NUDLDLISTSCENE *scene = reinterpret_cast<NUDLDLISTSCENE *>(raw_scene);
+static void PreWarmGeomsAndBakeVAOs(nudisplayscene_s *scene, nunativegscene_s *) {
     for (i32 clip_index = 0; clip_index < scene->nclip_objects; ++clip_index) {
         u8 *clip = reinterpret_cast<u8 *>(&scene->clip_objects[clip_index]);
         u32 nitems = *reinterpret_cast<u32 *>(clip);
@@ -358,7 +357,7 @@ extern "C" void NuGScnFixupPS(NUGSCN *scene) {
     NuPortalMaxDepth(scene, scene->max_portals);
     NuThreadCriticalSectionBegin(g_vaoLifetimeMutex);
     NuIOS_ResetVAODuplicateFinder();
-    PreWarmGeomsAndBakeVAOs(reinterpret_cast<nudisplayscene_s *>(scene->display_list), scene->field437_0x1d0);
+    PreWarmGeomsAndBakeVAOs(scene->display_list, scene->field437_0x1d0);
     NuThreadCriticalSectionEnd(g_vaoLifetimeMutex);
 }
 

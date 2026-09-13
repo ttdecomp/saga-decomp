@@ -25,6 +25,7 @@ extern "C" {
     i32 NuIOS_ShouldUseMSAA(void);
     void NuIOSInitOpenGLES(void);
     void NuIOS_AllocateSystemFramebuffers(void);
+    void Nu360_dxClear(u32 clear_flags, u32 colour);
     void NuIOS_WaitUntilAllowedToRender(void);
     void NuIOS_SetRenderIncomplete(void);
     void NuIOS_SetRenderComplete(void);

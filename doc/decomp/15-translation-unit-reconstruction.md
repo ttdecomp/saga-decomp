@@ -1779,24 +1779,193 @@ with no other function-score changes. The remaining `DrawItems` gap
 looks like an otherwise-unused O0 local copy of its argument; no
 speculative local was added merely to gain matching.
 
-### Scratch/clear Android owner
+### Graphics clear boundary correction
 
-The original `nuscratch_android.c` text run ends with `Nu360_dxClear` at
-`0x317070`; its optimized body is followed by the framebuffer functions
-in the next run. The clear-colour cache is a four-byte function-local
-BSS symbol, `_ZZ13Nu360_dxClearE10lastColour`, not the file-static state
-previously held by `nuposteffect_plain.cpp`. The clear wrapper and cache
-now live in `nuscratch_android.c` at target `-O2`, with the existing
-post-effect header as their real interface. The scratch allocator
-functions remain in `nucore_plain.cpp` for a later coordinated move.
-Their original bodies are EBP-framed and effectively unoptimized while
-the clear body is optimized; moving the five allocators wholesale into
-this `-O2` file could lower matching. This mixed-codegen boundary needs
-an ordinary source/toolchain explanation before claiming a complete TU,
-not a per-function optimization attribute added for the score.
+The checkpoint first placed `Nu360_dxClear` at `0x317070` in a new
+`nuscratch_android.c` file because it follows the scratch allocator
+run. A fuller original local-symbol audit corrects that attribution:
+`_GLOBAL__sub_I_nuscratch_android.c` ends the scratch object, then the
+clear-local `_ZZ13Nu360_dxClearE10lastColour` and
+`_GLOBAL__sub_I_ios_graphics.cpp` belong to the following object.
+The clear function directly precedes its optimized framebuffer
+functions at `0x317190`–`0x3173c0`. The original scratch allocators are
+unoptimized in their own TU; the clear is not a mixed-optimization
+member of that TU. No function-level optimization attribute or pragma
+is warranted.
 
-The isolated target report is unchanged at 45.110252%: the clear body
-remains 69.208954% and no other function score changes. The new owner
-does emit the original local cache symbol. Target/WASM/native builds,
-all three lint modes, four repository checks, complete 13,425/13,425
-symbol coverage, and a rebuilt 120-healthy-frame Map smoke pass.
+The correction moves the clear wrapper and its four-byte function-local
+BSS cache into the existing `ios_graphics.cpp` owner, declares its API
+in `ios_graphics.h`, and removes the mistakenly named source file and
+its build/lint overrides. Against the 45.123135% callback baseline, the
+target score rises to 45.123142%: `Nu360_dxClear` remains 69.208954%,
+`NuIOS_AllocateSystemFramebuffers` gains 90.00→90.12%, and
+`NuIOSInitOpenGLES` becomes exact from 99.74%, with no regressions.
+The scratch allocator source and data were subsequently moved into their
+own O0 TU, as recorded in the next section.
+Target/WASM/native builds, all three lint modes, four repository checks,
+13,425/13,425 text-symbol coverage, and the rebuilt 120-healthy-frame
+Map smoke pass after the correction.
+
+### Original Android scratch allocator unit
+
+The original address run `0x316d41`–`0x31706c` is an O0 C++ translation
+unit named `nuscratch_android.c`. Its five public allocator bodies are
+`NuScratchReset`, `NuScratchAlloc32`, `NuScratchAlloc64`,
+`NuScratchAlloc128`, and `NuScratchRelease`, in that order. The same unit
+owns the global `PS2_SCRATCH_BASE` and local `ps2_scratch_free` BSS. The
+original three allocators each repeat the alignment, size-rounding, and
+last-pointer push sequence; there is no shared allocator helper in the
+original text. The original TU also emits a VuVec static initializer and
+`_GLOBAL__sub_I_nuscratch_android.c` from its `nuvuvec.hpp` inclusion.
+The declarations follow the original BSS order: backing array, six VuVec
+locals, then the private cursor.
+
+These bodies and data now live in that real source unit, with `numem.h`
+declaring all five exports and the removed helper no longer compiled from
+`nucore_plain.cpp`. Against the 45.123142% immediately preceding report,
+the target score reaches 45.129750%. `NuScratchReset` rises 54.88→99.88%,
+Alloc32 25.03→99.79%, Alloc64 and Alloc128 25.00→99.79%, and Release
+53.80→83.80%. The constructor is exact; no other function regresses.
+The remaining Release mismatch is a genuine compiler expression-form
+difference (`lea` plus dereference versus direct indexed load), not a
+reason to introduce a matching-only construct. Clear remains in its
+separate, following `ios_graphics.cpp` TU.
+
+Target, WASM, and native/smoke builds pass, as do target/native/WASM lint,
+all four repository checks, and the exact extra-symbol baseline. Original
+text-symbol coverage remains 13,425/13,425 with zero missing. The rebuilt
+Map/Cantina fixture advanced 120 healthy frames on this attempt; the
+original movement/trig sanitizer flake remains documented above.
+
+### Android display-list callback continuation
+
+Six callbacks in the original `nuiosdl_gl.cpp` address run were still
+defined in the displaced `nu2api_nucore_misc.cpp` owner. The original
+addresses are `NuIOSDLSkinMtxCallback` at `0x294764`,
+`NuIOSDLVertexOffsetsCallback` at `0x294d93`, `NuIOSDLFogCallback` at
+`0x2951b0`, `NuIOSDLLightmapOld` at `0x295420`,
+`NuIOSDLLightmapOffsetOld` at `0x2954f0`, and `NuIOSDLLightmap` at
+`0x2955ee`. They now live in `nuiosdl_gl.cpp` under its existing `-O2`
+optimization setting, using the actual display-list callback, texture,
+fog, and shader headers. The skin callback is an ordinary definition,
+without the displaced weak attribute. Packet interpretation and GL
+state operations were preserved.
+
+The isolated whole-binary score rises from 45.110740% to 45.123135%.
+In that order, the six callback scores rise 26.94→82.58%,
+35.97→71.16%, 24.64→60.24%, 30.88→70.47%, 27.12→77.03%, and
+23.95→58.70%. Three untouched functions in the displaced miscellaneous
+file show small score shifts: `NuHGobjEvalAnimBlend2Root_3` improves
+88.92→89.10%, while `NuDisplayListCreate` changes 53.25→53.15% and
+`NuIOS_CreateGLTexFromPVRInMemory` 26.44→26.36%. Those two losses are
+not called relocation-only: deleting definitions from a GCC source file
+can alter generated code and section placement of its remaining bodies,
+and their own source was not changed. The original address run and
+aggregate gain justify retaining this coherent six-function unit, with
+the two small secondary regressions recorded rather than hidden.
+
+Target, WASM, and native smoke builds pass, as do the target/native/WASM
+lint modes and all four repository checks. Original text-symbol
+coverage remains 13,425/13,425, with zero missing. A rebuilt Map/Cantina
+fixture smoke passed 120 healthy frames on this attempt; the original
+`MovePlayer`/`NuFsqrt` trig sanitizer flake remains documented elsewhere.
+
+### Display-scene unclip and scene type boundary
+
+The original ordinary-text run contains `NuDisplaySceneUnclip` at
+`0x2f1180` (112 bytes), followed without intervening local symbols by
+`InvalidateClipRanges`, `NuDisplayListExecute`, `DefaultMtl`,
+`NuMtlUpdate`, and `NuDisplaySceneClone`. This supports the existing O3
+display-list core owner in `nudlist.cpp`; the exact original filename is
+still unproven. The former empty stub lived in the unrelated catch-all
+`nu2api_nucore_misc.cpp`.
+
+The original C++ symbol uses `nudisplayscene_s` for the 0x90-byte
+display-list scene. The current tree had assigned that tag to a separate
+0x218-byte render-parameter structure. The two types are now named
+coherently: `nudisplayscene_s` for the display-list scene and
+`nurenderscene_s` for the render parameters. Related declarations and
+callers use the real header types, not a cast or linker-only declaration.
+Unclip clears the first item ID of every scene material, then marks each
+clip object present in the active two-bit clip bitmap. The original
+`_Z20NuDisplaySceneUnclipP16nudisplayscene_s` name is emitted from the
+ordinary C++ declaration, and the current body is 112 bytes, the same
+size as the original.
+
+The shared target trial in `/tmp/unclip_scene_trial.json` raises Unclip
+from 9.767442% to 96.279070%; it also includes simultaneous quadtree
+work, so its 45.171870% aggregate is not attributed to this function
+alone. `PreWarmGeomsAndBakeVAOs` improves 51.94→54.66% from the type
+boundary correction. The untouched `NuDisplayListCaptureSortPriority`
+changes 68.83→68.61% with unchanged 249-byte size; objdiff shows its
+existing loop/control-flow differences, and this small secondary shift is
+recorded as layout/matcher churn, not hidden. The remaining two Unclip
+instruction differences are the original's unsigned-byte active-buffer
+index versus the compiler's signed shift; both select the same 0/1 index
+for the existing field values. A source trial explicitly taking the low
+byte produced the same score, so the simpler expression was retained.
+The target build/report passed, and the combined NuQT gate on this source
+passed target/WASM/native builds, all three lint modes, four checks, full
+13,425/13,425 text-symbol coverage, and a rebuilt 120-frame Map/Cantina
+smoke. The original movement/trig sanitizer flake remains documented.
+
+### Quadtree insertion ownership
+
+The original `nuqt.cpp` run contains local `InsertData` at `0x2617f7`,
+local recursive `AddElementR` at `0x261a8d`, and exported
+`NuQTAddElement` at `0x2622e3`. These now live together in the O0
+`nuqt.cpp` owner, with the public six-argument declaration in `nuqt.h`.
+The empty public definition in `nucore_plain.cpp` and the two unrelated
+`__used__` local placeholders in `rtl.cpp` and `gamelib_ogg.cpp` were
+removed. The original's unusual behaviors are retained: `InsertData`
+uses an inverted initial-capacity comparison and a cached null destination
+for `memcpy`, while redistribution tests the new item's bounds for old
+items and compacts their data after recursion. No safety correction or
+forced symbol emission was added.
+
+Against `/tmp/scratch_final.json` at 45.129750%, the isolated whole-binary
+fuzzy score reaches 45.160545% with no unrelated function regressions.
+`InsertData` scores 99.93%, and `NuQTAddElement` 92.98%. A subsequent
+source-faithful unrolling of the original four explicit quadrant branches
+raises `AddElementR` from 46.13% to 66.56% in the shared target report;
+this run also includes the independently reconstructed display-scene
+callback, so its aggregate is not attributed solely to quadtree work.
+The remaining recursive-body mismatch reflects source shape/codegen still
+to be reconstructed, not a reason to add assembly or matching-only
+attributes. Target, WASM, and native/smoke builds pass, as do all three
+lint modes, all four repository checks, and the extra-symbol baseline.
+Original text-symbol coverage is 13,425/13,425 with zero missing. The
+rebuilt Map/Cantina fixture passed 120 healthy frames on this attempt;
+the independently documented original movement/trig sanitizer flake
+remains possible on other runs.
+
+### Android material plane and copy ownership
+
+The original `numtl_android.cpp` ordinary-text run places `NuMtlInsert`
+at `0x29c090` (25 bytes), `NuMtlSetRenderPlane` at `0x29c0b0`
+(77 bytes), and `NuMtlCopy` at `0x29ca00` (46 bytes), immediately before
+`NuMtlInitExPS` at `0x29ca30`. The adjacent Android-specific rendering
+functions and original material-unit source path support this ownership.
+The two plane functions write bits 4..11 of the material's first word;
+SetRenderPlane then calls Insert. Copy transfers the full 0x2c4-byte
+material while preserving the destination display-list pointer at +0x3c.
+These are normal typed definitions in the existing `-O2` material unit,
+declared in `numtl.h`; the misplaced empty stubs were removed.
+
+The pre-material `/tmp/scratch_final.json` report scored 45.129750%:
+Insert 35%, SetRenderPlane 20%, Copy 30%. Parallel NuQT/display-scene
+work produced `/tmp/unclip_scene_trial.json` at 45.171870%; this is a
+**partial material snapshot**, already containing exact Insert at 100%,
+while SetRenderPlane and Copy remained 20% and 30%. The final report
+scores 45.174390%, with all three bodies at 100% and their original
+25/77/46-byte sizes. Address-keyed comparison against the partial shared
+report changes only SetRenderPlane (20→100%) and Copy (30→100%); no
+scored body regresses. Assigned exact-body counts increase 4,471→4,474
+(the report-wide matched-function measure is 4,705→4,708), including
+Insert newly assigned at 100% where the partial report did not count it.
+
+Target, WASM, and native/smoke builds pass, as do target/native/WASM lint,
+all four repository checks, and the extra-symbol baseline. Original
+text-symbol coverage is 13,425/13,425 with zero missing. The rebuilt
+Map/Cantina fixture passed 120 healthy frames on this attempt; the
+original movement/trig sanitizer flake remains documented above.

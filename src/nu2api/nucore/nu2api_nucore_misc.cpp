@@ -95,36 +95,6 @@ void NuDebugMsgPrint(char *message) {
     printf("%s", message);
 }
 
-// original 0x2955ee -- lightmap display-list packet.  Mode 1 installs one
-// lightmap; mode 2 walks the packet's three lightmap ids.  The latter really
-// does select texture unit zero for each entry in the target binary.
-void NuIOSDLLightmap(void *arg) {
-    i32 *packet = static_cast<i32 *>(arg);
-    const i32 mode = packet[0];
-
-    if (mode == 1) {
-        const i32 texture_id = packet[1] > 0 ? packet[1] : 1;
-        NUNATIVETEX *texture = NuTexGetNative(texture_id);
-        glActiveTexture(GL_TEXTURE0);
-        g_currentTexUnit = 0;
-        glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
-    } else if (mode == 2) {
-        for (i32 index = 0; index < 3; ++index) {
-            const i32 texture_id = packet[index + 2] > 0 ? packet[index + 2] : 1;
-            NUNATIVETEX *texture = NuTexGetNative(texture_id);
-            glActiveTexture(GL_TEXTURE0);
-            g_currentTexUnit = 0;
-            glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
-        }
-    } else {
-        return;
-    }
-
-    const f32 *offset = reinterpret_cast<const f32 *>(packet + 5);
-    const f32 shader_offset[4] = {offset[0], -offset[1], 0.0f, 0.0f};
-    NuShaderManagerSetfv(0x58, shader_offset);
-}
-
 void NuVpSetDestRect(float, float, float, float) {
 }
 
@@ -394,51 +364,12 @@ void NuGCutRigidCalcMtx(NUGCUTRIGID_s *rigid, float frame, numtx_s *mtx) {
     NuMtxTranslate(mtx, reinterpret_cast<NUVEC *>(&rigid->base_matrix.m30));
 }
 
-void NuIOSDLFogCallback(void *arg) {
-    const NUFOGSTATE *fog = static_cast<const NUFOGSTATE *>(arg);
-    if (fog->enabled != 0) {
-        const u32 colour = fog->colour;
-        const f32 fog_colour[4] = {
-            static_cast<f32>(colour & 0xff) / 255.0f,
-            static_cast<f32>((colour >> 8) & 0xff) / 255.0f,
-            static_cast<f32>((colour >> 16) & 0xff) / 255.0f,
-            static_cast<f32>(colour >> 24) / 255.0f,
-        };
-        const f32 fog_params[4] = {
-            fog->near_distance,
-            fog->far_distance,
-            fog->far_distance - fog->near_distance,
-            fog->density,
-        };
-        NuShaderManagerSetfv(0x47, fog_colour);
-        NuShaderManagerSetfv(0x48, fog_params);
-    } else {
-        const f32 fog_params[4] = {100000.0f, 0.0f, 100000.0f, 0.0f};
-        NuShaderManagerSetfv(0x48, fog_params);
-    }
-}
-
-// original 0x295420 -- legacy packet containing three texture ids.
-void NuIOSDLLightmapOld(void *arg) {
-    const i32 *texture_ids = static_cast<const i32 *>(arg);
-    for (i32 index = 0; index < 3; ++index) {
-        const i32 texture_id = texture_ids[index] > 0 ? texture_ids[index] : 1;
-        NUNATIVETEX *texture = NuTexGetNative(texture_id);
-        glActiveTexture(GL_TEXTURE0 + index);
-        g_currentTexUnit = index;
-        glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
-    }
-
-    const f32 shader_offset[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    NuShaderManagerSetfv(0x58, shader_offset);
-}
-
 // NuIOSDLMtlCallback is transcribed in android/nuiosdl_gl.cpp (original 0x29c480).
 
 // original 0x2f87d0
 void NuDisplayListCreate(nudisplayscene_s *raw_scene, variptr_u *buffer, variptr_u, i32 item_count, i32 material_count,
                          i32, i32, i32 sort_priority_count, i32, i32 allocate_materials) {
-    NUDLDLISTSCENE *scene = reinterpret_cast<NUDLDLISTSCENE *>(raw_scene);
+    NUDLDLISTSCENE *scene = raw_scene;
     scene->nitems = item_count;
     scene->nmtls = material_count;
 
@@ -516,9 +447,6 @@ void NuDisplayListCreate(nudisplayscene_s *raw_scene, variptr_u *buffer, variptr
 void NuFadeSetFxCodeMtls(nugeom_s *, unsigned char *) {
 }
 
-void NuDisplaySceneUnclip(nudisplayscene_s *) {
-}
-
 void NuGCutRigidCalcMtx_3(NUGCUTRIGID_s *rigid, float frame, numtx_s *mtx) {
     ani3_animheader_s *animation = reinterpret_cast<ani3_animheader_s *>(rigid->animation);
     f32 *values = NuAnimCurveExtractAllNodeCurves_3(animation, 0, frame, NULL);
@@ -561,17 +489,6 @@ i32 NuIOS_GetInAppProduct(i32, NuIOS_InAppProduct *) {
 
 
 
-
-// Original 0x294764. The skin packet begins with the number of palette
-// matrices followed by their contiguous 4x4 values.
-void SAGA_HOST_WEAK NuIOSDLSkinMtxCallback(void *data) {
-    i32 *packet = static_cast<i32 *>(data);
-    const i32 matrix_count = *packet++;
-    NUSHADEROBJECT *shader = NuShaderManagerGetCurrentShader();
-    if (shader != NULL) {
-        NuShaderObjectSetElementsfv(shader, 0x5a, 0, matrix_count * 4, reinterpret_cast<const f32 *>(packet));
-    }
-}
 
 void NuGCutCharAnimProcess_3(NUGCUTCHAR_s *character, f32 frame, NUMTX *matrix, i32 *visible, u32 *animation_index,
                              f32 *animation_rate, f32 *blend_time, f32 *animation_start_frame, i32 *layer_mask) {
@@ -632,22 +549,6 @@ i32 NuIOS_GetPurchaseResult() {
 }
 
 void NuLightMotionBlurEffect(i32, float) {
-}
-
-// original 0x2954f0 -- legacy three-lightmap packet followed by a UV offset.
-void NuIOSDLLightmapOffsetOld(void *arg) {
-    const i32 *texture_ids = static_cast<const i32 *>(arg);
-    for (i32 index = 0; index < 3; ++index) {
-        const i32 texture_id = texture_ids[index] > 0 ? texture_ids[index] : 1;
-        NUNATIVETEX *texture = NuTexGetNative(texture_id);
-        glActiveTexture(GL_TEXTURE0 + index);
-        g_currentTexUnit = index;
-        glBindTexture(GL_TEXTURE_2D, texture->platform.gl_tex != 0 ? texture->platform.gl_tex : g_whiteTexture);
-    }
-
-    const f32 *offset = reinterpret_cast<const f32 *>(texture_ids + 3);
-    const f32 shader_offset[4] = {offset[0], -offset[1], 0.0f, 0.0f};
-    NuShaderManagerSetfv(0x58, shader_offset);
 }
 
 void NuIOS_DisplaySystemAlert(char const *) {
@@ -718,17 +619,6 @@ void NuCameraTransformScissorClip(nuvec_s *, nuvec_s *, i32, numtx_s *) {
 }
 
 // NuDebrisRendererFlushBuffers is transcribed in android/nuptl_android.c (original 0x296f35).
-
-// Original 0x294d93. The packet stores a count followed by up to eight vec4
-// vertex-offset entries for semantic 0x50.
-void NuIOSDLVertexOffsetsCallback(void *arg) {
-    const i32 *packet = static_cast<const i32 *>(arg);
-    i32 count = packet[0];
-    if (count > 8) {
-        count = 8;
-    }
-    NuShaderManagerSetElementsfv(0x50, 0, count, reinterpret_cast<const f32 *>(packet + 1));
-}
 
 
 void NuIOS_CopyBackbufferToTexture(nunativetex_s *texture, bool) {

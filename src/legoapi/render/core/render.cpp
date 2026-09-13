@@ -663,7 +663,7 @@ extern "C" {
             scene->flags |= NUDL_SCENE_FLAG_CLIPPING;
             DisplaySceneEvaluateClipFallback(scene);
         }
-        DisplayListGenerateTransforms(reinterpret_cast<nudisplayscene_s *>(scene));
+        DisplayListGenerateTransforms(scene);
 
         if ((scene->instance_visibility_enabled & NUDL_SCENE_INSTANCE_VISIBILITY_ENABLED) == 0 &&
             noscenespecials == 0 && scene->nspecials > 0) {

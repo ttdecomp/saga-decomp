@@ -4,7 +4,7 @@
 // generic filter controls are reconstructed here without adding a new pass.
 //
 // Transcribed originals:
-//   Nu360_dxClear               0x317070  moved to nuscratch_android.c
+//   Nu360_dxClear               0x317070  lives in ios_graphics.cpp
 //   NuFramebufferClear          0x2a2720  thin forwarder to Nu360_dxClear
 //   NuFramebufferSwapBuffers    0x2a2700  no-op on Android/host (swap owned by EGL)
 //   NuPostEffectReset           0x2ab8b0
@@ -28,6 +28,7 @@
 #include "nu2api/nucore/NuPostFilter.h"
 #include "nu2api/nu3d/nupostresources.h"
 #include "nu2api/nu3d/android/nuiosdl_gl.h"
+#include "nu2api/nuandroid/ios_graphics.h"
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Post-effect globals

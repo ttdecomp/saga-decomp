@@ -243,9 +243,10 @@ build --per_file_copt=^src/nu2api/nu3d/glutils\.c$@-x,c++,-std=gnu++11
 build --per_file_copt=^src/nu2api/nu3d/android/nuptl_android\.c$@-x,c++,-std=gnu++11
 build --per_file_copt=^src/nu2api/nu3d/android/nudlist_android\.c$@-x,c++,-std=gnu++11
 build --per_file_copt=^src/nu2api/nu3d/android/nurndr_android\.c$@-x,c++,-std=gnu++11
-build --per_file_copt=^src/nu2api/nu3d/android/nuscratch_android\.c$@-x,c++,-std=gnu++11
 build --per_file_copt=^src/nu2api/nu3d/android/nuprim_android\.c$@-x,c++,-std=gnu++11
+build --per_file_copt=^src/nu2api/nu3d/android/nuscratch_android\.c$@-x,c++,-std=gnu++11
 build:target --per_file_copt=^src/nu2api/nu3d/android/nuprim_android\.c$@-O0
+build:target --per_file_copt=^src/nu2api/nu3d/android/nuscratch_android\.c$@-O0
 build:target --per_file_copt=^src/nu2api/nu3d/android/nudlist_android\.c$@-O0
 build:target --per_file_copt=^src/nu2api/nu3d/android/nurndr_android\.c$@-O0
 build:target --per_file_copt=^src/nu2api/nu3d/glutils\.c$@-O0
@@ -373,7 +374,6 @@ build:target --per_file_copt=^src/legoapi/menus/screens/customise\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/characters/core/customiser\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/misc/supportall\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nu3d/android/nuposteffect_plain\.cpp$@-O2
-build:target --per_file_copt=^src/nu2api/nu3d/android/nuscratch_android\.c$@-O2
 build:target --per_file_copt=^src/nu2api/nu3d/nudlist\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nucore/nu2api_nucore_misc\.cpp$@-O2
 build:target --per_file_copt=^src/nu2api/nucore/nugcutscene_anim\.cpp$@-O2

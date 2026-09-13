@@ -228,8 +228,6 @@ extern "C" {
     void NuWindAnimate(NUWIND *wind, f32 frametime);
     void NuTimeBarSetRender(i32 set);
     void NuShaderManagerSetfv(i32 semantic, const f32 *values);
-    void *NuScratchAlloc32(i32 size);
-    void NuScratchRelease(void);
 
     // ---------------------------------------------------------------------------
     // Redirected symbols — real bodies live elsewhere (kept as comments)
@@ -471,7 +469,7 @@ extern "C" {
         }
         prev_lock = lock;
     }
-    extern nudisplayscene_s currentScene;
+    extern nurenderscene_s currentScene;
     i32 NuRndrDoingScreenGrab;
     i32 motionBlurAccumActiveThisFrame;
 
@@ -2670,41 +2668,6 @@ extern "C" {
     void *NuMemReAllocFn(void *ptr, u32 size) {
         return NuMemoryGet()->GetThreadMem()->_BlockReAlloc(ptr, size, 4, 1, "", 0);
     }
-    u8 PS2_SCRATCH_BASE[0x8000];
-    static u8 *ps2_scratch_free;
-
-    // Original @0x316d41.
-    void NuScratchReset(void) {
-        ps2_scratch_free = PS2_SCRATCH_BASE;
-    }
-
-    static void *NuScratchAllocAligned(i32 size, usize alignment) {
-        if (ps2_scratch_free == NULL) {
-            NuScratchReset();
-        }
-        u8 *previous = ps2_scratch_free;
-        u8 *allocation = reinterpret_cast<u8 *>(ALIGN(reinterpret_cast<usize>(ps2_scratch_free), alignment));
-        ps2_scratch_free = allocation + ALIGN(size, 4);
-        *reinterpret_cast<u8 **>(ps2_scratch_free) = previous;
-        ps2_scratch_free += sizeof(previous);
-        return allocation;
-    }
-
-    // Original @0x316e45 / 0x316d5d / 0x316dd1.
-    void *NuScratchAlloc128(i32 size) {
-        return NuScratchAllocAligned(size, 16);
-    }
-    void *NuScratchAlloc32(i32 size) {
-        return NuScratchAllocAligned(size, 4);
-    }
-    void *NuScratchAlloc64(i32 size) {
-        return NuScratchAllocAligned(size, 8);
-    }
-
-    // Original @0x316eb9.
-    void NuScratchRelease(void) {
-        ps2_scratch_free = *reinterpret_cast<u8 **>(ps2_scratch_free - sizeof(ps2_scratch_free));
-    }
     void *NuPtrBlockRead(NUFILE file) {
         void *block = NuMemFileAddr(file);
         return NuPtrBlockFix(block);
@@ -2993,7 +2956,7 @@ extern "C" {
         currentScene.accumulation_frames = frames;
         currentScene.accumulation_mode = mode;
     }
-    extern nudisplayscene_s currentScene;
+    extern nurenderscene_s currentScene;
     void NuBackbufferCopy(i32 texture_id) {
         currentScene.unknown_214 = static_cast<u32>(texture_id);
     }
@@ -5166,7 +5129,7 @@ extern "C" {
     void NuOcclusionManagerSetOccluderScreenSpaceThreshold(f32 threshold) {
         g_OcclusionManager.unknown_15c = threshold;
     }
-    void NuInvalidateClipRanges(nudldlistscene_s *scene) {
+    void NuInvalidateClipRanges(nudisplayscene_s *scene) {
         for (i32 index = 0; index < scene->nclip_objects; ++index) {
             if (scene->lod_ranges[index] != 0.0f) {
                 scene->lod_ranges[index] = FLT_MAX;
@@ -5182,9 +5145,6 @@ extern "C" {
     // ---------------------------------------------------------------------------
     // Strings / conversion / Unicode
     // ---------------------------------------------------------------------------
-
-    void NuQTAddElement(void) {
-    }
 
     // ---------------------------------------------------------------------------
     // Containers / lists / params

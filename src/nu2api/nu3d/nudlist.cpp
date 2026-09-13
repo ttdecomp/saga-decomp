@@ -125,6 +125,17 @@ static nudisplaylistitem_s *AddCallItem(nudisplaylist_s *list, u8 type, void *ne
 // Executor
 // ──────────────────────────────────────────────────────────────────────────────
 
+// Original 0x2f1180: reset every material-list head and make all clipping
+// objects visible in the current frame's two-bit visibility map.
+void NuDisplaySceneUnclip(NUDLDLISTSCENE *scene) {
+    for (i32 i = 0; i < static_cast<i32>(scene->nmtls); ++i) {
+        scene->dlist_mtls[i]->mtl_item->id = 0;
+    }
+    for (i32 i = 0; i < scene->nclip_objects; ++i) {
+        scene->clip_used[scene->render_buffer >> 7][i >> 2] |= static_cast<u8>(1u << (2 * (i & 3)));
+    }
+}
+
 extern "C" void NuDisplayListExecute(nudisplaylistitem_s *item, const nudl_handler_fn *item_table) {
     // `item_table` points at the entry for type 0x80.
     for (;;) {
@@ -248,7 +259,7 @@ static i32 ClipUsedBlockCount(i32 nclip) {
     return (((nclip + 7) / 8) * 2) / 16 + 1;
 }
 
-static void ResetSceneBeforeFrame(nudldlistscene_s *scene, bool gated) {
+static void ResetSceneBeforeFrame(nudisplayscene_s *scene, bool gated) {
     if (gated && (scene->flags & 6) == 0) {
         return;
     }
@@ -509,7 +520,7 @@ extern "C" void NuDisplayListSwapBuffersBeginFrame(void) {
     ResetSceneBeforeFrame(&global_dlist_manager.dyn_mtl_dlist, /*gated=*/true);
 
     for (i32 i = 0; i < global_dlist_manager.ndisplay_lists; ++i) {
-        nudldlistscene_s *sc = global_dlist_manager.dlists[i];
+        nudisplayscene_s *sc = global_dlist_manager.dlists[i];
         u32 nv = (~static_cast<u32>(static_cast<u8>(sc->render_buffer))) & 0xffffff80;
         sc->render_buffer &= 0x7f;
         sc->render_buffer |= nv;
@@ -538,7 +549,7 @@ extern "C" void NuDisplayListSwapBuffersBeginFrame(void) {
 #define MTL_BLEND_OP2(mtl) (*(const u8 *)((const u8 *)(mtl) + 0xf8))
 #define MTL_ATTRIB_DWORD1(mtl) (*(const u32 *)((const u8 *)(mtl) + 0x44))
 
-static void UpdateMaterialClipBits(nudldlistscene_s *scene) {
+static void UpdateMaterialClipBits(nudisplayscene_s *scene) {
     if (!scene || !scene->mtls || !scene->mtls[0]) {
         return;
     }
@@ -582,7 +593,7 @@ extern "C" i32 NuDisplayListAddRenderScene(void) {
 
     i32 count = 0;
     for (nusortpri_s *sp = mgr->sort_list; sp; sp = sp->sys_next) {
-        nudldlistscene_s *sc = sp->display_scene;
+        nudisplayscene_s *sc = sp->display_scene;
         if (sc == nullptr) {
             // FX sortpri — carry over unless already captured this frame.
             if ((sp->flags & 2) == 0) {
@@ -1033,7 +1044,7 @@ extern "C" void NuDisplayListSwapBuffersEndFrame(void) {
     UpdateMaterialClipBits(&mgr->dyn_mtl_dlist);
 
     for (i32 i = 0; i < mgr->ndisplay_lists; ++i) {
-        nudldlistscene_s *sc = mgr->dlists[i];
+        nudisplayscene_s *sc = mgr->dlists[i];
         u8 flags = sc->flags;
 
         if ((flags & 4) != 0) {
@@ -1117,7 +1128,7 @@ extern "C" void NuDisplayListSwapBuffersEndFrame(void) {
         }
     };
 
-    auto copyMaterialGeometry = [&](NUDISPLAYLIST *dl, nudisplaylistitem_s *first, nudldlistscene_s *sc) {
+    auto copyMaterialGeometry = [&](NUDISPLAYLIST *dl, nudisplaylistitem_s *first, nudisplayscene_s *sc) {
         *dl->dyn_geom = *first;
         if ((sc->flags & 4) == 0) {
             dl->mtl_last->next = dl->mtl_item->next;
@@ -1131,7 +1142,7 @@ extern "C" void NuDisplayListSwapBuffersEndFrame(void) {
     };
 
     for (nusortpri_s *sp = mgr->sort_list; sp; sp = sp->sys_next) {
-        nudldlistscene_s *sc = sp->display_scene;
+        nudisplayscene_s *sc = sp->display_scene;
         if (!sc) {
             RndrStateUpdateFx(&tmp_state, sp->items);
             continue;
@@ -1188,7 +1199,7 @@ extern "C" void NuDisplayListSwapBuffersEndFrame(void) {
     }
 
     for (i32 i = 0; i < mgr->ndisplay_lists; ++i) {
-        nudldlistscene_s *sc = mgr->dlists[i];
+        nudisplayscene_s *sc = mgr->dlists[i];
         if (sc->local_state) {
             RndrStateResetGlobalState(sc->local_state);
         }

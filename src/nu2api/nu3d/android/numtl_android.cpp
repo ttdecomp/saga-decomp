@@ -48,6 +48,24 @@ u8 DebrisGlassIOS_Tex[] = {
 
 static i32 g_DebrisGlassDistortTID;
 
+// Original numtl_android.cpp, 0x29c090..0x29c0fd and 0x29ca00..0x29ca2d.
+// The plane occupies bits 4..11 of the first material word.
+void NuMtlInsert(NUMTL *mtl, i32 plane) {
+    mtl->renderplane = static_cast<u8>(plane);
+}
+
+extern "C" void NuMtlSetRenderPlane(NUMTL *mtl, i8 plane) {
+    mtl->renderplane = static_cast<u8>(plane);
+    NuMtlInsert(mtl, plane);
+}
+
+extern "C" void NuMtlCopy(NUMTL *destination, const NUMTL *source) {
+    // The original copies the material, retaining the destination display list at +0x3c.
+    NUDISPLAYLIST *display_list = destination->display_list;
+    *destination = *source;
+    destination->display_list = display_list;
+}
+
 NuVertexFormatPS *g_nuDebrisVertexFormat;
 NuVertexFormatPS *g_nuFaceOnVertexFormat;
 NuVertexFormatPS *g_nuFallbackVertexFormat;

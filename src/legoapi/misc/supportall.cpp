@@ -1361,7 +1361,7 @@ void DisplayListCreateDynMtlList(variptr_u *buffer, variptr_u buffer_end) {
     NUDLIST_MANAGER *manager = &global_dlist_manager;
     NUDLDLISTSCENE *scene = &manager->dyn_mtl_dlist;
 
-    NuDisplayListCreate(reinterpret_cast<nudisplayscene_s *>(scene), buffer, buffer_end, 0x400, 0x80, 0, 0, 0x80, 0, 0);
+    NuDisplayListCreate(scene, buffer, buffer_end, 0x400, 0x80, 0, 0, 0x80, 0, 0);
     scene->nsort_pris = 0;
     scene->name = const_cast<char *>("Dynamic Material Display Scene");
 

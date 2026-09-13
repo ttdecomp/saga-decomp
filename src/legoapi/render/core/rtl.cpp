@@ -55,10 +55,6 @@ static __used__ rtl_s *GetNextRTL(void *, rtl_s *, char *, int *) {
     return nullptr;
 }
 
-static __used__ int InsertData(nuqthdr_s *, int, void *) {
-    return 0;
-}
-
 static __used__ void InsertLight(rtl_s *, rtlidata_s *, float) {
 }
 

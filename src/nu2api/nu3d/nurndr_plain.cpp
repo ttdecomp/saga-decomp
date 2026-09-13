@@ -7,7 +7,7 @@
 // It owns renderer scene/present paths and primitive drawing helpers:
 //
 //   1. Scene lifecycle  — NuRndrBeginScene / NuRndrClear / NuRndrEndScene
-//      builds the current `nudisplayscene_s` (0x218 bytes in the original BSS)
+//      builds the current `nurenderscene_s` (0x218 bytes in the original BSS)
 //      and queues it into a 16-slot ring consumed by the render thread.
 //
 //   2. Primitive drawing helpers that call the immediate-mode API in
@@ -63,13 +63,13 @@ extern "C" {
     i32 PS2_REZ_H = 720;
     // Scene currently being built.  Size is 0x218 bytes; original lives in BSS
     // and is referenced as a plain object by all render/present code.
-    struct nudisplayscene_s currentScene = {0};
+    struct nurenderscene_s currentScene = {0};
 
     // Deferred ring: NuRndrEndScene copies the completed scene here; the render
     // thread drains it.  Stride is 0x218, 16 slots (0x2180 bytes total) in the
     // original.
     i32 sceneParametersCount = 0;
-    struct nudisplayscene_s sceneParameters[kSceneRingCapacity] = {0};
+    struct nurenderscene_s sceneParameters[kSceneRingCapacity] = {0};
 
     // Shared renderer state block (original BSS @0x119b900, 0x1b0 bytes).
     NUGLOBALRNDRSTATE render_state = {};
@@ -229,8 +229,6 @@ extern "C" void NuMtlAnimateSetSpeedScale(f32 speed_scale) {
 }
 extern "C" void NuMtlAnimateShaderMtlTextures(void) {
 }
-extern "C" void NuMtlCopy(void) {
-}
 static void NuMtlCreate3D(void) {
 }
 extern "C" void NuMtlCreateBuff(void) {
@@ -243,8 +241,6 @@ extern "C" void NuMtlFindVariantMtl(void) {
 extern "C" void NuMtlFindVariantMtlFromDesc(void) {
 }
 extern "C" void NuMtlRegisterForOverride(void) {
-}
-extern "C" void NuMtlSetRenderPlane(void) {
 }
 static void NuMtlSetRenderStatesPS(void) {
 }
