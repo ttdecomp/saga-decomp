@@ -4,17 +4,14 @@
 // nurndr_plain.cpp — Host "plain" renderer backend.
 //
 // This TU is the host replacement for the PS2 rendering TU (nurndr).
-// It owns three things the rest of the engine expects to exist:
+// It owns renderer scene/present paths and primitive drawing helpers:
 //
 //   1. Scene lifecycle  — NuRndrBeginScene / NuRndrClear / NuRndrEndScene
 //      builds the current `nudisplayscene_s` (0x218 bytes in the original BSS)
 //      and queues it into a 16-slot ring consumed by the render thread.
 //
-//   2. Immediate-mode 2D — NuPrim2DBegin / NuPrim2DAddXYZ / NuPrim2DEnd.
-//      Vertices are streamed directly into the display-list vertex buffer
-//      (`display_list_buffer`).  Type 4 (quad) is expanded to two triangles
-//      (6 vertices) word-wise so both full-float and half-float UV layouts
-//      work without a branch.
+//   2. Primitive drawing helpers that call the immediate-mode API in
+//      android/nuprim_android.c, including quad expansion there.
 //
 //   3. Frame present   — NuRndrSwapScreen / NuRndrSwapScreenEx.  Flushes
 //      debris, swaps the display-list and stream buffers, kicks the render
@@ -27,6 +24,7 @@
 
 #include <float.h>
 #include <string.h>
+#include "nu2api/nu3d/nuprim_internal.h"
 #include "nu2api/numath/nufloat.h"
 #include "nu2api/numath/nutrig.h"
 #include "nu2api/numath/nuvec.h"
@@ -89,53 +87,12 @@ extern i32 rndr_blend_shape_deformer_wt_ptrs_cnt;
 // Immediate-mode 2D stream state
 // ---------------------------------------------------------------------------
 
-// Globals shared with nuprim.cpp (see nuprim.h for the canonical declarations).
+// Vertex count shared with the primitive implementation (see nuprim.h).
 i32 g_NuPrim_VertexCount;
-
-// File-local bookkeeping for the in-flight prim.  These mirror the original
-// TU statics at 0x99b60c (vertex-count pointer) and 0x628cc0 (prim type).
-u16 *g_NuPrim_PendingVertexCount = nullptr;
-u16 g_NuPrim_ActivePrimType = 0;
 
 // Display-list cursor for the 2D stream.  Defined in nudlist.cpp.
 extern VARIPTR *display_list_buffer;
 
-// Per-TU copy of NuDisplayListAddItem.  The original nurndr TU carries its
-// own copy at 0x29cc6c alongside the nudlist one; behaviour is identical.
-static nudisplaylistitem_s *AddDisplayListItem(nudisplaylist_s *list, u8 type, void *next) {
-    nudisplaylistitem_s *item = list->items;
-    item->type = type;
-    item->id = 3; // CALL
-    item->next = next;
-    list->items = (nudisplaylistitem_s *)((u8 *)list->items + 0x10);
-    return (nudisplaylistitem_s *)((u8 *)list->items - 0x10);
-}
-
-// ---------------------------------------------------------------------------
-// Prim vertex layout
-// ---------------------------------------------------------------------------
-
-// Immediate-mode vertex: {x,y,z, colour, u,v}.  Full UVs are f32[2],
-// half UVs are f16[2] packed at the same offsets.  Stride is always 0x18.
-// Copied word-wise during quad expansion so both layouts are handled
-// without branching.
-struct PrimVertexRaw {
-    f32 x, y, z;
-    u32 color;
-    u32 uv[2];
-};
-static_assert(sizeof(PrimVertexRaw) == 0x18, "PrimVertex stride must be 0x18");
-
-// Header emitted at the start of each prim stream chunk.  The vertex count
-// lives at +0xa and is patched by NuPrim2DEnd.
-struct PrimStreamHeader {
-    u32 prim_type;
-    u32 pad0;
-    u16 pad1;
-    u16 vertex_count; // patched on End
-    u32 pad2;
-};
-static_assert(sizeof(PrimStreamHeader) == 0x10, "PrimStreamHeader must be 0x10");
 
 // ---------------------------------------------------------------------------
 // Forward declarations for C-visible helpers
@@ -149,7 +106,6 @@ extern "C" {
     void DisplayListUpdateRenderState(void *list, void *state);
     void NuDisplayListLinkMtl(nudisplaylist_s *list, NUMTL *mtl);
     VARIPTR *NuDisplayListLinkItems(nudisplaylist_s *list, i32 count);
-    nudisplaylist_s *NuDisplayListGet2dList(void);
 }
 
 void NuDebrisRendererFlushBuffers(void);
@@ -168,95 +124,6 @@ extern "C" {
 // ---------------------------------------------------------------------------
 // Immediate-mode 2D API
 // ---------------------------------------------------------------------------
-
-extern "C" void NuPrim2DAddXYZ(float x, float y, float z) {
-    PrimVertexRaw *vtx = (PrimVertexRaw *)g_NuPrim_StreamBufferPtr->addr;
-    vtx->x = NuPrim_XBias + NuPrim_XScale * x;
-    vtx->y = NuPrim_YBias + NuPrim_YScale * y;
-    vtx->z = z;
-    g_NuPrim_StreamBufferPtr->addr += sizeof(PrimVertexRaw);
-    g_NuPrim_VertexCount++;
-
-    // Quad expansion (prim type 4): every pair of AddXYZ calls becomes a
-    // 6-vertex quad (two triangles).  The expansion is done word-wise so
-    // both full-float and half-float UV encodings are preserved without
-    // needing to know which is active.  See original 0x29d235..0x29d395.
-    if (g_NuPrim_ActivePrimType == 4 && (g_NuPrim_VertexCount & 1) == 0) {
-        u32 *words = (u32 *)(usize)(g_NuPrim_StreamBufferPtr->addr - 0x30);
-        g_NuPrim_StreamBufferPtr->addr += 0x60;
-        g_NuPrim_VertexCount += 4;
-
-        memcpy(&words[12], &words[6], 0x18);
-        memcpy(&words[18], &words[12], 0x18);
-        words[24] = words[0];
-        words[25] = words[7];
-        words[26] = words[8];
-        words[27] = words[9];
-        words[28] = words[4];
-        words[29] = words[11];
-        words[6] = words[12];
-        words[7] = words[1];
-        words[8] = words[2];
-        words[9] = words[3];
-        words[10] = words[16];
-        words[11] = words[5];
-        memcpy(&words[30], &words[0], 0x18);
-    }
-}
-
-extern "C" SAGA_HOST_WEAK void NuPrim2DBegin(u32 prim_type, u32 /*vtx_fmt*/, NUMTL *mtl) {
-    if (mtl == nullptr) {
-        mtl = numtl_defaultmtl2d;
-    }
-
-    g_NuPrim_NeedsOverbrightening = mtl->tex_id != 0;
-    g_NuPrim_NeedsHalfUVs = mtl->shader_desc.vtx_desc.has_half_uvs;
-
-    VARIPTR *buf = NuDisplayListGetBuffer();
-
-    nudisplaylist_s *list;
-    if (mtl->display_list != nullptr) {
-        list = mtl->display_list;
-        u8 *base = *(u8 **)list;
-        base[0x74] |= 2;
-        i32 bit = (base[0x75] >> 7) & 1;
-        u8 *slot = *(u8 **)((u8 *)base + 8 + (0x14 + bit) * 4);
-        i32 cnt = ((i32 *)list)[1];
-        i32 byte_idx = cnt >= 0 ? (cnt + 7) >> 3 : (~cnt + 9) >> 3;
-        u8 mask = (u8)(1 << (((i32 *)list)[1] & 7));
-        slot[(usize)byte_idx] |= mask;
-    } else {
-        list = NuDisplayListGet2dList();
-        NuDisplayListLinkMtl(list, mtl);
-    }
-
-    RndrStateSetConstAlphaTint(0, 0, 0.0f, nullptr, nullptr);
-    DisplayListUpdateRenderState(list, &render_state);
-    NuDisplayListLinkItems(list, 1);
-
-    g_NuPrim_StreamBufferPtr = display_list_buffer;
-
-    auto *hdr = (PrimStreamHeader *)display_list_buffer->addr;
-    hdr->prim_type = prim_type;
-    hdr->vertex_count = 0;
-    display_list_buffer->addr += sizeof(PrimStreamHeader);
-
-    g_NuPrim_PendingVertexCount = &hdr->vertex_count;
-    g_NuPrim_ActivePrimType = (u16)prim_type;
-    g_NuPrim_VertexCount = 0;
-
-    AddDisplayListItem(list, 0x93, hdr);
-}
-
-extern "C" void NuPrim2DEnd(void) {
-    *g_NuPrim_PendingVertexCount = (u16)g_NuPrim_VertexCount;
-    g_NuPrim_VertexCount = 0;
-}
-
-extern "C" void NuPrim3DEnd(void) {
-    *g_NuPrim_PendingVertexCount = (u16)g_NuPrim_VertexCount;
-    g_NuPrim_VertexCount = 0;
-}
 
 // ---------------------------------------------------------------------------
 // Scene lifecycle

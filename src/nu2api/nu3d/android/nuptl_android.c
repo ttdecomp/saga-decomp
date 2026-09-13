@@ -20,24 +20,27 @@
 #include "nu2api/numath/nuvec4.h"
 #include "nu2api/nucore/nuvuvec.hpp"
 #include "legoapi/legoapi_types.h"
+#include "legoapi/render/fx/game_deb.h"
+#include "nu2api/nucore/nustring.h"
+#include "nu2api/numath/nutrig.h"
 
-i32 g_UseSysMemVB; // bss
-void *g_pVBData;   // bss
-static u32 g_DebriVB[8];  // debris GL buffer handles
+static NUMTX NuRndr_DebrisMtx;
+static NUVEC4 NuRndr_DebrisPlane;
+static NUMTX *NuRndr_DebrisRotMtxPtr;
+static i32 g_UseSysMemVB;
+static u32 g_CurrentDebriVBIndex;
+static u32 g_DebriVB[8];
 static void *g_DebriSysMemVB[2][64];
-void *g_debrisUploadBuffer;
-u32 g_VBMaxVertexCount;
-u32 g_writeBufferIndex;
+static u32 g_CurrentVBVertexCount;
+static u32 g_VBSize;
+static u32 g_VBMaxVertexCount;
+static void *g_pVBData;
+static void *g_debrisUploadBuffer;
+static nunativedebrisdata_s *g_ParticleGroup;
+static void *g_lastPartEffect;
+static u32 g_FrameVertexCount;
+static u32 g_writeBufferIndex;
 static u32 g_readBufferIndex = 1;
-u32 g_CurrentDebriVBIndex;
-u32 g_VBSize;
-u32 g_CurrentVBVertexCount;
-u32 g_FrameVertexCount;
-void *g_lastPartEffect;
-NUMTX NuRndr_DebrisMtx;
-NUMTX *NuRndr_DebrisRotMtxPtr;
-NUVEC4 NuRndr_DebrisPlane;
-nunativedebrisdata_s *g_ParticleGroup;
 
 static u32 g_IdealDynamicVBSize = 0xc800;
 
@@ -46,6 +49,23 @@ static void NuIOSBindVAO(u32 vao) {
     if (vao != g_lastBoundVAO) {
         g_lastBoundVAO = vao;
     }
+}
+
+static void NuDisplayListSetNext(NUDISPLAYLISTITEM *item, void *next) {
+    item->next = next;
+}
+
+static void NuDisplayListSetID_CALL(NUDISPLAYLISTITEM *item) {
+    item->id = 3;
+}
+
+static NUDISPLAYLISTITEM *NuDisplayListAddItem(NUDISPLAYLIST *list, u8 type, void *next) {
+    NUDISPLAYLISTITEM *item = list->items;
+    item->type = type;
+    NuDisplayListSetID_CALL(item);
+    NuDisplayListSetNext(item, next);
+    list->items = reinterpret_cast<NUDISPLAYLISTITEM *>(reinterpret_cast<u8 *>(list->items) + 0x10);
+    return reinterpret_cast<NUDISPLAYLISTITEM *>(reinterpret_cast<u8 *>(list->items) - 0x10);
 }
 
 // The original particle renderer contains its own file-local copies of these
@@ -356,10 +376,6 @@ void BuildDebrisVerts(PartHeader *header, uv1debdata *chunk_data, NUMTL *materia
 }
 void AddParticleGroupToDisplayList(nunativedebrisdata_s *group) {
     NUDISPLAYLIST *list = group->material->display_list;
-    if (list == NULL) {
-        return;
-    }
-
     NUDLDLISTSCENE *display_scene = list->dlist;
     display_scene->flags |= NUDL_SCENE_FLAG_CLIP_MATERIALS;
     const i32 material_byte = list->mtl_id >= 0 ? list->mtl_id / 8 : (list->mtl_id + 7) / 8;
@@ -368,11 +384,7 @@ void AddParticleGroupToDisplayList(nunativedebrisdata_s *group) {
 
     DisplayListUpdateRenderState(list, &render_state);
     NuDisplayListLinkItems(list, 1);
-    NUDISPLAYLISTITEM *item = list->items;
-    item->type = 0xa7;
-    item->id = 3;
-    item->next = group;
-    list->items++;
+    NuDisplayListAddItem(list, 0xa7, group);
 }
 void NuIOSDLDebrisCallback(void *data) {
     nunativedebrisdata_s *packet = static_cast<nunativedebrisdata_s *>(data);
@@ -449,5 +461,197 @@ void LinkDmaParticalSets(dma_particle_chunk_s **chunks, i32 count) {
     }
 }
 }
+
+void NuRndrParticleSetRepeat(NUVEC *position) {
+    NUVEC repeat = {
+        (position->x - NuRndrDebBase.x) / NuRndrDebRange.x,
+        (position->y - NuRndrDebBase.y) / NuRndrDebRange.y,
+        (position->z - NuRndrDebBase.z) / NuRndrDebRange.z,
+    };
+    repeat.x -= static_cast<f32>(static_cast<i32>(repeat.x + 65536.0f) - 65536);
+    repeat.y -= static_cast<f32>(static_cast<i32>(repeat.y + 65536.0f) - 65536);
+    repeat.z -= static_cast<f32>(static_cast<i32>(repeat.z + 65536.0f) - 65536);
+    position->x = NuRndrDebBase.x + repeat.x * NuRndrDebRange.x;
+    position->y = NuRndrDebBase.y + repeat.y * NuRndrDebRange.y;
+    position->z = NuRndrDebBase.z + repeat.z * NuRndrDebRange.z;
+}
+void NuRndrParticleDraw(variptr_u *, PartHeader *header, uv1debdata *data, float time, numtx_s *matrix, i32 *,
+                        float clip_distance, i32 mode, numtl_s *, float, float) {
+    dma_particle_s *particle = reinterpret_cast<dma_particle_chunk_s *>(data)->particles;
+    for (i32 index = 0; index != 32; ++index, ++particle) {
+        f32 age = time - particle->start_time;
+        u32 frame = static_cast<u32>(particle->inverse_lifetime * age);
+        if (frame > 62) {
+            continue;
+        }
+        u32 next_frame = frame + 1;
+        f32 fraction = particle->inverse_lifetime * age - static_cast<f32>(frame);
+        debris_particle_frame_s *first = &header->frames[frame];
+        debris_particle_frame_s *second = &header->frames[next_frame];
+        NUVEC position;
+        position.x = particle->position.x + particle->momentum.x * age;
+        position.y = particle->position.y + particle->momentum.y * age + header->gravity * age * age * 0.945f;
+        position.z = particle->position.z + particle->momentum.z * age;
+        NUVEC rotated;
+        rotated.x = position.x * matrix->m00 + position.y * matrix->m10 + position.z * matrix->m20;
+        rotated.y = position.x * matrix->m01 + position.y * matrix->m11 + position.z * matrix->m21;
+        rotated.z = position.x * matrix->m02 + position.y * matrix->m12 + position.z * matrix->m22;
+        NuRndr_DebrisMtx.m30 = rotated.x + matrix->m30;
+        NuRndr_DebrisMtx.m31 = rotated.y + matrix->m31;
+        NuRndr_DebrisMtx.m32 = rotated.z + matrix->m32;
+        if (mode == 6 || mode == 7) {
+            NuRndrParticleSetRepeat(reinterpret_cast<NUVEC *>(&NuRndr_DebrisMtx.m30));
+        }
+        f32 distance = NuRndr_DebrisPlane.w +
+                       (NuRndr_DebrisMtx.m32 * NuRndr_DebrisPlane.z +
+                        (NuRndr_DebrisMtx.m30 * NuRndr_DebrisPlane.x + NuRndr_DebrisMtx.m31 * NuRndr_DebrisPlane.y));
+        if (clip_distance > distance) {
+            continue;
+        }
+        NUVEC offset;
+        offset.x = first->position.x * (1.0f - fraction) + second->position.x * fraction;
+        offset.y = first->position.y * (1.0f - fraction) + second->position.y * fraction;
+        offset.z = first->position.z * (1.0f - fraction) + second->position.z * fraction;
+        NUVEC extent;
+        extent.x = first->extent.x * (1.0f - fraction) + second->extent.x * fraction;
+        extent.y = first->extent.y * (1.0f - fraction) + second->extent.y * fraction;
+        extent.z = first->extent.z * (1.0f - fraction) + second->extent.z * fraction;
+        NUVEC texture_offset;
+        texture_offset.x = first->texture_offset.x * (1.0f - fraction) + second->texture_offset.x * fraction;
+        texture_offset.y = first->texture_offset.y * (1.0f - fraction) + second->texture_offset.y * fraction;
+        texture_offset.z = first->texture_offset.z * (1.0f - fraction) + second->texture_offset.z * fraction;
+        NuVecMtxTransform(&offset, &offset, &NuRndr_DebrisMtx);
+        NuVecMtxTransform(&extent, &extent, &NuRndr_DebrisMtx);
+        NuVecMtxTransform(&texture_offset, &texture_offset, &NuRndr_DebrisMtx);
+        // The original ends here without submitting geometry. Its subsequent
+        // colour conversions only write dead stack locals.
+    }
+}
+
+extern "C" void GenericDebinfoDmaTypeUpdate(debinftype *effect) {
+        if (effect->native_data == NULL) {
+            if (freeDmaDebType >= EDPP_MAX_DMADEBTYPES) {
+                return;
+            }
+            effect->native_data = DmaDebTypes[freeDmaDebType++];
+        }
+
+        if (NuStrCmp(effect->name, "FLY") == 0 && static_cast<u32>(effect->texture_u0) == 0x8003c &&
+            static_cast<u32>(effect->texture_v0) == 0x80100 && static_cast<u32>(effect->texture_u1) == 0x8005e &&
+            static_cast<u32>(effect->texture_v1) == 0x80082) {
+            for (u32 i = 0; i < 8; ++i) {
+                effect->width_keys[i].value = effect->height_keys[i].value;
+                effect->height_keys[i].value += effect->height_keys[i].value;
+                effect->alpha_keys[i].value *= 1.5f;
+                effect->rotation_keys[i].value *= 1.5f;
+            }
+            effect->texture_u0 = static_cast<f32>(static_cast<u32>(effect->texture_u0) & ~0x1ffU) + 63.75f;
+            effect->texture_v0 = static_cast<f32>(static_cast<u32>(effect->texture_v0) & ~0x1ffU) + 127.5f;
+            effect->texture_u1 = static_cast<f32>(static_cast<u32>(effect->texture_u1) & ~0x1ffU) + 95.625f;
+            effect->texture_v1 = static_cast<f32>(static_cast<u32>(effect->texture_v1) & ~0x1ffU) + 191.25f;
+        }
+        PartHeader *header = effect->native_data;
+        header->gravity = effect->field_0a0;
+        header->texture_u0 = static_cast<f32>(static_cast<i32>(effect->texture_u0) & 0x1ff) / 255.0f;
+        header->texture_v0 = static_cast<f32>(static_cast<i32>(effect->texture_v0) & 0x1ff) / 255.0f;
+        header->texture_u1 = static_cast<f32>(static_cast<i32>(effect->texture_u1) & 0x1ff) / 255.0f;
+        header->texture_v1 = static_cast<f32>(static_cast<i32>(effect->texture_v1) & 0x1ff) / 255.0f;
+
+        for (i32 frame_index = 0; frame_index < 64; ++frame_index) {
+            f32 width = 0.0f;
+            f32 height = 0.0f;
+            f32 rotation = 0.0f;
+            f32 red = 0.0f;
+            f32 green = 0.0f;
+            f32 blue = 0.0f;
+            f32 alpha = 0.0f;
+            const f32 time = static_cast<f32>(frame_index) / 64.0f;
+            for (i32 i = 0; i < 7; ++i) {
+                const debris_float_key_s &first = effect->width_keys[i];
+                const debris_float_key_s &second = effect->width_keys[i + 1];
+                if (first.time <= time && time <= second.time) {
+                    const f32 duration = second.time - first.time;
+                    const f32 elapsed = time - first.time;
+                    width = elapsed == 0.0f ? first.value : first.value + (second.value - first.value) * (elapsed / duration);
+                    break;
+                }
+            }
+            for (i32 i = 0; i < 7; ++i) {
+                const debris_float_key_s &first = effect->height_keys[i];
+                const debris_float_key_s &second = effect->height_keys[i + 1];
+                if (first.time <= time && time <= second.time) {
+                    const f32 duration = second.time - first.time;
+                    const f32 elapsed = time - first.time;
+                    height = elapsed == 0.0f ? first.value : first.value + (second.value - first.value) * (elapsed / duration);
+                    break;
+                }
+            }
+            for (i32 i = 0; i < 7; ++i) {
+                const debris_float_key_s &first = effect->rotation_keys[i];
+                const debris_float_key_s &second = effect->rotation_keys[i + 1];
+                if (first.time <= time && time <= second.time) {
+                    const f32 duration = second.time - first.time;
+                    const f32 elapsed = time - first.time;
+                    rotation = elapsed == 0.0f ? first.value : first.value + (second.value - first.value) * (elapsed / duration);
+                    break;
+                }
+            }
+            const f32 sine = NU_SIN_LUT(rotation);
+            const f32 cosine = NU_SIN_LUT(rotation + 16384.0f);
+            const f32 wave_x = effect->field_0b4 * NU_SIN_LUT(effect->field_0b0 * time * 65536.0f);
+            const f32 wave_y = effect->field_0bc * NU_SIN_LUT(effect->field_0b8 * time * 65536.0f);
+            const f32 texture_x_numerator = cosine * (width * 0.25f) - sine * (height * 0.25f) + wave_x;
+            const f32 texture_y_numerator = -sine * (width * 0.25f) - cosine * (height * 0.25f) + wave_y;
+
+            debris_particle_frame_s &frame = header->frames[frame_index];
+            frame.position.x = (-cosine * (width * 0.25f) - sine * (height * 0.25f) + wave_x) / 2048.0f;
+            frame.position.y = (sine * (width * 0.25f) - cosine * (height * 0.25f) + wave_y) / 2048.0f;
+            frame.position.z = 0.0f;
+            frame.texture_offset.x = texture_x_numerator / 2048.0f;
+            frame.texture_offset.y = texture_y_numerator / 2048.0f;
+            frame.texture_offset.z = 0.0f;
+            frame.extent.x = (texture_x_numerator + sine * (height * 0.5f)) / 2048.0f;
+            frame.extent.y = (texture_y_numerator + cosine * (height * 0.5f)) / 2048.0f;
+            frame.extent.z = 0.0f;
+            for (i32 i = 0; i < 7; ++i) {
+                const debris_colour_key_s &first = effect->colour_keys[i];
+                const debris_colour_key_s &second = effect->colour_keys[i + 1];
+                if (first.time <= time && time <= second.time) {
+                    const f32 duration = second.time - first.time;
+                    const f32 elapsed = time - first.time;
+                    if (elapsed == 0.0f) {
+                        red = first.red;
+                        green = first.green;
+                        blue = first.blue;
+                    } else {
+                        const f32 fraction = elapsed / duration;
+                        red = first.red + static_cast<i32>(second.red - first.red) * fraction;
+                        green = first.green + static_cast<i32>(second.green - first.green) * fraction;
+                        blue = first.blue + static_cast<i32>(second.blue - first.blue) * fraction;
+                    }
+                    break;
+                }
+            }
+            red += red;
+            green += green;
+            blue += blue;
+            if (red > 255.0f) red = 255.0f;
+            if (green > 255.0f) green = 255.0f;
+            if (blue > 255.0f) blue = 255.0f;
+            for (i32 i = 0; i < 7; ++i) {
+                const debris_float_key_s &first = effect->alpha_keys[i];
+                const debris_float_key_s &second = effect->alpha_keys[i + 1];
+                if (first.time <= time && time <= second.time) {
+                    const f32 duration = second.time - first.time;
+                    const f32 elapsed = time - first.time;
+                    alpha = elapsed == 0.0f ? first.value : first.value + (second.value - first.value) * (elapsed / duration);
+                    break;
+                }
+            }
+            frame.colour = (static_cast<u32>(static_cast<i32>(blue)) << 16) |
+                           (static_cast<u32>(static_cast<i32>(green)) << 8) |
+                           static_cast<u32>(red) | (static_cast<u32>(alpha) << 24);
+        }
+    }
 
 // Original provides only the mangled spelling (_Z28NuDebrisRendererFlushBuffersv).

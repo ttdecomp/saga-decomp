@@ -2,6 +2,7 @@
 #include "decomp.h"
 #include "legoapi/legoapi_types.h"
 #include "legoapi/render/fx.h"
+#include "legoapi/render/fx/game_deb.h"
 #include "nu2api/numath/nufloat.h"
 #include "nu2api/numath/nutrig.h"
 #include "nu2api/numath/numtx.h"
@@ -140,9 +141,6 @@ extern "C" {
     extern i32 globalframes;
     extern i32 update_debris_enabled;
     extern u32 debrisseed;
-    extern PartHeader **DmaDebTypes;
-    extern i32 EDPP_MAX_DMADEBTYPES;
-    extern i32 freeDmaDebType;
     extern i32 debris_setup_called;
     extern usize debris_trash_space;
     extern usize debris_trash_size;
@@ -165,7 +163,6 @@ extern "C" {
 
 
     void DebrisReScale(i32, f32);
-    void GenericDebinfoDmaTypeUpdate(debinftype *);
     void DebReAlloc(debkeydatatype_s *, i32);
     extern "C++" void DebrisProcessSpheres(uv1deb *, f32, debinftype *, debkeydatatype_s *, i32);
     extern "C++" {

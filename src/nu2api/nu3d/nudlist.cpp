@@ -196,10 +196,6 @@ static nudisplaylistitem_s *AddCallItem(nudisplaylist_s *list, u8 type, void *ne
     return reinterpret_cast<nudisplaylistitem_s *>(reinterpret_cast<u8 *>(list->items) - kItemSize);
 }
 
-extern "C" nudisplaylist_s *NuDisplayListGet2dList(void) {
-    return &global_dlist_manager.dlist_2d;
-}
-
 extern "C" void NuDisplayListResetBuffer(void) {
     display_list_buffer = reinterpret_cast<VARIPTR *>(&rndrstream_free);
     display_list_buffer_end = reinterpret_cast<VARIPTR *>(rndrstream_end.addr);

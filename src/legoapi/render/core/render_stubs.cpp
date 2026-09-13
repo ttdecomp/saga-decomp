@@ -16,46 +16,6 @@
 
 #include <string.h>
 
-static f32 EvaluateDebrisCurve(const debris_float_key_s (&keys)[8], f32 time) {
-    for (i32 i = 0; i < 7; ++i) {
-        if (keys[i].time <= time && time <= keys[i + 1].time) {
-            const f32 duration = keys[i + 1].time - keys[i].time;
-            if (time == keys[i].time || duration == 0.0f) {
-                return keys[i].value;
-            }
-            const f32 t = (time - keys[i].time) / duration;
-            return keys[i].value + (keys[i + 1].value - keys[i].value) * t;
-        }
-    }
-    return 0.0f;
-}
-
-static u8 ClampDebrisColour(f32 value) {
-    value += value;
-    return static_cast<u8>(value > 255.0f ? 255.0f : value);
-}
-
-static u32 EvaluateDebrisColour(const debinftype *effect, f32 time) {
-    f32 red = 0.0f;
-    f32 green = 0.0f;
-    f32 blue = 0.0f;
-    for (i32 i = 0; i < 7; ++i) {
-        const debris_colour_key_s &first = effect->colour_keys[i];
-        const debris_colour_key_s &second = effect->colour_keys[i + 1];
-        if (first.time <= time && time <= second.time) {
-            const f32 duration = second.time - first.time;
-            const f32 t = time == first.time || duration == 0.0f ? 0.0f : (time - first.time) / duration;
-            red = first.red + (static_cast<i32>(second.red) - first.red) * t;
-            green = first.green + (static_cast<i32>(second.green) - first.green) * t;
-            blue = first.blue + (static_cast<i32>(second.blue) - first.blue) * t;
-            break;
-        }
-    }
-    const u8 alpha = static_cast<u8>(EvaluateDebrisCurve(effect->alpha_keys, time));
-    return static_cast<u32>(alpha) << 24 | static_cast<u32>(ClampDebrisColour(red)) |
-           static_cast<u32>(ClampDebrisColour(green)) << 8 | static_cast<u32>(ClampDebrisColour(blue)) << 16;
-}
-
 struct numtl_s;
 typedef struct numtl_s NUMTL;
 
@@ -366,65 +326,6 @@ extern "C" {
     void FmvTimePS(void) {
     }
 
-    void GenericDebinfoDmaTypeUpdate(debinftype *effect) {
-        extern PartHeader **DmaDebTypes;
-        extern i32 EDPP_MAX_DMADEBTYPES;
-        extern i32 freeDmaDebType;
-
-        if (effect == NULL) {
-            return;
-        }
-        if (effect->native_data == NULL) {
-            if (freeDmaDebType >= EDPP_MAX_DMADEBTYPES) {
-                return;
-            }
-            effect->native_data = DmaDebTypes[freeDmaDebType++];
-        }
-
-        if (NuStrCmp(effect->name, "FLY") == 0 && static_cast<u32>(effect->texture_u0) == 0x8003c &&
-            static_cast<u32>(effect->texture_v0) == 0x80100 && static_cast<u32>(effect->texture_u1) == 0x8005e &&
-            static_cast<u32>(effect->texture_v1) == 0x80082) {
-            for (u32 i = 0; i < 8; ++i) {
-                effect->width_keys[i].value = effect->height_keys[i].value;
-                effect->height_keys[i].value += effect->height_keys[i].value;
-                effect->alpha_keys[i].value *= 1.5f;
-                effect->rotation_keys[i].value *= 1.5f;
-            }
-            effect->texture_u0 = static_cast<f32>(static_cast<u32>(effect->texture_u0) & ~0x1ffU) + 63.75f;
-            effect->texture_v0 = static_cast<f32>(static_cast<u32>(effect->texture_v0) & ~0x1ffU) + 127.5f;
-            effect->texture_u1 = static_cast<f32>(static_cast<u32>(effect->texture_u1) & ~0x1ffU) + 95.625f;
-            effect->texture_v1 = static_cast<f32>(static_cast<u32>(effect->texture_v1) & ~0x1ffU) + 191.25f;
-        }
-        PartHeader *header = effect->native_data;
-        header->gravity = effect->field_0a0;
-        header->texture_u0 = static_cast<f32>(static_cast<i32>(effect->texture_u0) & 0x1ff) / 255.0f;
-        header->texture_v0 = static_cast<f32>(static_cast<i32>(effect->texture_v0) & 0x1ff) / 255.0f;
-        header->texture_u1 = static_cast<f32>(static_cast<i32>(effect->texture_u1) & 0x1ff) / 255.0f;
-        header->texture_v1 = static_cast<f32>(static_cast<i32>(effect->texture_v1) & 0x1ff) / 255.0f;
-
-        for (i32 frame_index = 0; frame_index < 64; ++frame_index) {
-            const f32 time = static_cast<f32>(frame_index) / 64.0f;
-            const f32 width = EvaluateDebrisCurve(effect->width_keys, time);
-            const f32 height = EvaluateDebrisCurve(effect->height_keys, time);
-            const f32 rotation = EvaluateDebrisCurve(effect->rotation_keys, time);
-            const f32 sine = NU_SIN_LUT(rotation);
-            const f32 cosine = NU_SIN_LUT(rotation + 16384.0f);
-            const f32 wave_x = effect->field_0b4 * NU_SIN_LUT(effect->field_0b0 * time * 65536.0f);
-            const f32 wave_y = effect->field_0bc * NU_SIN_LUT(effect->field_0b8 * time * 65536.0f);
-
-            debris_particle_frame_s &frame = header->frames[frame_index];
-            frame.position.x = (-cosine * (width * 0.25f) - sine * (height * 0.25f) + wave_x) / 2048.0f;
-            frame.position.y = (sine * (width * 0.25f) - cosine * (height * 0.25f) + wave_y) / 2048.0f;
-            frame.position.z = 0.0f;
-            frame.texture_offset.x = (cosine * (width * 0.25f) - sine * (height * 0.25f) + wave_x) / 2048.0f;
-            frame.texture_offset.y = (-sine * (width * 0.25f) - cosine * (height * 0.25f) + wave_y) / 2048.0f;
-            frame.texture_offset.z = 0.0f;
-            frame.extent.x = (cosine * (width * 0.25f) + sine * (height * 0.25f) + wave_x) / 2048.0f;
-            frame.extent.y = (-sine * (width * 0.25f) + cosine * (height * 0.25f) + wave_y) / 2048.0f;
-            frame.extent.z = 0.0f;
-            frame.colour = EvaluateDebrisColour(effect, time);
-        }
-    }
 
     void Initialise_PS(NUGSCN *scene) {
         scene->instance_visibility_flags = PortalVisiFlags;

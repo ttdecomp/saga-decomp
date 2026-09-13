@@ -1,6 +1,7 @@
 #include "decomp.h"
 #include "legoapi/legoapi_types.h"
 #include "legoapi/render/fx.h"
+#include "legoapi/render/fx/game_deb.h"
 #include "nu2api/nu3d/nutex.h"
 #include "nu2api/nu3d/glutils.h"
 #include "nu2api/nu3d/numtl.h"
@@ -35,7 +36,6 @@ extern "C" {
 
     extern u32 debrisseed;
     extern f32 globaltime;
-    void GenericDebinfoDmaTypeUpdate(debinftype *);
 }
 
 static dma_particle_s *DebrisParticleAt(debkeydatatype_s *key, i16 index, u8 particle_type) {

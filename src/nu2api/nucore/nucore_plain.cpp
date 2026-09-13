@@ -958,35 +958,6 @@ extern "C" {
 
 // Local helpers matching original static display-list setters (t local symbols)
 
-static __used__ void NuDisplayListSetID(nudisplaylistitem_s *item, unsigned char id) {
-    item->id = id;
-}
-static __used__ void NuDisplayListAddItem(nudisplaylist_s *list, unsigned char id, void *item) {
-    (void)list;
-    (void)id;
-    (void)item;
-}
-static __used__ void NuDisplayListSetItem(nudisplaylistitem_s *item, unsigned char a, unsigned char b, void *c) {
-    (void)item;
-    (void)a;
-    (void)b;
-    (void)c;
-}
-static __used__ void NuDisplayListSetNext(nudisplaylistitem_s *item, void *next) {
-    item->next = next;
-}
-static __used__ void NuDisplayListSetID_CNT(nudisplaylistitem_s *item) {
-    item->id = 0;
-}
-static __used__ void NuDisplayListSetID_RET(nudisplaylistitem_s *item) {
-    item->id = 4;
-}
-static __used__ void NuDisplayListSetID_CALL(nudisplaylistitem_s *item) {
-    (void)item;
-}
-static __used__ void NuDisplayListSetID_NEXT(nudisplaylistitem_s *item) {
-    item->id = 1;
-}
 
 extern "C" {
     // original 0x2e8cc0

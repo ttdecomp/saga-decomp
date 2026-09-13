@@ -12,6 +12,8 @@ _DISABLED_FEATURES = ["layering_check"]
 # as well; clang-tidy cannot infer the Bazel per-file -x override from a suffix.
 _CXX_NAMED_C_SOURCES = [
     "src/nu2api/nu3d/android/nuptl_android.c",
+    "src/nu2api/nu3d/android/nudlist_android.c",
+    "src/nu2api/nu3d/android/nuprim_android.c",
     "src/nu2api/nu3d/glutils.c",
     "src/nu2api/nu3d/android/nurain_android.c",
     "src/nu2api/nucore/android/nuthread.c",

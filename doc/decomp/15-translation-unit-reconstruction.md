@@ -1483,3 +1483,165 @@ UBSan table-index error; three subsequent rebuilt runs loaded Map and
 advanced all 120 frames. The intermittent sanitizer failure is recorded as
 an unresolved runtime observation, not claimed to be caused or fixed by
 this TU move.
+
+### Remaining particle-renderer run
+
+The original initializer-delimited `nuptl_android.c` local block starts
+with its `VuVecSet` at `0x296ad4`, owns file-local debris matrix, camera
+plane, particle packet, and vertex-buffer state, and ends at
+`_GLOBAL__sub_I_nuptl_android.c` at `0x29a9d5`; the next block starts with
+another `VuVecSet` at `0x29a9f4`. The map correctly cautions that an
+initializer-delimited block may contain another unit, so source-path and
+shared-static evidence remain important. Immediately after the DMA setup
+run are `NuRndrParticleSetRepeat` at `0x2987c6`, `NuRndrParticleDraw` at
+`0x2989d8`, and `GenericDebinfoDmaTypeUpdate` at `0x299204`.
+
+Moving the unchanged Repeat body from `nurndr.cpp` into the original particle
+owner raises it from 22.18% to 89.55%, with no other function changes.
+Moving the unchanged Draw body next raises it from 13.18% to 71.90%, again
+with no other score changes. The Repeat declaration now belongs in the
+particle owner header, and dead source-local debris declarations were
+removed from the previous owners.
+
+`GenericDebinfoDmaTypeUpdate` at `0x299204` then moved unchanged from the
+render catch-all into the same original run. It stayed at 40.02%, showing
+that owner correction alone could not match its large body. Its three
+private curve/colour helper functions were reconstruction artifacts: the
+original 5,724-byte body has no helper calls beyond its PIC thunk and
+`NuStrCmp`. The source now performs five ordinary inline key searches per
+frame (width, height, rotation, RGB, alpha), with inclusive key intervals
+and elapsed-zero interpolation branches, matching the disassembly. It also
+removes an entry null guard absent from the original, preserves 32-bit
+signed/unsigned colour conversion without signed-shift UB, and reuses the
+rounded texture-offset numerators for extent coordinates. These changes
+raise the body from 40.02% to 60.06%; the whole-binary report reaches
+45.0569% from the preceding commit's 44.9990%, with no regressions or exact
+losses. Target/WASM/native builds, all three lint modes, four repository
+checks, complete symbol coverage, and a rebuilt 120-frame Cantina fixture
+smoke pass on the final source.
+
+Once the particle/Draw/update consumers had migrated, the original
+`_ZL...` debris matrix, camera plane, packet, buffer counts and pointers,
+and write index had no remaining cross-TU source users. Giving their
+definitions file-local linkage restores the original data-symbol ownership.
+Seven functions improve and none regress: `NuDebrisRendererNextBuffer`
+59.86% to 96.13%, Flush 57.43% to 93.06%, Rotation 77.25% to 99.88%,
+Init 75.61% to 95.23%, Group 78.43% to 94.32%, Build 52.60% to 58.01%,
+and Draw 71.90% to 75.42%. Overall matching rises again to 45.0737%.
+Ordering the declarations to mirror the original local BSS symbol sequence
+changes no function score, but the rebuilt object's BSS order now matches
+that sequence. No fake accessors or export aliases were introduced. The
+frozen-source gate passed target, WASM, and native builds, all three lint
+modes, four checks, 13,425/13,425 symbol coverage, and a rebuilt 120-frame
+Cantina fixture smoke.
+
+The original local block also contains its own display-list helper chain:
+`NuDisplayListSetNext` at `0x296b2f`, `NuDisplayListSetID_CALL` at
+`0x296b3e`, and `NuDisplayListAddItem` at `0x296b4b`. The original
+`AddParticleGroupToDisplayList` calls that last helper directly after
+linking its list items. Reconstructing these as ordinary file-local
+functions, rather than manually writing the item fields in the caller,
+makes the first two helpers exact and raises `NuDisplayListAddItem` to
+83.10%. The caller improves from 34.77% to 54.86%. Its original code
+unconditionally dereferences the display list; removing a provisional
+null guard restores that behavior and accounts for the final caller gain.
+The whole-binary report reaches 45.0766%, with seven improved functions,
+none regressed, and two new exact matches relative to the preceding
+data-order trial. The other TUs' independent copies of these static
+helpers remain untouched. Target/WASM/native builds, all three lint modes,
+four checks, and 13,425/13,425 symbol coverage pass on the final source.
+The rebuilt Cantina smoke loaded the area and reached gameplay on each
+attempt, but two attempts stopped in the previously observed
+`MovePlayer` → `NuAtan2D` trig-table UBSan failure; two attempts advanced
+all 120 frames. The likely mechanism is a nonzero AI movement vector with
+squared length at most `1e-6`: `NuFsqrt` returns zero in that interval,
+while `MovePlayer` only checks for an exactly zero vector before taking
+the reciprocal. The original `NuFsqrt` disassembly at `0x292ec5` has the
+same threshold path, and its `MovePlayer` disassembly at `0x102129`–
+`0x102193` similarly divides without a rounded-zero guard. This appears
+to be a source-fidelity/runtime tension rather than a direct debris-path
+regression. It is not treated as a clean runtime pass or hidden with a
+sanitizer suppression.
+
+### Display-list Android helper chain
+
+The next original local block names `nudlist_android.c` and contains a
+separate setter chain at `0x29aaa9`–`0x29ab92`. Its `NuDisplayListSetItem`
+stores the type and calls `NuDisplayListSetNext` before dispatching the
+item ID to one of the CALL, CNT, NEXT, or RET setters. Five immediately
+following public `NuDisplayListAdd*` wrappers call `SetItem`. These
+functions had been split between generic display-list stubs and
+`nucore_plain.cpp`, where several `__used__` definitions were no-op
+symbol placeholders. A new `nudlist_android.c`, compiled as C++ at the
+original unoptimized level, holds the real file-local call chain and
+five wrappers; the placeholders are removed rather than preserved for
+symbol counts.
+
+The isolated trial raises whole-binary fuzzy matching from 45.0766% to
+45.0808%. `SetNext`, CALL, CNT, NEXT, RET, and `SetItem` become exact;
+`SetID` reaches 99.58% with only branch-target address differences. All
+five wrappers remain exact, with seven improved functions, no regressions,
+and six additional exact matches. Original TU-local copies of `SetNext`
+and CALL also exist in `nuptl_android.c` and `nuprim_android.c`; the
+former remains exact and the latter awaits its own natural caller-based
+reconstruction. Target/WASM/native builds, all three lint modes, all
+four repository checks, 13,425/13,425 symbol coverage, and a rebuilt
+120-frame Map/Cantina smoke pass on this source.
+
+### Primitive Android begin cluster
+
+The next original local block identifies `nuprim_android.c`. Its text run
+places `NuPrimPushCoordSystem` at `0x29cbc9`, a local
+`NuDisplayListGet2dList`, then separate static `SetNext`, `SetID_CALL`,
+and `AddItem` helpers before `NuPrim2DBegin` at `0x29ccc5` and
+`NuPrim3DBegin` at `0x29ceb8`. Both begins call that same `AddItem`, so
+their helper copy can be emitted by real source calls. The previous
+implementations were split between `nurndr_plain.cpp` at `-O3` and
+`nuprim.cpp`, while `nucore_plain.cpp` contained an unused `__used__`
+`AddItem` placeholder. A new C++-mode, unoptimized `nuprim_android.c`
+now owns the begin chain; the exact `NuPrimPushCoordSystem` and its
+`NuPrimInit` caller moved with it. The unused placeholder and an
+incorrectly exported `NuDisplayListGet2dList` duplicate were removed.
+The shared primitive stream pointer and vertex count remain global
+because real callers in other TUs use them.
+
+This isolated unit raises fuzzy matching from 45.0808% to 45.0880%:
+`NuPrim2DBegin` improves from 17.51% to 71.57%, `Get2dList`,
+`SetNext`, and `SetID_CALL` become exact, and the already exact
+`NuPrimPushCoordSystem` and `NuPrimInit` stay exact. Seven functions
+improve, four new exact matches appear, and one untouched function,
+`NuRndrLineStrip2di`, slips from 42.08% to 42.00%. Inspection found
+a real register-allocation/code-generation difference after the moved
+`NuPrim2DBegin` call; it is not asserted to be a relocation-only change.
+The structurally evidenced, net-positive unit is retained with that
+small regression recorded. Target/WASM/native builds, all three lint
+modes, four repository checks, 13,425/13,425 symbol coverage, and a
+rebuilt 120-frame Map/Cantina smoke pass.
+
+The contiguous continuation of this original TU has `NuPrim2DEnd` at
+`0x29d0c9`, `NuPrim3DEnd` at `0x29d0f6`, `NuPrim2DAddXYZ` at
+`0x29d123`, then `NuPrimSetCoordinateSystem` at `0x29d3d1`. Moving the
+End pair and vertex writer from `nurndr_plain.cpp` into
+`nuprim_android.c` restores their common owner and lets their two
+exclusive bookkeeping variables become genuine file-local data. The
+original `g_NuPrim_VertexCountPtr` is zero-initialized BSS, while
+`g_NuPrim_CurrentPrimType` is a 16-bit `.data` value initialized to
+`10000`; the latter was previously zero-initialized under a different
+name. The vertex writer shares a real 0x18-byte internal layout header
+with remaining renderer consumers, with its quad-copy order preserved.
+`g_NuPrim_StreamBufferPtr` and `g_NuPrim_VertexCount` remain exported
+because callers in other TUs use them. Moving near-exact
+`NuPrimSetCoordinateSystem` in original order leaves its score unchanged.
+
+The staged measurement rises from 45.0880% to 45.0953% without further
+function regressions. Both Ends rise from 74.08% to 99.92%,
+`NuPrim2DAddXYZ` from 27.11% to 71.34%, `NuPrim2DBegin` from
+71.57% to 77.30%, and `NuPrim3DBegin` from 72.54% to 74.88%. No
+attribute or forced-emission stand-in was added for the static data.
+Target/WASM/native builds, all three lint modes, four checks,
+13,425/13,425 symbol coverage, and build-file formatting checks pass.
+On the rebuilt Cantina fixture, two 120-frame attempts reached gameplay
+then hit the previously documented original trig-table UBSan failure;
+the third reached 120 healthy frames. This is a flaky smoke result,
+not a clean pass. The original behavior is deliberately preserved for
+matching, as requested by the user; no sanitizer suppression was added.

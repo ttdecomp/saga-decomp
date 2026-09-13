@@ -22,6 +22,7 @@
 #include "legoapi/legoapi_types.h"
 #include "legoapi/render/core/render.h"
 #include "legoapi/render/fx.h"
+#include "legoapi/render/fx/game_deb.h"
 #include "legoapi/world/level.h"
 #include "legoapi/world/levels/levels.h"
 #include "legoapi/world/area.h"
@@ -633,18 +634,6 @@ void AddSurfaceDebris(GameObject_s *object) {
         AddVariableShotDebrisEffect(world->debris_sys->entries[effect].effect, &position, 1, 0, 0);
     } while (--count != 0);
 }
-
-extern NUMTX NuRndr_DebrisMtx;
-extern NUVEC4 NuRndr_DebrisPlane;
-extern nunativedebrisdata_s *g_ParticleGroup;
-extern void *g_pVBData;
-extern u32 g_CurrentVBVertexCount;
-extern u32 g_FrameVertexCount;
-extern u32 g_VBMaxVertexCount;
-extern u32 g_CurrentDebriVBIndex;
-extern i32 g_UseSysMemVB;
-extern i32 NuDebrisRendererNextBuffer();
-extern void NuRndrParticleSetRepeat(NUVEC *position);
 
 void bgprocIsFreezing() {
 }
@@ -1412,8 +1401,6 @@ void DisplayListCreateDynMtlList(variptr_u *buffer, variptr_u buffer_end) {
 }
 
 extern "C" {
-    extern PartHeader **DmaDebTypes;
-    extern i32 freeDmaDebType;
     extern i32 EDPP_MAX_TYPES;
     void edppDeleteEffect(i32);
 }

@@ -363,6 +363,8 @@ extern "C" {
     void RndrStateUpdate(void *state, NUMTL *mtl, nudisplaylistitem_s *item);
     void DisplayListUpdateRenderState(void *dl, void *local_state);
     void NuDisplayListLinkItem(nudisplaylist_s *dl, u8 type, void *call_addr);
+    void NuDisplayListLinkMtl(nudisplaylist_s *dl, NUMTL *mtl);
+    void *DisplayListCreateGeomTransformPS(VARIPTR *buffer, NUMTX *transform, NUMTL *mtl, void *next, void *tx);
     void NuDisplayListBurstRndrSpecial(nuhspecial_s *handle, u32 count, NUMTX *matrices, i32 clip);
     VARIPTR *NuDisplayListLinkItems(nudisplaylist_s *dl, i32 count);
     void NuDisplayListLinkList(NUDISPLAYLIST *list, NUDISPLAYLISTITEM *first, NUDISPLAYLISTITEM *last);
