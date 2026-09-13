@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.691166,
+    "fuzzy_match_percent": 44.69114,
     "total_code": "4722419",
     "matched_code": "387543",
     "matched_code_percent": 8.206451,
@@ -86548,6 +86548,52 @@
           "offset": 1892432,
           "size": 9,
           "match_percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "nu2api/nu3d/android/NuGLES2Extensions.cpp.o",
+      "source": "src/nu2api/nu3d/android/NuGLES2Extensions.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/NuGLES2Extensions.o",
+      "functions": [
+        {
+          "name": "_Z21NuGLES2ExtensionsInitv",
+          "demangled_name": "NuGLES2ExtensionsInit()",
+          "address": 2784672,
+          "offset": 1894704,
+          "size": 154,
+          "match_percent": 100.0
+        },
+        {
+          "name": "glGenVertexArraysOESC",
+          "demangled_name": "glGenVertexArraysOESC",
+          "address": 2784832,
+          "offset": 1894864,
+          "size": 45,
+          "match_percent": 100.0
+        },
+        {
+          "name": "glDeleteVertexArraysOESC",
+          "demangled_name": "glDeleteVertexArraysOESC",
+          "address": 2784880,
+          "offset": 1894912,
+          "size": 45,
+          "match_percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "nu2api/nu3d/android/NuRenderDevice_gles2.cpp.o",
+      "source": "src/nu2api/nu3d/android/NuRenderDevice_gles2.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/NuRenderDevice_gles2.o",
+      "functions": [
+        {
+          "name": "_GLOBAL__sub_I_NuRenderDevice_gles2.cpp",
+          "demangled_name": "_GLOBAL__sub_I_NuRenderDevice_gles2.cpp",
+          "address": 904080,
+          "offset": 14112,
+          "size": 93,
+          "match_percent": 0.0
         },
         {
           "name": "_Z16_NuCheckGLErrorsPKc",
@@ -86635,38 +86681,7 @@
           "address": 2783536,
           "offset": 1893568,
           "size": 1133,
-          "match_percent": 70.27839
-        }
-      ]
-    },
-    {
-      "name": "nu2api/nu3d/android/gles_extensions.cpp.o",
-      "source": "src/nu2api/nu3d/android/gles_extensions.cpp",
-      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/gles_extensions.o",
-      "functions": [
-        {
-          "name": "_Z21NuGLES2ExtensionsInitv",
-          "demangled_name": "NuGLES2ExtensionsInit()",
-          "address": 2784672,
-          "offset": 1894704,
-          "size": 154,
-          "match_percent": 100.0
-        },
-        {
-          "name": "glGenVertexArraysOESC",
-          "demangled_name": "glGenVertexArraysOESC",
-          "address": 2784832,
-          "offset": 1894864,
-          "size": 45,
-          "match_percent": 100.0
-        },
-        {
-          "name": "glDeleteVertexArraysOESC",
-          "demangled_name": "glDeleteVertexArraysOESC",
-          "address": 2784880,
-          "offset": 1894912,
-          "size": 45,
-          "match_percent": 100.0
+          "match_percent": 70.172165
         }
       ]
     },
@@ -122769,14 +122784,6 @@
       "match_percent": 0.0
     },
     {
-      "name": "_GLOBAL__sub_I_NuRenderDevice_gles2.cpp",
-      "demangled_name": "_GLOBAL__sub_I_NuRenderDevice_gles2.cpp",
-      "address": 904080,
-      "offset": 14112,
-      "size": 93,
-      "match_percent": 0.0
-    },
-    {
       "name": "_GLOBAL__sub_I_NuGLES2Extensions.cpp",
       "demangled_name": "_GLOBAL__sub_I_NuGLES2Extensions.cpp",
       "address": 904176,
@@ -129666,10 +129673,10 @@
     }
   ],
   "summary": {
-    "bazel_units": 513,
+    "bazel_units": 514,
     "functions": 13454,
-    "assigned_functions": 12320,
+    "assigned_functions": 12321,
     "ambiguous_functions": 231,
-    "unassigned_functions": 903
+    "unassigned_functions": 902
   }
 }

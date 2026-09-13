@@ -806,3 +806,39 @@ piece selectors retain their scores, both texture/save helpers remain exact,
 and no other function changes. The remainder of the original run includes
 unfinished stubs and absent local data, so this is a partial TU extraction;
 no fake initializer or forced-emission marker is added to imply completion.
+
+### Render-device and GLES2-extension boundaries
+
+The original local-symbol sequence has three distinct initializers:
+`_GLOBAL__sub_I_NuRenderDevice.cpp` (271 bytes),
+`_GLOBAL__sub_I_NuRenderDevice_gles2.cpp` (93 bytes), and
+`_GLOBAL__sub_I_NuGLES2Extensions.cpp` (93 bytes). Each has its own nearby
+file-local `VuVec_*` block. This rules out merging the separately implemented
+extension routines into the current base device TU merely because their text
+addresses are adjacent. The unchanged three-function/six-pointer extension
+unit was instead renamed to the original `NuGLES2Extensions.cpp` basename at
+the same `-O2` setting, with its used initialization API in an owner header.
+The rename changes no function score. Its original initializer is still
+absent; no unrelated header is included just to manufacture one.
+
+The original ordinary-text run at `0x002a74d0..0x002a7d9d` consists of the
+GL error hook, render-thread selection, critical-section methods and
+wrappers, buffer swap, resize, and `NuRenderDevice::Initialize`. The latter
+three contain literal full paths ending in `NuRenderDevice_gles2.cpp`, and the
+critical-section family uses the same thread-context state. That path plus
+the separate original initializer/data block supports an Android GLES2
+source owner, although the exact boundary with the preceding base methods is
+not proved by address alone. These unchanged suffix bodies now live in
+`android/NuRenderDevice_gles2.cpp` in original text order at `-O2`, alongside
+`gt_glContextIndex` and `g_nextGLContextIndex`. `g_renderDevice`, its
+constructor, and preceding lifecycle methods remain in the base source.
+Their cross-TU declarations are in `NuRenderDevice.h`, including host users
+of the thread-context state; no new weak/used attributes were introduced.
+
+All previously exact device and extension functions remain exact. Only
+`NuRenderDevice::Initialize` moves from 70.28% to 70.17%, a roughly
+0.000026-point whole-binary decline (44.691166% to 44.691140%). The base
+initializer remains 61.14% and the new GLES2 initializer has no natural
+current counterpart yet. The split is retained for its path/data evidence;
+missing genuine initialization and remaining body differences are explicit
+follow-up work, not reasons to shape a score with unused includes.

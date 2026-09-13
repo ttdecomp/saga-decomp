@@ -1,6 +1,7 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
+#include "nu2api/nu3d/android/NuGLES2Extensions.h"
 #include "decomp.h"
 
 // Android stores these entry points as exported data symbols. Host GL libraries
