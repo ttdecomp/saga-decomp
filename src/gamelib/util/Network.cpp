@@ -1,22 +1,18 @@
 #include "gamelib_util_types.h"
+#include "gamelib/util/Utilities.h"
 #include "gameapi/edtools/gameapi_edtools_types.h"
 #include "legoapi/legoapi_types.h"
 #include <string.h>
-NetMessage::MessageData NetMessage::sm_poolMessageData[512];
 NetSession *theSession;
 i16 NetReplicator::smNextId;
 i16 NetChangedReplicator::mTableInited;
 i16 NetChangedReplicator::mCrc32Table[256];
 
-extern "C" u32 UtilGetFrameStartTime(void);
 extern EdRegistry theRegistry;
 extern NetTransporter theNetwork;
 extern MemoryManager theMemoryManager;
 
 void NetworkSyncPause() {
-}
-
-void NetMessage::DebugPrint() const {
 }
 
 void NetRotator2::PredictValue(EdClass const *, void *, NetPredictor::PredictorTime *, NetPredictor::PredictorData **,

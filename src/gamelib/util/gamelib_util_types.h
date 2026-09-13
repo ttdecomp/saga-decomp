@@ -182,6 +182,7 @@ struct NetSession {
     u8 reserved_00[0x34];
     u32 error;
 };
+extern NetSession *theSession;
 DECOMP_ASSERT(sizeof(NetMessage) == 0x10, "NetMessage ABI");
 DECOMP_ASSERT(offsetof(NetMessage, data) == 4, "NetMessage data offset");
 DECOMP_ASSERT(offsetof(NetMessage, read_offset) == 8, "NetMessage read cursor offset");

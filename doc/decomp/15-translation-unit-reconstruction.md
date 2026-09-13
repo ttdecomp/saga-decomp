@@ -842,3 +842,43 @@ initializer remains 61.14% and the new GLES2 initializer has no natural
 current counterpart yet. The split is retained for its path/data evidence;
 missing genuine initialization and remaining body differences are explicit
 follow-up work, not reasons to shape a score with unused includes.
+
+### NuScreen source owner
+
+The original `_GLOBAL__sub_I_NuScreen.cpp` has a distinct file-local
+`VuVec_*`/rodata block. The complete original `NuScreen` text run
+(`0x000eed80..0x000eee60`) and `NuScreen::ms_instance` already belong to the
+single current `nuscreen.cpp` source at `-O2`; all eight reported function
+entries are exact. Renaming that owner to `NuScreen.cpp` preserves every
+function score and the optimization setting. The original initializer is
+not recreated by the basename alone, and no dummy local state was added.
+
+### Platform and utility source owners
+
+The original `_GLOBAL__sub_I_NuPlatform.cpp` names the owner of
+`NuPlatform::ms_instance` and the implemented platform functions. Renaming
+the existing lowercase source to `NuPlatform.cpp` preserves its `-O3`
+setting and every function score. Its original 93-byte initializer is still
+missing because the current source does not naturally emit the associated
+file-local `VuVec_*` block.
+
+The original text places `UtilGetTime`, `UtilGetFrameStartTime`, and
+`UtilFrameStart` consecutively between the `Transporter.cpp` and `Ftp.cpp`
+runs. The intervening `_GLOBAL__sub_I_Utilities.cpp` local block also owns
+`frameStartTimeMS` and `frameStartTime`. These three unchanged functions and
+the two statics now live in `gamelib/util/Utilities.cpp` at their former
+effective `-O3`, while the GroupBuffer family remains in its existing
+source pending stronger ownership evidence. `Network.cpp` uses the new
+owner header instead of a source-local link-time declaration. The split
+preserves all function scores, but does not yet emit the original `VuVec_*`
+initializer. No unused dependency was added to force one.
+
+The preceding original `Message.cpp` run contains
+`NetMessage::RaiseError` at `0x0052b6b0` and `NetMessage::DebugPrint` at
+`0x0052b6d0`, followed immediately by the Network/stream run. These two
+already exact bodies and `NetMessage::sm_poolMessageData` now share
+`gamelib/util/Message.cpp` at `-O3`. `theSession` stays in `Network.cpp`:
+the member methods' text adjacency does not establish ownership of that
+separate global. Its declaration is in the shared type header, replacing a
+function-local link-time `extern` in `RaiseError`. The original
+`_GLOBAL__sub_I_Message.cpp` remains absent and was not synthesized.

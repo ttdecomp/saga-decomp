@@ -37236,6 +37236,29 @@
       ]
     },
     {
+      "name": "gamelib/util/Message.cpp.o",
+      "source": "src/gamelib/util/Message.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_gamelib/Message.o",
+      "functions": [
+        {
+          "name": "_ZN10NetMessage10RaiseErrorEv",
+          "demangled_name": "NetMessage::RaiseError()",
+          "address": 5420720,
+          "offset": 4530752,
+          "size": 27,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZNK10NetMessage10DebugPrintEv",
+          "demangled_name": "NetMessage::DebugPrint() const",
+          "address": 5420752,
+          "offset": 4530784,
+          "size": 9,
+          "match_percent": 100.0
+        }
+      ]
+    },
+    {
       "name": "gamelib/util/Network.cpp.o",
       "source": "src/gamelib/util/Network.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_gamelib/Network.o",
@@ -37255,14 +37278,6 @@
           "offset": 3803840,
           "size": 529,
           "match_percent": 4.158416
-        },
-        {
-          "name": "_ZNK10NetMessage10DebugPrintEv",
-          "demangled_name": "NetMessage::DebugPrint() const",
-          "address": 5420752,
-          "offset": 4530784,
-          "size": 9,
-          "match_percent": 100.0
         },
         {
           "name": "_ZN18NetListenerBindingC1EP20NetListenerInterfacehPc",
@@ -38072,14 +38087,6 @@
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_gamelib/Network_stubs.o",
       "functions": [
         {
-          "name": "_ZN10NetMessage10RaiseErrorEv",
-          "demangled_name": "NetMessage::RaiseError()",
-          "address": 5420720,
-          "offset": 4530752,
-          "size": 27,
-          "match_percent": 100.0
-        },
-        {
           "name": "_ZN20NetworkObjectManager17FindNetworkObjectEi",
           "demangled_name": "NetworkObjectManager::FindNetworkObject(int)",
           "address": 5442736,
@@ -38596,6 +38603,37 @@
           "offset": 4537904,
           "size": 74,
           "match_percent": 17.35484
+        }
+      ]
+    },
+    {
+      "name": "gamelib/util/Utilities.cpp.o",
+      "source": "src/gamelib/util/Utilities.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_gamelib/Utilities.o",
+      "functions": [
+        {
+          "name": "UtilGetTime",
+          "demangled_name": "UtilGetTime",
+          "address": 5428032,
+          "offset": 4538064,
+          "size": 115,
+          "match_percent": 99.96875
+        },
+        {
+          "name": "UtilGetFrameStartTime",
+          "demangled_name": "UtilGetFrameStartTime",
+          "address": 5428160,
+          "offset": 4538192,
+          "size": 22,
+          "match_percent": 99.875
+        },
+        {
+          "name": "UtilFrameStart",
+          "demangled_name": "UtilFrameStart",
+          "address": 5428192,
+          "offset": 4538224,
+          "size": 123,
+          "match_percent": 99.93939
         }
       ]
     },
@@ -71925,30 +71963,6 @@
           "offset": 2550144,
           "size": 40,
           "match_percent": 100.0
-        },
-        {
-          "name": "UtilGetTime",
-          "demangled_name": "UtilGetTime",
-          "address": 5428032,
-          "offset": 4538064,
-          "size": 115,
-          "match_percent": 99.96875
-        },
-        {
-          "name": "UtilGetFrameStartTime",
-          "demangled_name": "UtilGetFrameStartTime",
-          "address": 5428160,
-          "offset": 4538192,
-          "size": 22,
-          "match_percent": 99.875
-        },
-        {
-          "name": "UtilFrameStart",
-          "demangled_name": "UtilFrameStart",
-          "address": 5428192,
-          "offset": 4538224,
-          "size": 123,
-          "match_percent": 99.93939
         }
       ]
     },
@@ -86552,6 +86566,77 @@
       ]
     },
     {
+      "name": "nu2api/nu3d/NuScreen.cpp.o",
+      "source": "src/nu2api/nu3d/NuScreen.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/NuScreen.o",
+      "functions": [
+        {
+          "name": "_ZN8NuScreen6CreateEv",
+          "demangled_name": "NuScreen::Create()",
+          "address": 978304,
+          "offset": 88336,
+          "size": 75,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN8NuScreen6ExistsEv",
+          "demangled_name": "NuScreen::Exists()",
+          "address": 978384,
+          "offset": 88416,
+          "size": 9,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN8NuScreen7DestroyEv",
+          "demangled_name": "NuScreen::Destroy()",
+          "address": 978400,
+          "offset": 88432,
+          "size": 62,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN8NuScreenC1Ev",
+          "demangled_name": "NuScreen::NuScreen()",
+          "address": 978464,
+          "offset": 88496,
+          "size": 17,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN8NuScreenC2Ev",
+          "demangled_name": "NuScreen::NuScreen()",
+          "address": 978464,
+          "offset": 88496,
+          "size": 17,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN8NuScreenD1Ev",
+          "demangled_name": "NuScreen::~NuScreen()",
+          "address": 978496,
+          "offset": 88528,
+          "size": 9,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN8NuScreenD2Ev",
+          "demangled_name": "NuScreen::~NuScreen()",
+          "address": 978496,
+          "offset": 88528,
+          "size": 9,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN8NuScreen19SetSceeenDimensionsEff",
+          "demangled_name": "NuScreen::SetSceeenDimensions(float, float)",
+          "address": 978512,
+          "offset": 88544,
+          "size": 26,
+          "match_percent": 100.0
+        }
+      ]
+    },
+    {
       "name": "nu2api/nu3d/android/NuGLES2Extensions.cpp.o",
       "source": "src/nu2api/nu3d/android/NuGLES2Extensions.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/NuGLES2Extensions.o",
@@ -90351,77 +90436,6 @@
           "offset": 1821563,
           "size": 2032,
           "match_percent": 99.369514
-        }
-      ]
-    },
-    {
-      "name": "nu2api/nu3d/nuscreen.cpp.o",
-      "source": "src/nu2api/nu3d/nuscreen.cpp",
-      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nuscreen.o",
-      "functions": [
-        {
-          "name": "_ZN8NuScreen6CreateEv",
-          "demangled_name": "NuScreen::Create()",
-          "address": 978304,
-          "offset": 88336,
-          "size": 75,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN8NuScreen6ExistsEv",
-          "demangled_name": "NuScreen::Exists()",
-          "address": 978384,
-          "offset": 88416,
-          "size": 9,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN8NuScreen7DestroyEv",
-          "demangled_name": "NuScreen::Destroy()",
-          "address": 978400,
-          "offset": 88432,
-          "size": 62,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN8NuScreenC1Ev",
-          "demangled_name": "NuScreen::NuScreen()",
-          "address": 978464,
-          "offset": 88496,
-          "size": 17,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN8NuScreenC2Ev",
-          "demangled_name": "NuScreen::NuScreen()",
-          "address": 978464,
-          "offset": 88496,
-          "size": 17,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN8NuScreenD1Ev",
-          "demangled_name": "NuScreen::~NuScreen()",
-          "address": 978496,
-          "offset": 88528,
-          "size": 9,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN8NuScreenD2Ev",
-          "demangled_name": "NuScreen::~NuScreen()",
-          "address": 978496,
-          "offset": 88528,
-          "size": 9,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN8NuScreen19SetSceeenDimensionsEff",
-          "demangled_name": "NuScreen::SetSceeenDimensions(float, float)",
-          "address": 978512,
-          "offset": 88544,
-          "size": 26,
-          "match_percent": 100.0
         }
       ]
     },
@@ -109799,6 +109813,29 @@
       ]
     },
     {
+      "name": "nu2api/nuplatform/NuPlatform.cpp.o",
+      "source": "src/nu2api/nuplatform/NuPlatform.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/NuPlatform.o",
+      "functions": [
+        {
+          "name": "_ZN10NuPlatform6CreateEv",
+          "demangled_name": "NuPlatform::Create()",
+          "address": 987072,
+          "offset": 97104,
+          "size": 82,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN10NuPlatform18SetCurrentPlatformE21PLATFORMS_SUPPORTED_e",
+          "demangled_name": "NuPlatform::SetCurrentPlatform(PLATFORMS_SUPPORTED_e)",
+          "address": 987280,
+          "offset": 97312,
+          "size": 469,
+          "match_percent": 58.049587
+        }
+      ]
+    },
+    {
       "name": "nu2api/nuplatform/nudevicespecs.cpp.o",
       "source": "src/nu2api/nuplatform/nudevicespecs.cpp",
       "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nudevicespecs.o",
@@ -109850,29 +109887,6 @@
           "offset": 98752,
           "size": 83,
           "match_percent": 19.40909
-        }
-      ]
-    },
-    {
-      "name": "nu2api/nuplatform/nuplatform.cpp.o",
-      "source": "src/nu2api/nuplatform/nuplatform.cpp",
-      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_nu2api/nuplatform.o",
-      "functions": [
-        {
-          "name": "_ZN10NuPlatform6CreateEv",
-          "demangled_name": "NuPlatform::Create()",
-          "address": 987072,
-          "offset": 97104,
-          "size": 82,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN10NuPlatform18SetCurrentPlatformE21PLATFORMS_SUPPORTED_e",
-          "demangled_name": "NuPlatform::SetCurrentPlatform(PLATFORMS_SUPPORTED_e)",
-          "address": 987280,
-          "offset": 97312,
-          "size": 469,
-          "match_percent": 58.049587
         }
       ]
     },
@@ -129673,7 +129687,7 @@
     }
   ],
   "summary": {
-    "bazel_units": 514,
+    "bazel_units": 516,
     "functions": 13454,
     "assigned_functions": 12321,
     "ambiguous_functions": 231,

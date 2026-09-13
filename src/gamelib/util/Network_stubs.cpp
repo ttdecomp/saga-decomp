@@ -1,10 +1,5 @@
 #include "gamelib_util_types.h"
 
-void NetMessage::RaiseError() {
-    extern NetSession *theSession;
-    theSession->error = 0xa0001000;
-}
-
 NetworkObject *NetworkObjectManager::FindNetworkObject(i32 id) {
     if (id == 0 || objects[id].object == NULL) {
         return NULL;
