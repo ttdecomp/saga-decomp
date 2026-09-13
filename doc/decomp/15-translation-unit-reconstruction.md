@@ -882,3 +882,20 @@ the member methods' text adjacency does not establish ownership of that
 separate global. Its declaration is in the shared type header, replacing a
 function-local link-time `extern` in `RaiseError`. The original
 `_GLOBAL__sub_I_Message.cpp` remains absent and was not synthesized.
+
+The original `Stats.cpp` text run follows the network-object run: seven
+implemented `NetSmallStats`, `NetSample`, and `NetStats` methods occupy
+`0x00535790..0x00536619`, followed by an as-yet-unimplemented weak
+`NetSmallStats::Update`. Their separate 93-byte initializer and local
+`VuVec_*`/stats-string block confirm a distinct owner. The seven existing
+bodies now live in `gamelib/util/Stats.cpp` at `-O3` in original order,
+without score changes. The missing initializer belongs to substantive
+stats rendering code, not a file-rename trick; this extraction does not
+claim those low-scoring bodies are matched.
+
+The separate owner also made the small `NetSample` methods practical to
+verify. The original arithmetic is four 32-bit lanes, with an unsigned
+per-lane maximum. Ordinary explicit field operations at `-O3` match both
+arithmetic operators exactly and bring `Max` to 99.95%, raising overall
+matching from 44.691140% to 44.693275% without regressions. No vector
+intrinsics, assembly, attributes, or forced initializer were needed.

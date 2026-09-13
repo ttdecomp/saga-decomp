@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.69114,
+    "fuzzy_match_percent": 44.693275,
     "total_code": "4722419",
-    "matched_code": "387543",
-    "matched_code_percent": 8.206451,
+    "matched_code": "387605",
+    "matched_code_percent": 8.207764,
     "total_data": "14606528",
     "matched_data": "543696",
     "matched_data_percent": 3.722281,
     "total_functions": 13459,
-    "matched_functions": 4637,
-    "matched_functions_percent": 34.45278,
+    "matched_functions": 4639,
+    "matched_functions_percent": 34.467644,
     "total_units": 1
   },
   "text": {
@@ -38022,62 +38022,6 @@
           "offset": 4570144,
           "size": 9,
           "match_percent": 62.5
-        },
-        {
-          "name": "_ZNK13NetSmallStats4DrawEffffNS_5eInfoE",
-          "demangled_name": "NetSmallStats::Draw(float, float, float, float, NetSmallStats::eInfo) const",
-          "address": 5461904,
-          "offset": 4571936,
-          "size": 812,
-          "match_percent": 2.413793
-        },
-        {
-          "name": "_ZN9NetSample5ResetEv",
-          "demangled_name": "NetSample::Reset()",
-          "address": 5462720,
-          "offset": 4572752,
-          "size": 17,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZN9NetSamplepLERKS_",
-          "demangled_name": "NetSample::operator+=(NetSample const&)",
-          "address": 5462752,
-          "offset": 4572784,
-          "size": 31,
-          "match_percent": 38.18182
-        },
-        {
-          "name": "_ZN9NetSamplemIERKS_",
-          "demangled_name": "NetSample::operator-=(NetSample const&)",
-          "address": 5462784,
-          "offset": 4572816,
-          "size": 31,
-          "match_percent": 38.18182
-        },
-        {
-          "name": "_ZN9NetSample3MaxERKS_",
-          "demangled_name": "NetSample::Max(NetSample const&)",
-          "address": 5462816,
-          "offset": 4572848,
-          "size": 78,
-          "match_percent": 20.0
-        },
-        {
-          "name": "_ZNK8NetStats4DrawEffffN13NetSmallStats5eInfoE",
-          "demangled_name": "NetStats::Draw(float, float, float, float, NetSmallStats::eInfo) const",
-          "address": 5462896,
-          "offset": 4572928,
-          "size": 2540,
-          "match_percent": 1.054482
-        },
-        {
-          "name": "_ZN8NetStats6UpdateEv",
-          "demangled_name": "NetStats::Update()",
-          "address": 5465440,
-          "offset": 4575472,
-          "size": 186,
-          "match_percent": 7.777778
         }
       ]
     },
@@ -38109,6 +38053,69 @@
           "offset": 4553696,
           "size": 64,
           "match_percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "gamelib/util/Stats.cpp.o",
+      "source": "src/gamelib/util/Stats.cpp",
+      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_gamelib/Stats.o",
+      "functions": [
+        {
+          "name": "_ZNK13NetSmallStats4DrawEffffNS_5eInfoE",
+          "demangled_name": "NetSmallStats::Draw(float, float, float, float, NetSmallStats::eInfo) const",
+          "address": 5461904,
+          "offset": 4571936,
+          "size": 812,
+          "match_percent": 2.413793
+        },
+        {
+          "name": "_ZN9NetSample5ResetEv",
+          "demangled_name": "NetSample::Reset()",
+          "address": 5462720,
+          "offset": 4572752,
+          "size": 17,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN9NetSamplepLERKS_",
+          "demangled_name": "NetSample::operator+=(NetSample const&)",
+          "address": 5462752,
+          "offset": 4572784,
+          "size": 31,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN9NetSamplemIERKS_",
+          "demangled_name": "NetSample::operator-=(NetSample const&)",
+          "address": 5462784,
+          "offset": 4572816,
+          "size": 31,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZN9NetSample3MaxERKS_",
+          "demangled_name": "NetSample::Max(NetSample const&)",
+          "address": 5462816,
+          "offset": 4572848,
+          "size": 78,
+          "match_percent": 99.95238
+        },
+        {
+          "name": "_ZNK8NetStats4DrawEffffN13NetSmallStats5eInfoE",
+          "demangled_name": "NetStats::Draw(float, float, float, float, NetSmallStats::eInfo) const",
+          "address": 5462896,
+          "offset": 4572928,
+          "size": 2540,
+          "match_percent": 1.054482
+        },
+        {
+          "name": "_ZN8NetStats6UpdateEv",
+          "demangled_name": "NetStats::Update()",
+          "address": 5465440,
+          "offset": 4575472,
+          "size": 186,
+          "match_percent": 7.777778
         }
       ]
     },
@@ -129687,7 +129694,7 @@
     }
   ],
   "summary": {
-    "bazel_units": 516,
+    "bazel_units": 517,
     "functions": 13454,
     "assigned_functions": 12321,
     "ambiguous_functions": 231,

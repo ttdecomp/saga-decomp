@@ -510,28 +510,3 @@ void NetworkObjectManager::UpdateLocalObjectList() {
 
 NetworkObjectManager::~NetworkObjectManager() {
 }
-
-void NetStats::Draw(float, float, float, float, NetSmallStats::eInfo) const {
-}
-
-void NetStats::Update() {
-}
-
-void NetSample::Max(NetSample const &) {
-}
-
-void NetSample::Reset() {
-    values[0] = 0;
-    values[1] = 0;
-    values[2] = 0;
-    values[3] = 0;
-}
-
-void NetSample::operator+=(NetSample const &) {
-}
-
-void NetSample::operator-=(NetSample const &) {
-}
-
-void NetSmallStats::Draw(float, float, float, float, NetSmallStats::eInfo) const {
-}

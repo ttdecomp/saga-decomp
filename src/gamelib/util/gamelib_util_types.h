@@ -215,7 +215,7 @@ struct NetRotator2 {
                       i32);
 };
 struct NetSample {
-    i32 values[4];
+    u32 values[4];
     void Max(NetSample const &);
     void Reset();
     void operator+=(NetSample const &);

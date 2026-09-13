@@ -63,7 +63,7 @@ See https://ttdecomp.github.io/saga/
 | `editor` | 8.1% | 13.8% |
 | `gameapi` | 31.4% | 18.0% |
 | `gameframework` | 100.0% | 52.9% |
-| `gamelib` | 26.4% | 23.7% |
+| `gamelib` | 26.6% | 24.5% |
 | `java` | 96.1% | 73.1% |
 | `legoapi` | 41.6% | 29.8% |
 | `legoapi/actions` | 37.5% | 7.2% |

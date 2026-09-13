@@ -21,6 +21,7 @@ build:target --per_file_copt=^src/legoapi/items/objects/cable\.cpp$@-O3
 build:target --per_file_copt=^src/gamelib/util/VirtualStackAllocator\.cpp$@-O2
 build:target --per_file_copt=^src/gamelib/util/Network_stubs\.cpp$@-O3
 build:target --per_file_copt=^src/gamelib/util/Message\.cpp$@-O3
+build:target --per_file_copt=^src/gamelib/util/Stats\.cpp$@-O3
 # Recovered stub-only device units: -O3 reproduces FileSize exactly and the
 # APK constructor/CreateNuFile and SetCurrentDir bodies apart from relocation.
 build:target --per_file_copt=^src/nu2api/nufile/nufiledevice\.cpp$@-O3
