@@ -318,7 +318,7 @@ cross-TU declarations instead of scattered local `extern` declarations.
   functions. The sole remaining initializer scores 99.35%.
 - Original `gizbuildit.cpp` has one long text run across three current `-O3`
   files, with `CalcAveragePosAndRad` between BuildIt functions in that run.
-  That function was in default `-O0` `misc/utilities.cpp`; moving it to the
+  That function was in `-O2` `misc/utilities.cpp`; moving it to the
   BuildIt owner and declaring it in the BuildIt header changed no function
   scores. The three source bodies were then consolidated in the singular
   `gizmo/object/gizbuildit.cpp` owner at `-O3`, leaving one 281-byte
@@ -359,6 +359,58 @@ cross-TU declarations instead of scattered local `extern` declarations.
   `-O3`; no other function score changes. The `-O3` setting is retained,
   raising whole-binary fuzzy matching from 44.5785% to 44.5985%. The
   remaining body mismatch must be addressed through real source/layout work.
+- Original `gizmoblowups.cpp` has one callback-to-blowup text run beginning at
+  `0x004b7540` and ending before the pickup TU at `0x004bedb0`. Its local
+  block owns the callback functions, `NewBlowup_RegisterGizmo::addtype`,
+  `Blowup_OutputName`, the blowup name table/count, and one 93-byte dynamic
+  initializer. The current `gizmos/object/newblowup.cpp` and
+  `gizmo/object/gizmoblowups.cpp` were both `-O3` fragments of that run;
+  merging them under the original `gizmoblowups.cpp` basename removes a
+  redundant current initializer while retaining the original-named one at
+  99.35%. Fuzzy matching rises 44.598870% to 44.599873%: four functions
+  improve, including `GizBlowup_InitSingleTerrain` (67.33% to 77.15%),
+  none regress, and no exact match is lost. A measured follow-up replaces
+  supported local cross-TU declarations with owner headers and leaves every
+  score unchanged. Target build, four checks, symbol coverage, and 120-frame
+  Map smoke pass. This is not yet the complete original TU: original-run
+  functions remain in the `-O2` gizmo wrapper and several other files, while
+  the merged current source also contains out-of-run helpers. Those require
+  separate ownership and optimization tests.
+- Original `gizmopickups.cpp` has a 41-function text run from `0x004bedb0`
+  to the next turret owner at `0x004c28a0`. Its local block includes
+  `GizmoPickups_CollideList`, registration-local `addtype`, and file-local
+  `GizmoPickupSys`; adjacent data places `COINMAGNETSCALE`, `COINMSGTIME`,
+  and `GizmoPickups_Collide2DFn` in the same owner. The pickup-specific
+  functions and data formerly in `gizmo/gizmos/gizmos_gizmopickups.cpp` were
+  moved into the existing `-O3` `gizmos/fx/gizmopickups.cpp` owner, while
+  singular-`gizmopickup.cpp` `Pup_*` callbacks, `CollectCoin`, and
+  `SetOnOff` remain separate. `GizmoPickups_CollideList` was placed before
+  `GizmoPickups_AllocateProgressData`, following their original text order.
+  Whole-binary fuzzy matching moves from 44.600426% to 44.598564%: no exact
+  function is lost, `GizmoPickups_Collide` improves 45.747% to 50.374%, but
+  `GizmoPickups_CollideList` declines 67.204% to 56.413%. Moving its
+  definition to the original-relative position did not alter those scores.
+  Objdiff shows changed branch/register allocation and a reordered collision
+  tail, so the cause remains unresolved; TU-level optimization context is a
+  hypothesis, not a proven explanation. The target build, four checks, and
+  120-frame Map smoke pass. Do not count this partial merge as a reconstructed
+  complete TU; other functions and data in the original address interval
+  remain in separate current owners.
+  A second measured stage moves `GizmoPickups_InitSys` and
+  `SpecialMiniKits_Reset` out of `items/collect/minikits.cpp` into the same
+  pickup owner. Both now use one file-static `_ZL14GizmoPickupSys`, matching
+  the original local symbol at `0x00668660`; the redundant minikits-file
+  pointer is removed. `InitSys` precedes registration and
+  `SpecialMiniKits_Reset` follows it, as in the original text run. Fuzzy
+  matching rises from 44.598564% to 44.598870%, with no lost exacts:
+  `GizmoPickups_InitSys` stays 99.857%, `GizmoPickups_Reset` improves
+  47.075% to 49.094%, and `SpecialMiniKits_Reset` declines 98.519% to
+  96.019%. The latter objdiff has six differing instructions, including the
+  moved pointer's GOT displacement and register/compare variants; it shows
+  no changed calls or source-level behavior. Target build, four checks,
+  symbol coverage (zero missing), and 120-frame Map smoke pass. The
+  `SpecialMiniKits_Reset` register differences and other pickup-run functions
+  still need ordinary source/TU reconstruction.
 - Original `gizspinner.cpp` has a single text run of spinner callbacks and
   implementation functions, with one initializer and adjacent spinner data.
   The two current `-O3` sources were consolidated under the original basename

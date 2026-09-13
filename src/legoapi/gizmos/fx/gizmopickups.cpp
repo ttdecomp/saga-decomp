@@ -7,6 +7,8 @@
 #include "globals.h"
 #include "legoapi/audio/sfx.h"
 #include "legoapi/core/config/cheat.h"
+#include "legoapi/characters/core/players.h"
+#include "legoapi/misc/utilities.h"
 #include "legoapi/core/input/qrand.h"
 #include "legoapi/items/objects/gameobjects.h"
 #include "legoapi/legoapi_types.h"
@@ -15,6 +17,62 @@
 #include "legoapi/world/level.h"
 #include "legoapi/world/mission.h"
 #include "legoapi/world/world.h"
+
+f32 COINMAGNETSCALE = 3.0f;
+f32 COINMSGTIME = 1.0f;
+f32 (*GizmoPickups_Collide2DFn)(GameObject_s *) = NULL;
+
+static GIZMOPICKUP_s *GizmoPickups_CollideList(GameObject_s *, GIZMOPICKUP_s *, i32);
+
+void GizmoPickup_InBox(WORLDINFO_s *, i32, nuvec_s *, nuvec_s *) {
+}
+
+GIZMOPICKUP_s *GizmoPickups_Collide(WORLDINFO_s *world, GameObject_s *object, i32) {
+    if (world == NULL || (object->apiobj.field_0x1f4 & 0x00040000) != 0) {
+        return NULL;
+    }
+
+    GIZMOPICKUP_s *pickup = GizmoPickups_CollideList(object, world->gizmo_pickup_sys->temporary_pickups, 64);
+    if (pickup != NULL) {
+        pickup->state_flags =
+            static_cast<u8>((pickup->state_flags | GIZMOPICKUP_STATE_COLLECTED) & ~GIZMOPICKUP_STATE_ACTIVE);
+    } else {
+        pickup =
+            GizmoPickups_CollideList(object, world->gizmo_pickup_sys->pickups, world->gizmo_pickup_sys->pickup_count);
+        if (pickup == NULL) {
+            return NULL;
+        }
+        pickup->state_flags |= GIZMOPICKUP_STATE_COLLECTED;
+    }
+
+    i32 type_index = pickup->type_index;
+    if ((pickup->state_flags & GIZMOPICKUP_STATE_ALTERNATE_TYPE) != 0 && GizmoPickupSys_Game.alternate_type != -1) {
+        type_index = GizmoPickupSys_Game.alternate_type;
+    }
+    GIZMO_PICKUP_TYPE *type = &GizmoPickupSys_Game.types[type_index];
+    if (type->collection_sfx_name != NULL) {
+        PlaySfx(type->collection_sfx_name, &pickup->position);
+    }
+    if (type->collect_fn != NULL) {
+        type->collect_fn(world, pickup, type_index, object, 0);
+    }
+    if ((type->flags & GIZMOPICKUP_TYPE_FLAG_40) != 0) {
+        ++AreaGlobals.values.field_0x18;
+    }
+    return pickup;
+}
+
+void GizmoPickup_FindNearest(WORLDINFO_s *, nuvec_s *, float *) {
+}
+
+void GizmoPickup_NumberOfType(WORLDINFO_s *, i32, char) {
+}
+
+void GizmoPickup_TurnOnPickup(GIZMOPICKUP_s *pickup) {
+    if (pickup != NULL) {
+        pickup->state_flags |= GIZMOPICKUP_STATE_ENABLED | GIZMOPICKUP_STATE_VISIBLE | GIZMOPICKUP_STATE_ACTIVATED;
+    }
+}
 
 GIZMOPICKUP_s *GizmoPickup_FindByName(WORLDINFO_s *world, char *name) {
     if (name != NULL && world != NULL) {
@@ -67,6 +125,8 @@ void SuperCounter_ActivateGizmoPickup(GIZMO_s *gizmo, GIZMOPICKUP_s *pickup);
 void SuperCounters_ResetProcessed(WORLDINFO_s *world);
 void MiniKitDetector(NUVEC *position);
 
+static GIZMOPICKUPSYS_s *GizmoPickupSys = &GizmoPickupSys_Game;
+
 namespace {
 
     enum : i32 {
@@ -82,8 +142,6 @@ namespace {
         u32 activated[GIZMOPICKUP_PROGRESS_WORDS];
     };
     DECOMP_ASSERT(sizeof(GIZMOPICKUPPROGRESS_s) == 0x100, "GIZMOPICKUP progress ABI");
-
-    GIZMOPICKUPSYS_s *GizmoPickupSys = &GizmoPickupSys_Game;
 
     GIZMO_PICKUP_TYPE *GetPickupType(const GIZMOPICKUP_s &pickup) {
         i32 type_index = pickup.type_index;
@@ -443,6 +501,92 @@ static NUVEC *GizmoPickup_GetPos(GIZMO *gizmo) {
     return NULL;
 }
 
+static GIZMOPICKUP_s *GizmoPickups_CollideList(GameObject_s *object, GIZMOPICKUP_s *pickups, i32 count) {
+    if (pickups == NULL) {
+        return NULL;
+    }
+
+    bool collide_2d = false;
+    if ((object->apiobj.character_data->model_flags & 0x2000) != 0) {
+        collide_2d = VehicleArea != 0;
+    }
+
+    f32 collide_scale = 0.0f;
+    if (GizmoPickups_Collide2DFn != NULL) {
+        collide_scale = GizmoPickups_Collide2DFn(object);
+        if (collide_scale != 0.0f) {
+            collide_2d = true;
+        }
+    }
+
+    const bool coin_magnet = Cheats_CheckFlags(0x8000) != 0 || object->field_0xdec > 0.0f;
+    f32 scaled_pickup = coin_magnet ? COINMAGNETSCALE * AreaPickupScale : AreaPickupScale;
+    const f32 normal_pickup = AreaPickupScale;
+    if (collide_scale != 0.0f) {
+        scaled_pickup *= collide_scale;
+    }
+    if (collide_2d && VehicleArea != 0) {
+        scaled_pickup += scaled_pickup;
+    }
+
+    for (i32 index = 0; index < count; ++index) {
+        GIZMOPICKUP_s *pickup = &pickups[index];
+        GIZMO_PICKUP_TYPE *type = &GizmoPickupSys_Game.types[pickup->type_index];
+        u8 flags = pickup->state_flags;
+        if ((type->flags & GIZMOPICKUP_TYPE_CHALLENGE_MODE_FILTER) != 0 ||
+            (flags & (GIZMOPICKUP_STATE_ACTIVE | GIZMOPICKUP_STATE_ENABLED | GIZMOPICKUP_STATE_COLLECTED)) !=
+                (GIZMOPICKUP_STATE_ACTIVE | GIZMOPICKUP_STATE_ENABLED) ||
+            ((flags & GIZMOPICKUP_STATE_DRAWN) == 0 && (pickup->config_flags & 4) == 0)) {
+            continue;
+        }
+
+        if ((flags & GIZMOPICKUP_STATE_ALTERNATE_TYPE) != 0 && GizmoPickupSys_Game.alternate_type != -1) {
+            type = &GizmoPickupSys_Game.types[GizmoPickupSys_Game.alternate_type];
+        }
+        if (type->field_0x0f != 0 && pickups != WorldInfo_CurrentlyActive()->gizmo_pickup_sys->temporary_pickups) {
+            continue;
+        }
+        if ((pickup->config_flags & 4) != 0) {
+            return pickup;
+        }
+
+        f32 scale = type->score == 0 ? normal_pickup : scaled_pickup;
+        f32 radius_x = type->shadow_extent_x * scale;
+        f32 radius_y = scale * (coin_magnet ? type->shadow_extent_z : type->shadow_radius_z);
+        if (object->apiobj.collision_min.x > pickup->position.x + radius_x ||
+            pickup->position.x - radius_x > object->apiobj.collision_max.x ||
+            object->apiobj.collision_min.z > pickup->position.z + radius_x ||
+            pickup->position.z - radius_x > object->apiobj.collision_max.z) {
+            continue;
+        }
+
+        if (collide_2d) {
+            f32 dx = pickup->position.x - object->apiobj.collision_position.x;
+            f32 dz = pickup->position.z - object->apiobj.collision_position.z;
+            f32 radius = radius_x + object->apiobj.field_0x1dc;
+            if (dx * dx + dz * dz < radius * radius) {
+                return pickup;
+            }
+        } else if (object->apiobj.collision_min.y <= pickup->position.y + radius_y &&
+                   pickup->position.y - radius_y <= object->apiobj.collision_max.y) {
+            if (object->field_0xcc0 != NULL) {
+                f32 dx = pickup->position.x - object->apiobj.collision_position.x;
+                f32 dz = pickup->position.z - object->apiobj.collision_position.z;
+                f32 radius = radius_x + object->apiobj.field_0x1dc;
+                if (dx * dx + dz * dz < radius * radius) {
+                    return pickup;
+                }
+            } else if (SphereSphereOverlapScaleY(&pickup->position, radius_x, radius_y,
+                                                 &object->apiobj.collision_position, object->apiobj.collision_radius,
+                                                 object->apiobj.field_0x1e0)) {
+                return pickup;
+            }
+        }
+    }
+    return NULL;
+}
+
+
 static void *GizmoPickups_AllocateProgressData(VARIPTR *buffer, VARIPTR *buffer_end) {
     return GizmoBufferAlloc(buffer, buffer_end, sizeof(GIZMOPICKUPPROGRESS_s));
 }
@@ -634,6 +778,10 @@ static i32 GizmoPickups_Load(void *world_ptr, void *data) {
 void GizmoPickups_PostLoad(void *, void *) {
 }
 
+void GizmoPickups_InitSys(GIZMOPICKUPSYS_s *pickup_sys) {
+    GizmoPickupSys = pickup_sys;
+}
+
 ADDGIZMOTYPE *GizmoPickups_RegisterGizmo(i32 type_id) {
     static ADDGIZMOTYPE addtype;
 
@@ -671,4 +819,31 @@ ADDGIZMOTYPE *GizmoPickups_RegisterGizmo(i32 type_id) {
     gizmopickup_typeid = type_id;
 
     return &addtype;
+}
+
+void SpecialMiniKits_Reset(WORLDINFO_s *world) {
+    WORLDINFO_s *world_info = world;
+    SPECIALMINIKITSYS_s *system = world_info->special_minikits;
+    if (system == NULL || GizmoPickupSys->gizmo_type_id == -1) {
+        return;
+    }
+
+    i32 count = system->count;
+    SPECIALMINIKIT_s *item = system->items;
+    if (count <= 0) {
+        return;
+    }
+
+    i32 index = 0;
+    for (;;) {
+        item->pickup_gizmo = GizmoFindByName(world_info->gizmo_sys, gizmopickup_typeid, item->pickup_name);
+        if ((item->flags & 0x20) != 0) {
+            item->special_gizmo = GizmoFindByName(world_info->gizmo_sys, -1, item->special_name);
+        }
+        ++index;
+        ++item;
+        if (world_info->special_minikits->count <= index) {
+            break;
+        }
+    }
 }

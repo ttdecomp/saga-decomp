@@ -17,12 +17,6 @@ struct nuqthdr_s;
 struct nunativegscene_s;
 struct SHOPINPUT;
 
-static GIZMOPICKUPSYS_s *GizmoPickupSys = &GizmoPickupSys_Game;
-
-void GizmoPickups_InitSys(GIZMOPICKUPSYS_s *pickup_sys) {
-    GizmoPickupSys = pickup_sys;
-}
-
 void MiniKits_Init(variptr_u *, variptr_u *) {
 }
 
@@ -391,33 +385,6 @@ void SpecialMiniKits_Draw(WORLDINFO_s *) {
 }
 
 void AddStatusMiniKitParts() {
-}
-
-void SpecialMiniKits_Reset(WORLDINFO_s *world) {
-    WORLDINFO_s *world_info = world;
-    SPECIALMINIKITSYS_s *system = world_info->special_minikits;
-    if (system == NULL || GizmoPickupSys->gizmo_type_id == -1) {
-        return;
-    }
-
-    i32 count = system->count;
-    SPECIALMINIKIT_s *item = system->items;
-    if (count <= 0) {
-        return;
-    }
-
-    i32 index = 0;
-    for (;;) {
-        item->pickup_gizmo = GizmoFindByName(world_info->gizmo_sys, gizmopickup_typeid, item->pickup_name);
-        if ((item->flags & 0x20) != 0) {
-            item->special_gizmo = GizmoFindByName(world_info->gizmo_sys, -1, item->special_name);
-        }
-        ++index;
-        ++item;
-        if (world_info->special_minikits->count <= index) {
-            break;
-        }
-    }
 }
 
 void AllMiniKits_LSW_Update(STATUS_STAGE_s *stage, STATUSPACKET_s *packet, float elapsed) {

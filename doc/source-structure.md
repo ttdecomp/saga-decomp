@@ -11,12 +11,12 @@ Snapshot checked on 2026-09-13:
 
 | item | current value |
 |---|---:|
-| target source translation units | 517 |
+| target source translation units | 516 |
 | target C translation units | 13 |
-| target C++ translation units | 504 |
-| generated matching-report units | 517 |
-| optimization levels | 172 default `-O0`, 2 `-O1`, 112 `-O2`, 231 `-O3` |
-| special compile mode | one of the 231 `-O3` TUs also uses `-fPIE` |
+| target C++ translation units | 503 |
+| generated matching-report units | 516 |
+| optimization levels | 172 default `-O0`, 2 `-O1`, 112 `-O2`, 230 `-O3` |
+| special compile mode | one of the 230 `-O3` TUs also uses `-fPIE` |
 | original `_GLOBAL__sub_I_` symbols | 325 occurrences, 320 unique basenames |
 
 These counts describe the current generated files and will change as the tree

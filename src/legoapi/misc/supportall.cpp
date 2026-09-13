@@ -43,7 +43,6 @@
 void Hint_SetHintFromId(i32, i32, i32);
 void MakeBaddiesForgetAboutParty(i32);
 void ResetRadios();
-void SpecialMiniKits_Reset(WORLDINFO_s *);
 void SuperCounters_FixUpGizmos(WORLDINFO_s *);
 void AITriggerSetSysReset(AITRIGGERSETSYS_s *);
 void AITriggerSysAutoSetUp(WORLDINFO_s *, AITRIGGERSETSYS_s *);
@@ -123,7 +122,6 @@ void InitPlayerAI(GameObject_s *object);
 void ResetPlayer(GameObject_s *, i32, nuvec_s *, i32);
 f32 GetVehicleAreaRememberSpeed();
 void ResetRadios();
-void SpecialMiniKits_Reset(WORLDINFO_s *);
 void SuperCounters_FixUpGizmos(WORLDINFO_s *);
 void AITriggerSetSysReset(AITRIGGERSETSYS_s *);
 void AITriggerSysAutoSetUp(WORLDINFO_s *, AITRIGGERSETSYS_s *);

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "measures": {
-    "fuzzy_match_percent": 44.600426,
+    "fuzzy_match_percent": 44.599873,
     "total_code": "4722419",
     "matched_code": "386575",
     "matched_code_percent": 8.185953,
@@ -54794,54 +54794,6 @@
           "offset": 1104464,
           "size": 857,
           "match_percent": 65.89823
-        },
-        {
-          "name": "_ZL24GizmoPickups_CollideListP12GameObject_sP13GIZMOPICKUP_si",
-          "demangled_name": "GizmoPickups_CollideList(GameObject_s*, GIZMOPICKUP_s*, int)",
-          "address": 4978160,
-          "offset": 4088192,
-          "size": 961,
-          "match_percent": 67.204445
-        },
-        {
-          "name": "_Z23GizmoPickup_FindNearestP11WORLDINFO_sP7nuvec_sPf",
-          "demangled_name": "GizmoPickup_FindNearest(WORLDINFO_s*, nuvec_s*, float*)",
-          "address": 4983808,
-          "offset": 4093840,
-          "size": 214,
-          "match_percent": 7.777778
-        },
-        {
-          "name": "_Z24GizmoPickup_NumberOfTypeP11WORLDINFO_sic",
-          "demangled_name": "GizmoPickup_NumberOfType(WORLDINFO_s*, int, char)",
-          "address": 4985824,
-          "offset": 4095856,
-          "size": 145,
-          "match_percent": 9.056603
-        },
-        {
-          "name": "_Z24GizmoPickup_TurnOnPickupP13GIZMOPICKUP_s",
-          "demangled_name": "GizmoPickup_TurnOnPickup(GIZMOPICKUP_s*)",
-          "address": 4986112,
-          "offset": 4096144,
-          "size": 15,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_Z17GizmoPickup_InBoxP11WORLDINFO_siP7nuvec_sS2_",
-          "demangled_name": "GizmoPickup_InBox(WORLDINFO_s*, int, nuvec_s*, nuvec_s*)",
-          "address": 4986160,
-          "offset": 4096192,
-          "size": 259,
-          "match_percent": 5.060241
-        },
-        {
-          "name": "_Z20GizmoPickups_CollideP11WORLDINFO_sP12GameObject_si",
-          "demangled_name": "GizmoPickups_Collide(WORLDINFO_s*, GameObject_s*, int)",
-          "address": 4986432,
-          "offset": 4096464,
-          "size": 343,
-          "match_percent": 45.747253
         }
       ]
     },
@@ -56014,6 +55966,118 @@
           "match_percent": 78.42308
         },
         {
+          "name": "_ZL19Blowup_GetMaxGizmosPv",
+          "demangled_name": "Blowup_GetMaxGizmos(void*)",
+          "address": 4945216,
+          "offset": 4055248,
+          "size": 27,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL19Blowup_GetGizmoNameP7GIZMO_s",
+          "demangled_name": "Blowup_GetGizmoName(GIZMO_s*)",
+          "address": 4945248,
+          "offset": 4055280,
+          "size": 19,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL16Blowup_GetOutputP7GIZMO_sii",
+          "demangled_name": "Blowup_GetOutput(GIZMO_s*, int, int)",
+          "address": 4945280,
+          "offset": 4055312,
+          "size": 71,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL20Blowup_GetOutputNameP7GIZMO_si",
+          "demangled_name": "Blowup_GetOutputName(GIZMO_s*, int)",
+          "address": 4945360,
+          "offset": 4055392,
+          "size": 35,
+          "match_percent": 99.4
+        },
+        {
+          "name": "_ZL20Blowup_GetNumOutputsP7GIZMO_s",
+          "demangled_name": "Blowup_GetNumOutputs(GIZMO_s*)",
+          "address": 4945408,
+          "offset": 4055440,
+          "size": 12,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_Z20Blowup_GetVisibilityP7GIZMO_s",
+          "demangled_name": "Blowup_GetVisibility(GIZMO_s*)",
+          "address": 4945424,
+          "offset": 4055456,
+          "size": 27,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL18GizmoBlowup_GetPosP7GIZMO_s",
+          "demangled_name": "GizmoBlowup_GetPos(GIZMO_s*)",
+          "address": 4945456,
+          "offset": 4055488,
+          "size": 19,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL20Blowup_ClearProgressPvS_",
+          "demangled_name": "Blowup_ClearProgress(void*, void*)",
+          "address": 4945488,
+          "offset": 4055520,
+          "size": 526,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_Z21GizmoBlowupLateUpdatePvS_f",
+          "demangled_name": "GizmoBlowupLateUpdate(void*, void*, float)",
+          "address": 4946016,
+          "offset": 4056048,
+          "size": 137,
+          "match_percent": 99.67391
+        },
+        {
+          "name": "_ZL15Blowup_ActivateP7GIZMO_si",
+          "demangled_name": "Blowup_Activate(GIZMO_s*, int)",
+          "address": 4946160,
+          "offset": 4056192,
+          "size": 345,
+          "match_percent": 0.0
+        },
+        {
+          "name": "_ZL20Blowup_SetVisibilityP7GIZMO_si",
+          "demangled_name": "Blowup_SetVisibility(GIZMO_s*, int)",
+          "address": 4946512,
+          "offset": 4056544,
+          "size": 171,
+          "match_percent": 99.565216
+        },
+        {
+          "name": "_ZL27Blowup_AllocateProgressDataP9variptr_uS0_",
+          "demangled_name": "Blowup_AllocateProgressData(variptr_u*, variptr_u*)",
+          "address": 4946688,
+          "offset": 4056720,
+          "size": 50,
+          "match_percent": 100.0
+        },
+        {
+          "name": "_ZL16Blowup_AddGizmosP10GIZMOSYS_siPvS1_",
+          "demangled_name": "Blowup_AddGizmos(GIZMOSYS_s*, int, void*, void*)",
+          "address": 4946752,
+          "offset": 4056784,
+          "size": 142,
+          "match_percent": 87.93023
+        },
+        {
+          "name": "_ZL20Blowup_StoreProgressPvS_S_",
+          "demangled_name": "Blowup_StoreProgress(void*, void*, void*)",
+          "address": 4946896,
+          "offset": 4056928,
+          "size": 703,
+          "match_percent": 84.14966
+        },
+        {
           "name": "_Z25RemapTypeFlagToBlowupFlagj",
           "demangled_name": "RemapTypeFlagToBlowupFlag(unsigned int)",
           "address": 4947664,
@@ -56054,6 +56118,14 @@
           "match_percent": 100.0
         },
         {
+          "name": "_Z26gizmoblowup_reservebuffersPv",
+          "demangled_name": "gizmoblowup_reservebuffers(void*)",
+          "address": 4948416,
+          "offset": 4058448,
+          "size": 70,
+          "match_percent": 100.0
+        },
+        {
           "name": "_Z17GizBlowup_RespawnP13GIZMOBLOWUP_s",
           "demangled_name": "GizBlowup_Respawn(GIZMOBLOWUP_s*)",
           "address": 4948496,
@@ -56068,6 +56140,14 @@
           "offset": 4059312,
           "size": 69,
           "match_percent": 100.0
+        },
+        {
+          "name": "_Z23NewBlowup_RegisterGizmoi",
+          "demangled_name": "NewBlowup_RegisterGizmo(int)",
+          "address": 4949360,
+          "offset": 4059392,
+          "size": 392,
+          "match_percent": 66.29412
         },
         {
           "name": "_Z18GizmoBlowupTypeAddP11WORLDINFO_sP12nuhspecial_siPi",
@@ -56134,6 +56214,14 @@
           "match_percent": 66.4595
         },
         {
+          "name": "_Z22GizmoBlowupEarlyUpdatePvS_f",
+          "demangled_name": "GizmoBlowupEarlyUpdate(void*, void*, float)",
+          "address": 4957088,
+          "offset": 4067120,
+          "size": 1588,
+          "match_percent": 29.43314
+        },
+        {
           "name": "_Z24GizmoBlowupTypeNameBlankPc",
           "demangled_name": "GizmoBlowupTypeNameBlank(char*)",
           "address": 4958864,
@@ -56147,7 +56235,7 @@
           "address": 4958944,
           "offset": 4068976,
           "size": 463,
-          "match_percent": 67.333336
+          "match_percent": 77.14815
         },
         {
           "name": "_Z21GizBlowup_InitTerrainv",
@@ -56174,6 +56262,14 @@
           "match_percent": 41.266666
         },
         {
+          "name": "_ZL13Blowups_ResetPvS_S_",
+          "demangled_name": "Blowups_Reset(void*, void*, void*)",
+          "address": 4959808,
+          "offset": 4069840,
+          "size": 683,
+          "match_percent": 0.0
+        },
+        {
           "name": "_Z23GizmoBlowupUpdateMatrixP13GIZMOBLOWUP_s",
           "demangled_name": "GizmoBlowupUpdateMatrix(GIZMOBLOWUP_s*)",
           "address": 4960496,
@@ -56198,6 +56294,14 @@
           "match_percent": 100.0
         },
         {
+          "name": "_Z20GizmoBlowupBurstDrawPvS_f",
+          "demangled_name": "GizmoBlowupBurstDraw(void*, void*, float)",
+          "address": 4961312,
+          "offset": 4071344,
+          "size": 1935,
+          "match_percent": 73.50658
+        },
+        {
           "name": "_Z15GizmoBlowupDrawPvS_f",
           "demangled_name": "GizmoBlowupDraw(void*, void*, float)",
           "address": 4963248,
@@ -56212,6 +56316,14 @@
           "offset": 4073776,
           "size": 147,
           "match_percent": 99.71698
+        },
+        {
+          "name": "_Z16gizmoblowup_LoadPvS_",
+          "demangled_name": "gizmoblowup_Load(void*, void*)",
+          "address": 4968640,
+          "offset": 4078672,
+          "size": 131,
+          "match_percent": 100.0
         },
         {
           "name": "_Z22GizmoBlowupsFinalSetupP11WORLDINFO_s",
@@ -57718,6 +57830,14 @@
           "match_percent": 100.0
         },
         {
+          "name": "_ZL24GizmoPickups_CollideListP12GameObject_sP13GIZMOPICKUP_si",
+          "demangled_name": "GizmoPickups_CollideList(GameObject_s*, GIZMOPICKUP_s*, int)",
+          "address": 4978160,
+          "offset": 4088192,
+          "size": 961,
+          "match_percent": 56.413334
+        },
+        {
           "name": "_ZL33GizmoPickups_AllocateProgressDataP9variptr_uS0_",
           "demangled_name": "GizmoPickups_AllocateProgressData(variptr_u*, variptr_u*)",
           "address": 4979136,
@@ -57731,7 +57851,7 @@
           "address": 4979200,
           "offset": 4089232,
           "size": 493,
-          "match_percent": 6.576643
+          "match_percent": 6.613139
         },
         {
           "name": "_ZL22GizmoPickups_AddGizmosP10GIZMOSYS_siPvS1_",
@@ -57747,7 +57867,7 @@
           "address": 4979824,
           "offset": 4089856,
           "size": 929,
-          "match_percent": 47.07451
+          "match_percent": 49.094116
         },
         {
           "name": "_ZL17GizmoPickups_DrawPvS_f",
@@ -57766,12 +57886,28 @@
           "match_percent": 62.503357
         },
         {
+          "name": "_Z20GizmoPickups_InitSysP16GIZMOPICKUPSYS_s",
+          "demangled_name": "GizmoPickups_InitSys(GIZMOPICKUPSYS_s*)",
+          "address": 4983776,
+          "offset": 4093808,
+          "size": 24,
+          "match_percent": 99.85714
+        },
+        {
+          "name": "_Z23GizmoPickup_FindNearestP11WORLDINFO_sP7nuvec_sPf",
+          "demangled_name": "GizmoPickup_FindNearest(WORLDINFO_s*, nuvec_s*, float*)",
+          "address": 4983808,
+          "offset": 4093840,
+          "size": 214,
+          "match_percent": 7.777778
+        },
+        {
           "name": "_ZL17GizmoPickups_LoadPvS_",
           "demangled_name": "GizmoPickups_Load(void*, void*)",
           "address": 4984160,
           "offset": 4094192,
           "size": 762,
-          "match_percent": 21.005102
+          "match_percent": 20.928572
         },
         {
           "name": "_ZL31GizmoPickups_ReserveBufferSpacePv",
@@ -57798,12 +57934,28 @@
           "match_percent": 98.716415
         },
         {
+          "name": "_Z24GizmoPickup_NumberOfTypeP11WORLDINFO_sic",
+          "demangled_name": "GizmoPickup_NumberOfType(WORLDINFO_s*, int, char)",
+          "address": 4985824,
+          "offset": 4095856,
+          "size": 145,
+          "match_percent": 9.056603
+        },
+        {
           "name": "_Z22GizmoPickup_FindByNameP11WORLDINFO_sPc",
           "demangled_name": "GizmoPickup_FindByName(WORLDINFO_s*, char*)",
           "address": 4985984,
           "offset": 4096016,
           "size": 125,
           "match_percent": 99.69388
+        },
+        {
+          "name": "_Z24GizmoPickup_TurnOnPickupP13GIZMOPICKUP_s",
+          "demangled_name": "GizmoPickup_TurnOnPickup(GIZMOPICKUP_s*)",
+          "address": 4986112,
+          "offset": 4096144,
+          "size": 15,
+          "match_percent": 100.0
         },
         {
           "name": "_Z24GizmoPickup_BeenTurnedOnP13GIZMOPICKUP_s",
@@ -57814,12 +57966,36 @@
           "match_percent": 100.0
         },
         {
+          "name": "_Z17GizmoPickup_InBoxP11WORLDINFO_siP7nuvec_sS2_",
+          "demangled_name": "GizmoPickup_InBox(WORLDINFO_s*, int, nuvec_s*, nuvec_s*)",
+          "address": 4986160,
+          "offset": 4096192,
+          "size": 259,
+          "match_percent": 5.060241
+        },
+        {
+          "name": "_Z20GizmoPickups_CollideP11WORLDINFO_sP12GameObject_si",
+          "demangled_name": "GizmoPickups_Collide(WORLDINFO_s*, GameObject_s*, int)",
+          "address": 4986432,
+          "offset": 4096464,
+          "size": 343,
+          "match_percent": 50.373627
+        },
+        {
           "name": "_ZL19GizmoPickups_UpdatePvS_f",
           "demangled_name": "GizmoPickups_Update(void*, void*, float)",
           "address": 4988128,
           "offset": 4098160,
           "size": 198,
           "match_percent": 37.25926
+        },
+        {
+          "name": "_Z21SpecialMiniKits_ResetP11WORLDINFO_s",
+          "demangled_name": "SpecialMiniKits_Reset(WORLDINFO_s*)",
+          "address": 4989984,
+          "offset": 4100016,
+          "size": 169,
+          "match_percent": 96.01923
         }
       ]
     },
@@ -58879,173 +59055,6 @@
           "offset": 1014752,
           "size": 1008,
           "match_percent": 81.0237
-        }
-      ]
-    },
-    {
-      "name": "legoapi/gizmos/object/newblowup.cpp.o",
-      "source": "src/legoapi/gizmos/object/newblowup.cpp",
-      "object": "bazel-out/k8-fastbuild/bin/src/_objs/saga_target_legoapi/newblowup.o",
-      "functions": [
-        {
-          "name": "_ZL19Blowup_GetMaxGizmosPv",
-          "demangled_name": "Blowup_GetMaxGizmos(void*)",
-          "address": 4945216,
-          "offset": 4055248,
-          "size": 27,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL19Blowup_GetGizmoNameP7GIZMO_s",
-          "demangled_name": "Blowup_GetGizmoName(GIZMO_s*)",
-          "address": 4945248,
-          "offset": 4055280,
-          "size": 19,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL16Blowup_GetOutputP7GIZMO_sii",
-          "demangled_name": "Blowup_GetOutput(GIZMO_s*, int, int)",
-          "address": 4945280,
-          "offset": 4055312,
-          "size": 71,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL20Blowup_GetOutputNameP7GIZMO_si",
-          "demangled_name": "Blowup_GetOutputName(GIZMO_s*, int)",
-          "address": 4945360,
-          "offset": 4055392,
-          "size": 35,
-          "match_percent": 99.4
-        },
-        {
-          "name": "_ZL20Blowup_GetNumOutputsP7GIZMO_s",
-          "demangled_name": "Blowup_GetNumOutputs(GIZMO_s*)",
-          "address": 4945408,
-          "offset": 4055440,
-          "size": 12,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_Z20Blowup_GetVisibilityP7GIZMO_s",
-          "demangled_name": "Blowup_GetVisibility(GIZMO_s*)",
-          "address": 4945424,
-          "offset": 4055456,
-          "size": 27,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL18GizmoBlowup_GetPosP7GIZMO_s",
-          "demangled_name": "GizmoBlowup_GetPos(GIZMO_s*)",
-          "address": 4945456,
-          "offset": 4055488,
-          "size": 19,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL20Blowup_ClearProgressPvS_",
-          "demangled_name": "Blowup_ClearProgress(void*, void*)",
-          "address": 4945488,
-          "offset": 4055520,
-          "size": 526,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_Z21GizmoBlowupLateUpdatePvS_f",
-          "demangled_name": "GizmoBlowupLateUpdate(void*, void*, float)",
-          "address": 4946016,
-          "offset": 4056048,
-          "size": 137,
-          "match_percent": 99.67391
-        },
-        {
-          "name": "_ZL15Blowup_ActivateP7GIZMO_si",
-          "demangled_name": "Blowup_Activate(GIZMO_s*, int)",
-          "address": 4946160,
-          "offset": 4056192,
-          "size": 345,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_ZL20Blowup_SetVisibilityP7GIZMO_si",
-          "demangled_name": "Blowup_SetVisibility(GIZMO_s*, int)",
-          "address": 4946512,
-          "offset": 4056544,
-          "size": 171,
-          "match_percent": 99.23913
-        },
-        {
-          "name": "_ZL27Blowup_AllocateProgressDataP9variptr_uS0_",
-          "demangled_name": "Blowup_AllocateProgressData(variptr_u*, variptr_u*)",
-          "address": 4946688,
-          "offset": 4056720,
-          "size": 50,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_ZL16Blowup_AddGizmosP10GIZMOSYS_siPvS1_",
-          "demangled_name": "Blowup_AddGizmos(GIZMOSYS_s*, int, void*, void*)",
-          "address": 4946752,
-          "offset": 4056784,
-          "size": 142,
-          "match_percent": 87.5814
-        },
-        {
-          "name": "_ZL20Blowup_StoreProgressPvS_S_",
-          "demangled_name": "Blowup_StoreProgress(void*, void*, void*)",
-          "address": 4946896,
-          "offset": 4056928,
-          "size": 703,
-          "match_percent": 84.14966
-        },
-        {
-          "name": "_Z26gizmoblowup_reservebuffersPv",
-          "demangled_name": "gizmoblowup_reservebuffers(void*)",
-          "address": 4948416,
-          "offset": 4058448,
-          "size": 70,
-          "match_percent": 100.0
-        },
-        {
-          "name": "_Z23NewBlowup_RegisterGizmoi",
-          "demangled_name": "NewBlowup_RegisterGizmo(int)",
-          "address": 4949360,
-          "offset": 4059392,
-          "size": 392,
-          "match_percent": 66.29412
-        },
-        {
-          "name": "_Z22GizmoBlowupEarlyUpdatePvS_f",
-          "demangled_name": "GizmoBlowupEarlyUpdate(void*, void*, float)",
-          "address": 4957088,
-          "offset": 4067120,
-          "size": 1588,
-          "match_percent": 29.389534
-        },
-        {
-          "name": "_ZL13Blowups_ResetPvS_S_",
-          "demangled_name": "Blowups_Reset(void*, void*, void*)",
-          "address": 4959808,
-          "offset": 4069840,
-          "size": 683,
-          "match_percent": 0.0
-        },
-        {
-          "name": "_Z20GizmoBlowupBurstDrawPvS_f",
-          "demangled_name": "GizmoBlowupBurstDraw(void*, void*, float)",
-          "address": 4961312,
-          "offset": 4071344,
-          "size": 1935,
-          "match_percent": 73.50658
-        },
-        {
-          "name": "_Z16gizmoblowup_LoadPvS_",
-          "demangled_name": "gizmoblowup_Load(void*, void*)",
-          "address": 4968640,
-          "offset": 4078672,
-          "size": 131,
-          "match_percent": 100.0
         }
       ]
     },
@@ -63790,14 +63799,6 @@
           "match_percent": 6.363637
         },
         {
-          "name": "_Z20GizmoPickups_InitSysP16GIZMOPICKUPSYS_s",
-          "demangled_name": "GizmoPickups_InitSys(GIZMOPICKUPSYS_s*)",
-          "address": 4983776,
-          "offset": 4093808,
-          "size": 24,
-          "match_percent": 99.85714
-        },
-        {
           "name": "_Z15MiniKitDetectorP7nuvec_s",
           "demangled_name": "MiniKitDetector(nuvec_s*)",
           "address": 4986784,
@@ -63812,14 +63813,6 @@
           "offset": 4098960,
           "size": 1047,
           "match_percent": 1.590909
-        },
-        {
-          "name": "_Z21SpecialMiniKits_ResetP11WORLDINFO_s",
-          "demangled_name": "SpecialMiniKits_Reset(WORLDINFO_s*)",
-          "address": 4989984,
-          "offset": 4100016,
-          "size": 169,
-          "match_percent": 98.51923
         },
         {
           "name": "_Z20SpecialMiniKits_DrawP11WORLDINFO_s",
@@ -129653,7 +129646,7 @@
     }
   ],
   "summary": {
-    "bazel_units": 517,
+    "bazel_units": 516,
     "functions": 13454,
     "assigned_functions": 12320,
     "ambiguous_functions": 231,

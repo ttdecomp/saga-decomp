@@ -72,9 +72,9 @@ See https://ttdecomp.github.io/saga/
 | `legoapi/characters` | 39.4% | 18.6% |
 | `legoapi/core` | 31.0% | 21.1% |
 | `legoapi/cutscenes` | 41.0% | 16.9% |
-| `legoapi/gizmo` | 49.2% | 40.7% |
-| `legoapi/gizmos` | 51.5% | 45.9% |
-| `legoapi/items` | 41.6% | 38.4% |
+| `legoapi/gizmo` | 49.6% | 41.3% |
+| `legoapi/gizmos` | 51.2% | 45.4% |
+| `legoapi/items` | 41.5% | 38.5% |
 | `legoapi/menus` | 31.1% | 27.5% |
 | `legoapi/misc` | 31.2% | 13.0% |
 | `legoapi/props` | 59.1% | 13.6% |

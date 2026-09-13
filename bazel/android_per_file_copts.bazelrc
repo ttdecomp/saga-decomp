@@ -201,7 +201,6 @@ build:target --per_file_copt=^src/legoapi/gizmos/object/hatmachine\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/transport/ledges\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/gizmos/object/lever\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/trigger/minicut\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmos/object/newblowup\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/door/plugs\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/door/push\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/door/securitydoors\.cpp$@-O3
