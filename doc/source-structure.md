@@ -11,11 +11,11 @@ Snapshot checked on 2026-09-13:
 
 | item | current value |
 |---|---:|
-| target source translation units | 516 |
+| target source translation units | 515 |
 | target C translation units | 13 |
-| target C++ translation units | 503 |
-| generated matching-report units | 516 |
-| optimization levels | 172 default `-O0`, 2 `-O1`, 112 `-O2`, 230 `-O3` |
+| target C++ translation units | 502 |
+| generated matching-report units | 515 |
+| optimization levels | 172 default `-O0`, 2 `-O1`, 111 `-O2`, 230 `-O3` |
 | special compile mode | one of the 230 `-O3` TUs also uses `-fPIE` |
 | original `_GLOBAL__sub_I_` symbols | 325 occurrences, 320 unique basenames |
 

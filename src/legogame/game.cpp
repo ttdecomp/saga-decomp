@@ -6,6 +6,7 @@
 #include "legogame/game.h"
 #include "legoapi/characters/motion.h"
 #include "legoapi/gizmos/object/gizbuildits.h"
+#include "legoapi/gizmo/object/gizmoblowups.h"
 
 #include <string.h>
 
@@ -163,8 +164,6 @@ static void BigJump_EndOfLand(GameObject_s *object) {
 }
 #include "legoapi/world/world.h"
 
-extern void (*GizmoBlowUp_SfxFn)(GIZMOBLOWUP_s *, NUVEC *);
-extern i32 (*GizmoBlowUp_NoTargetFn)(WORLDINFO_s *, GameObject_s *);
 static i32 GizmoBlowUp_NoTarget(WORLDINFO_s *world, GameObject_s *) {
     if (world->current_level == DEATHSTARRESCUEA_LDATA)
         return GameCam->sock_position.location.sock == 2;

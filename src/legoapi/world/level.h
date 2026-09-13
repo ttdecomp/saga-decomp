@@ -332,8 +332,6 @@ typedef struct nufpcomjmp_s nufpcomjmp_s;
 
 void Level_RegisterGameConfigKeywords(nufpcomjmp_s *beforeLoadKeywords, nufpcomjmp_s *afterLoadKeywords);
 
-void SetLevelExBlowupFlags(u32 flags);
-u32 GetLevelExBlowupFlags(void);
 void GoToNewLevel(i32 levelIdx);
 
 void LevelConfig_BeforeLoad(LEVELDATA *level, char *buffer, nufpcomjmp_s *keywords);

@@ -22,6 +22,7 @@
 #include "legoapi/characters/core/players.h"
 #include "legoapi/gizmo/base/gizmo.h"
 #include "legoapi/gizmo/base/GizBlowupObjectInterface.h"
+#include "legoapi/gizmo/object/gizmoblowups.h"
 #include <string.h>
 
 extern BOLT_s Bolt[32];

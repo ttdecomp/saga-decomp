@@ -214,6 +214,7 @@ u32 areaSuitBits = 0;
 u8 *Game_LevelSave = NULL;
 EPISODESAVE_s *Game_EpisodeSave = NULL;
 u16 *Game_CompletionSave = NULL;
+void (*CheckLostDataFn)(GIZMOBLOWUP_s *) = NULL;
 MISSIONSAVE *Game_MissionSave = NULL;
 
 // ------------------------------------------------------------------------
@@ -1685,8 +1686,6 @@ i32 (*CutScene_ReplaceCharacterModelFn)(CUTINFO *, NUGCUTCHAR_s *) = NULL;
 i32 (*InitBolt_AddMomentumType)(BOLT_s *, GameObject_s *, nuvec_s *) = NULL;
 i32 (*Bolt_HitPlatFn)(BOLT_s *) = NULL;
 void (*Bolt_HitCustomFn)(BOLT_s *, nuvec_s *) = NULL;
-void (*GameBlowUpBlownUpFn)(GIZMOBLOWUP_s *) = NULL;
-void (*GizmoBlowup_TransformDrawFn)(GIZMOBLOWUP_s *) = NULL;
 void (*GizObstacle_SetDefaultSFXFn)(void *, GIZOBSTACLE_s *) = NULL;
 // Original bss @0x6a3f54 / @0x6a3f50.
 i32 LoadPerm_LanguageSelect = 0;
@@ -1724,7 +1723,6 @@ i32 create_qfont3dz = 0;
 // ------------------------------------------------------------------------
 // Cutscene & system misc
 // ------------------------------------------------------------------------
-u32 EXBLOWUPFLAGS = 0;
 i32 BeenAttacked = 0;
 FadeSystem FadeSys;
 i32 Paused = 0;

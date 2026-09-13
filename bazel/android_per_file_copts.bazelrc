@@ -161,7 +161,6 @@ build:target --per_file_copt=^src/legoapi/gizmo/object/gizminicut\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_grabber\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_grapples\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_hatmachine\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_newblowup\.cpp$@-O2
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_tubes\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/world/world\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/world/levelconfig\.cpp$@-O3

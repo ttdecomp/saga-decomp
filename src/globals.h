@@ -446,6 +446,7 @@ extern AREASAVE_s *Game_AreaSave;
 extern EPISODESAVE_s *Game_EpisodeSave;
 extern u8 *Game_CharacterSave;
 extern u16 *Game_CompletionSave;
+extern void (*CheckLostDataFn)(GIZMOBLOWUP_s *);
 extern MISSIONSAVE *Game_MissionSave;
 extern STATUSCOLLECTLIST_s StatusCollectList;
 #ifdef __cplusplus
@@ -1089,7 +1090,6 @@ extern u64 LevHSpecialExists;
 // ------------------------------------------------------------------------
 // Cutscene & system misc
 // ------------------------------------------------------------------------
-extern u32 EXBLOWUPFLAGS;
 extern i32 BeenAttacked;
 enum RESETBIT_FLAGS {
     RESETBIT_REINITIALISE_LEVEL = 1 << 0,
@@ -1142,8 +1142,6 @@ extern i32 (*CutScene_ReplaceCharacterModelFn)(CUTINFO *, NUGCUTCHAR_s *);
 extern i32 (*InitBolt_AddMomentumType)(BOLT_s *, GameObject_s *, nuvec_s *);
 extern i32 (*Bolt_HitPlatFn)(BOLT_s *);
 extern void (*Bolt_HitCustomFn)(BOLT_s *, nuvec_s *);
-extern void (*GameBlowUpBlownUpFn)(GIZMOBLOWUP_s *);
-extern void (*GizmoBlowup_TransformDrawFn)(GIZMOBLOWUP_s *);
 extern void (*GizObstacle_SetDefaultSFXFn)(void *, GIZOBSTACLE_s *);
 
 extern i32 PermDataLoaded;          // original .data init 1

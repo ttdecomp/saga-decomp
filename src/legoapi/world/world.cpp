@@ -9,6 +9,7 @@
 #include "gameapi/edtools/edstubs.h"
 #include "gameapi/gui/apimenu.h"
 #include "globals.h"
+#include "legoapi/gizmo/object/gizmoblowups.h"
 #include "legoapi/world/area.h"
 #include "legoapi/characters/core/character.h"
 #include "legoapi/world/level.h"

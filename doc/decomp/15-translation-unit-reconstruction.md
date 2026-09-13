@@ -376,6 +376,40 @@ cross-TU declarations instead of scattered local `extern` declarations.
   functions remain in the `-O2` gizmo wrapper and several other files, while
   the merged current source also contains out-of-run helpers. Those require
   separate ownership and optimization tests.
+  A controlled optimization trial for the still-separate
+  `gizmo/gizmos/gizmos_newblowup.cpp` wrapper changes its setting from `-O2`
+  to `-O3`, matching the optimized shape of the original run. Fuzzy matching
+  rises 44.599873% to 44.620518%: `GizmoBlowup_Opponent` improves 11.72% to
+  55.18%, `GizmoBlowup_Hit` 11.50% to 38.59%, and `GizmoBlowup_Target` 79.83%
+  to 88.99%; nothing regresses and all exact bodies remain exact. Target
+  build, four checks, symbol coverage, and 120-frame Map smoke pass. The
+  A subsequent measured merge moves all seven wrapper functions into the
+  original-named `gizmoblowups.cpp` owner at `-O3` and removes the redundant
+  source. All three exact wrapper bodies and the 93-byte initializer score
+  are preserved. Only `GizmoBlowUp_Hit` declines slightly (38.59% to 38.55%),
+  leaving aggregate fuzzy matching effectively unchanged at 44.6247%.
+  Target build, four checks, symbol coverage, and 120-frame Map smoke pass.
+  Out-of-run functions and data in other owners remain separate work.
+  `SetLevelExBlowupFunc` was an empty stub in `episode.cpp`, whereas the
+  original stores a non-null callback. Restoring that behavior makes it exact
+  (35% to 100%); moving it into the BlowUp owner then preserves the exact
+  match. `SetLevelExBlowupFlags`, `GetLevelExBlowupFlags`, and their
+  `EXBLOWUPFLAGS` word also move from `level.cpp`/`globals.cpp` into the owner
+  without changing either previously exact body. The owner header now exports
+  these APIs and callback pointers to call sites. Original `.bss` places
+  `GizmoBlowUp_NoTargetFn`, `GizmoBlowUpOpponent_Behind/Range2`,
+  `GizmoBlowUp_SfxFn`, `GizmoBlowup_TransformDrawFn`, `BlowupExFunc`,
+  `EXBLOWUPFLAGS`, and `GameBlowUpBlownUpFn` in that order, 16 bytes apart.
+  Moving the last two misplaced callbacks into the owner and arranging the
+  eight source definitions in the reverse declaration order emitted by GCC
+  4.7 restores that object-local sequence without affecting function scores.
+  `CheckLostDataFn` belongs to a separate original data block next to
+  `Game_CompletionSave`; moving it to the current globals owner is score
+  neutral. The registration-local `addtype` still follows the name table in
+  the current object's `.bss`, whereas the original has it before the table;
+  that local-data/source-order question remains open. This measured series
+  leaves fuzzy matching at 44.625084% and 4,631 exact functions, with target
+  build, four checks, symbol coverage, and 120-frame Map smoke passing.
 - Original `gizmopickups.cpp` has a 41-function text run from `0x004bedb0`
   to the next turret owner at `0x004c28a0`. Its local block includes
   `GizmoPickups_CollideList`, registration-local `addtype`, and file-local
@@ -411,6 +445,24 @@ cross-TU declarations instead of scattered local `extern` declarations.
   symbol coverage (zero missing), and 120-frame Map smoke pass. The
   `SpecialMiniKits_Reset` register differences and other pickup-run functions
   still need ordinary source/TU reconstruction.
+  A later body-level comparison found that the original collision filter
+  tests pickup-type bit `0x10`, whereas the reconstructed collision code used
+  challenge-mode bit `0x20`. The original Charkit type-table byte is `0x21`,
+  confirming `0x20` remains the challenge-mode bit; a distinct collision bit
+  was added without changing that table. The original collision helper also
+  stores its two condition flags as 32-bit integers and places the manual
+  distance test on the fall-through path, with the sphere helper on the other
+  branch. Restoring those ordinary source types and equivalent branch form
+  raises `GizmoPickups_CollideList` from 56.41% to 78.49%. Its accesses to
+  pickup types now use the original file-static `GizmoPickupSys` pointer,
+  shared with `GizmoPickups_InitSys`, instead of a fixed game-global system;
+  that structural/behavioral correction leaves the helper at 77.01% because
+  register/layout differences remain. `GizmoPickups_Collide` and
+  `GizmoPickups_TotalScore` also use the pointer as in the original, with no
+  further function-score change. The full set of these body/data corrections
+  raises fuzzy matching 44.620518% to 44.624714%, keeps all exact matches,
+  and passes target build, four checks, symbol coverage, and 120-frame Map
+  smoke.
 - Original `gizspinner.cpp` has a single text run of spinner callbacks and
   implementation functions, with one initializer and adjacent spinner data.
   The two current `-O3` sources were consolidated under the original basename

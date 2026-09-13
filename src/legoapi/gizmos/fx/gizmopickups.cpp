@@ -21,6 +21,7 @@
 f32 COINMAGNETSCALE = 3.0f;
 f32 COINMSGTIME = 1.0f;
 f32 (*GizmoPickups_Collide2DFn)(GameObject_s *) = NULL;
+static GIZMOPICKUPSYS_s *GizmoPickupSys = &GizmoPickupSys_Game;
 
 static GIZMOPICKUP_s *GizmoPickups_CollideList(GameObject_s *, GIZMOPICKUP_s *, i32);
 
@@ -46,10 +47,10 @@ GIZMOPICKUP_s *GizmoPickups_Collide(WORLDINFO_s *world, GameObject_s *object, i3
     }
 
     i32 type_index = pickup->type_index;
-    if ((pickup->state_flags & GIZMOPICKUP_STATE_ALTERNATE_TYPE) != 0 && GizmoPickupSys_Game.alternate_type != -1) {
-        type_index = GizmoPickupSys_Game.alternate_type;
+    if ((pickup->state_flags & GIZMOPICKUP_STATE_ALTERNATE_TYPE) != 0 && GizmoPickupSys->alternate_type != -1) {
+        type_index = GizmoPickupSys->alternate_type;
     }
-    GIZMO_PICKUP_TYPE *type = &GizmoPickupSys_Game.types[type_index];
+    GIZMO_PICKUP_TYPE *type = &GizmoPickupSys->types[type_index];
     if (type->collection_sfx_name != NULL) {
         PlaySfx(type->collection_sfx_name, &pickup->position);
     }
@@ -97,7 +98,7 @@ u32 GizmoPickups_TotalScore(void *world) {
     u32 score = 0;
     if (pickup != NULL) {
         for (i32 i = 0; i < system->pickup_count; ++i, ++pickup)
-            score += GizmoPickupSys_Game.types[pickup->type_index].score;
+            score += GizmoPickupSys->types[pickup->type_index].score;
     }
     return score;
 }
@@ -124,8 +125,6 @@ void SetAreaPickupGravity(i32 area, i32 level);
 void SuperCounter_ActivateGizmoPickup(GIZMO_s *gizmo, GIZMOPICKUP_s *pickup);
 void SuperCounters_ResetProcessed(WORLDINFO_s *world);
 void MiniKitDetector(NUVEC *position);
-
-static GIZMOPICKUPSYS_s *GizmoPickupSys = &GizmoPickupSys_Game;
 
 namespace {
 
@@ -506,7 +505,7 @@ static GIZMOPICKUP_s *GizmoPickups_CollideList(GameObject_s *object, GIZMOPICKUP
         return NULL;
     }
 
-    bool collide_2d = false;
+    i32 collide_2d = 0;
     if ((object->apiobj.character_data->model_flags & 0x2000) != 0) {
         collide_2d = VehicleArea != 0;
     }
@@ -515,11 +514,11 @@ static GIZMOPICKUP_s *GizmoPickups_CollideList(GameObject_s *object, GIZMOPICKUP
     if (GizmoPickups_Collide2DFn != NULL) {
         collide_scale = GizmoPickups_Collide2DFn(object);
         if (collide_scale != 0.0f) {
-            collide_2d = true;
+            collide_2d = 1;
         }
     }
 
-    const bool coin_magnet = Cheats_CheckFlags(0x8000) != 0 || object->field_0xdec > 0.0f;
+    const i32 coin_magnet = Cheats_CheckFlags(0x8000) != 0 || object->field_0xdec > 0.0f;
     f32 scaled_pickup = coin_magnet ? COINMAGNETSCALE * AreaPickupScale : AreaPickupScale;
     const f32 normal_pickup = AreaPickupScale;
     if (collide_scale != 0.0f) {
@@ -531,17 +530,17 @@ static GIZMOPICKUP_s *GizmoPickups_CollideList(GameObject_s *object, GIZMOPICKUP
 
     for (i32 index = 0; index < count; ++index) {
         GIZMOPICKUP_s *pickup = &pickups[index];
-        GIZMO_PICKUP_TYPE *type = &GizmoPickupSys_Game.types[pickup->type_index];
+        GIZMO_PICKUP_TYPE *type = &GizmoPickupSys->types[pickup->type_index];
         u8 flags = pickup->state_flags;
-        if ((type->flags & GIZMOPICKUP_TYPE_CHALLENGE_MODE_FILTER) != 0 ||
+        if ((type->flags & GIZMOPICKUP_TYPE_COLLISION_FILTER) != 0 ||
             (flags & (GIZMOPICKUP_STATE_ACTIVE | GIZMOPICKUP_STATE_ENABLED | GIZMOPICKUP_STATE_COLLECTED)) !=
                 (GIZMOPICKUP_STATE_ACTIVE | GIZMOPICKUP_STATE_ENABLED) ||
             ((flags & GIZMOPICKUP_STATE_DRAWN) == 0 && (pickup->config_flags & 4) == 0)) {
             continue;
         }
 
-        if ((flags & GIZMOPICKUP_STATE_ALTERNATE_TYPE) != 0 && GizmoPickupSys_Game.alternate_type != -1) {
-            type = &GizmoPickupSys_Game.types[GizmoPickupSys_Game.alternate_type];
+        if ((flags & GIZMOPICKUP_STATE_ALTERNATE_TYPE) != 0 && GizmoPickupSys->alternate_type != -1) {
+            type = &GizmoPickupSys->types[GizmoPickupSys->alternate_type];
         }
         if (type->field_0x0f != 0 && pickups != WorldInfo_CurrentlyActive()->gizmo_pickup_sys->temporary_pickups) {
             continue;
@@ -569,17 +568,19 @@ static GIZMOPICKUP_s *GizmoPickups_CollideList(GameObject_s *object, GIZMOPICKUP
             }
         } else if (object->apiobj.collision_min.y <= pickup->position.y + radius_y &&
                    pickup->position.y - radius_y <= object->apiobj.collision_max.y) {
-            if (object->field_0xcc0 != NULL) {
+            if (object->field_0xcc0 == NULL) {
+                if (SphereSphereOverlapScaleY(&pickup->position, radius_x, radius_y,
+                                              &object->apiobj.collision_position, object->apiobj.collision_radius,
+                                              object->apiobj.field_0x1e0)) {
+                    return pickup;
+                }
+            } else {
                 f32 dx = pickup->position.x - object->apiobj.collision_position.x;
                 f32 dz = pickup->position.z - object->apiobj.collision_position.z;
                 f32 radius = radius_x + object->apiobj.field_0x1dc;
                 if (dx * dx + dz * dz < radius * radius) {
                     return pickup;
                 }
-            } else if (SphereSphereOverlapScaleY(&pickup->position, radius_x, radius_y,
-                                                 &object->apiobj.collision_position, object->apiobj.collision_radius,
-                                                 object->apiobj.field_0x1e0)) {
-                return pickup;
             }
         }
     }
