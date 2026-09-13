@@ -10,6 +10,10 @@ extern i32 turret_gizmotype_id;
 #ifdef __cplusplus
 
 typedef struct GIZTURRET_s GIZTURRET;
+struct GIZTURRETSYS_s;
+struct GameObject_s;
+struct HINT_s;
+struct numtx_s;
 
 enum GIZTURRET_FLAGS : u8 {
     GIZTURRET_FLAG_ACTIVE = 1 << 1,
@@ -28,6 +32,10 @@ enum GIZTURRET_RUNTIME_FLAGS : u8 {
 };
 
 ADDGIZMOTYPE *GizTurrets_RegisterGizmo(i32 type_id);
+GameObject_s *GizTurret_GetTgt(GIZTURRET_s *turret, numtx_s *matrix);
+void GizTurret_CalculateInterceptVector(NUVEC *origin, numtx_s *matrix, NUVEC *target, NUVEC *velocity,
+                                        f32 speed, NUVEC *intercept, NUVEC *intercept_velocity, u32 fallback);
+void GizTurrets_Hit(void *world, GIZTURRET_s *turret, NUVEC *position, i32 player, i32 flags);
 
 extern "C" {
 #endif

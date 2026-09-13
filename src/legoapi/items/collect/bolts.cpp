@@ -8,6 +8,7 @@
 #include "legoapi/core/config/cheat.h"
 #include "legoapi/gizmos/fx/gizmopickups.h"
 #include "legoapi/items/objects/gameobjects.h"
+#include "legoapi/items/collect/bolts.h"
 #include "decomp.h"
 #include "nu2api/nucore/nustring.h"
 #include "legoapi/core/input/qrand.h"
@@ -63,7 +64,6 @@ BOLT_s *Bolt_Alloc() {
     return &Bolt[index];
 }
 
-extern i32 addbolt_nosfx;
 extern i32 addbolt_newsfx;
 extern NUVEC addbolt_newpos;
 f32 BOLT_SHOOTFLASHTIME = 0.1f;

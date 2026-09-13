@@ -13,6 +13,7 @@ struct CHARFIXUP {
 typedef struct CHARFIXUP CHARFIXUP;
 
 struct GameObject_s;
+extern "C" i16 id_GRABCONTROL;
 struct BLADE_s {
     i16 model;
     i16 glow_model;

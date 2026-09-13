@@ -161,7 +161,6 @@ build:target --per_file_copt=^src/legoapi/gizmo/object/giztimers\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/object/gizminicut\.cpp$@-O2
 # Turret lookup and hint traversal use the same optimized leaf/loop forms as
 # the surrounding generated gizmo translation units.
-build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_gizturrets\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_grabber\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_grapples\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/gizmos/gizmos_hatmachine\.cpp$@-O3
@@ -197,7 +196,7 @@ build:target --per_file_copt=^src/legoapi/gizmos/trigger/gizspecial\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmo/object/gizspecial\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/trigger/giztimer\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/traps/giztorpmachine\.cpp$@-O3
-build:target --per_file_copt=^src/legoapi/gizmos/traps/gizturrets\.cpp$@-O3
+build:target --per_file_copt=^src/legoapi/gizmos/traps/gizturret\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/transport/grapples\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/fx/guidelines\.cpp$@-O3
 build:target --per_file_copt=^src/legoapi/gizmos/object/hatmachine\.cpp$@-O3

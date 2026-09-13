@@ -292,3 +292,18 @@ cross-TU declarations instead of scattered local `extern` declarations.
   require body-level diagnosis, not a reversal of the evidenced static-data
   ownership. Target build, symbol coverage, checks, and 120-frame Map smoke
   pass.
+- Original `gizturret.cpp` local symbols contain the turret callbacks, output
+  name buffer, registration static, and six function-local vectors. Its three
+  adjacent `.data` words are `gizturret_rapid_fire_rate`,
+  `gizturret_test_ang`, and `turret_gizmotype_id`, formerly split across
+  `gizmos/traps/gizturrets.cpp` and
+  `gizmo/gizmos/gizmos_gizturrets.cpp`. Merging those sources under the singular
+  `gizmos/traps/gizturret.cpp` owner and retaining `-O3` restores that data
+  order and brings `_GLOBAL__sub_I_gizturret.cpp` from 0% to 99.35%.
+  The secondary file's duplicate empty `GizTurret_ReadAnimSetData` definition,
+  marked `__used__`, was removed; the real reader remains in the owner and
+  improves 16.80% to 23.96%. `GizmoTurret_GetOutputName` becomes exact, no
+  exact match is lost, and whole-binary fuzzy matching rises 44.5703% to
+  44.5722%. Target and WASM builds, symbol coverage, checks, and 120-frame Map
+  smoke pass. The remaining small Load/Reset body-score declines need ordinary
+  source-level investigation.
